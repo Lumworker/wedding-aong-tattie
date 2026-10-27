@@ -29,17 +29,17 @@ function Splash() {
 export function WeddingApp() {
   const snapshot = useSyncExternalStore(guestStore.subscribe, guestStore.getSnapshot, guestStore.getServerSnapshot)
   const [override, setOverride] = useState<View | null>(null)
-  const auto: View = snapshot.phone && snapshot.party ? "venue" : snapshot.phone ? "rsvp" : "phone"
+  const auto: View = snapshot.phone ? "rsvp" : "phone"
   const view = override ?? auto
 
   function continueWithPhone(phone: string) {
     guestStore.setPhone(phone)
-    setOverride(null)
+    setOverride("rsvp")
   }
 
   function saveParty(party: Party) {
     guestStore.saveParty(party)
-    setOverride(null)
+    setOverride("venue")
   }
 
   function changePhone() {

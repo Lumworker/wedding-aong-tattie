@@ -177,9 +177,14 @@ export function RsvpForm({
         <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          บอกเราว่าใครอยู่ในคณะนี้ จะได้พาทุกคนเข้าฉากงาน
+          กรอกชื่อ เพศ วัย และการร่วมงานของทุกคนในคณะ
           โบสถ์รองรับแขกทั้งงานได้กว่า 100 คน — แบบนี้เก็บเฉพาะคณะของคุณ ครั้งละไม่เกิน {PARTY_MAX} คน
         </p>
+        {party?.guests?.length ? (
+          <p className="mt-2 text-sm leading-6 text-sage-deep">
+            คณะนี้เคยบันทึกแล้ว ตรวจรายชื่อแล้วกดเข้างานได้
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={onChangePhone}

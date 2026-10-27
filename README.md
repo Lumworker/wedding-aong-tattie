@@ -27,11 +27,9 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 ## Guest flow
 
-1. **เบอร์มือถือ** — labeled เบอร์มือถือ. Hint: ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ. Thai mobiles `06` / `08` / `09`, 10 digits. Same device with a saved party skips this step and opens the scene.
-2. **ตอบรับ** — choose how many people are in the party (1–10). For each person: name, gender, adult or child, and whether they are coming. One party stays small; the church holds every attending party together.
-3. **ฉากงาน** — the animated main page. Use **แก้ไขการตอบรับ** to change the party, or **ใช้เบอร์อื่น** to switch accounts.
-
-A return visit with the same code on this device skips the gate and opens the scene, with the saved party restored. The code itself is not printed on the venue.
+1. **เบอร์มือถือ** — labeled เบอร์มือถือ. Hint: ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ. Thai mobiles `06` / `08` / `09`, 10 digits.
+2. **ตอบรับ** — always the next screen: how many people (1–10), then name, gender, adult or child, and whether they are coming. A saved party is prefilled so you can check it and enter the scene.
+3. **ฉากงาน** — after **บันทึกและเข้างาน**. Use **แก้ไขการตอบรับ** to open the form again, or **ใช้เบอร์อื่น** to switch accounts.
 
 ## What is stored
 

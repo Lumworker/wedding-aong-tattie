@@ -82,7 +82,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
           </Button>
           <Ornament className="mt-5" />
           <p className="text-center text-xs leading-5 text-muted-foreground">
-            เคยตอบรับบนเครื่องนี้แล้ว จะกลับเข้าฉากงานทันที
+            เคยตอบรับบนเครื่องนี้แล้ว จะเปิดฟอร์มคณะเดิม แล้วเข้าฉากได้
           </p>
         </form>
       </div>
