@@ -7,19 +7,18 @@ export type FigureMood = "idle" | "walk" | "cheer"
 function Nameplate({ label, y, highlight }: { label: string; y: number; highlight: boolean }) {
   const glyphs = Array.from(label)
   const shown = glyphs.length > 14 ? `${glyphs.slice(0, 13).join("")}…` : label
-  const width = Math.max(34, Array.from(shown).length * 6.8 + 14)
+  const width = Math.max(36, Array.from(shown).length * 6.6 + 12)
   return (
     <g transform={`translate(0 ${y})`}>
+      <rect x={-width / 2 + 1} y={-7} width={width} height={15} fill="#3A2C28" opacity="0.18" />
       <rect
         x={-width / 2}
         y={-8}
         width={width}
-        height={16}
-        rx={8}
+        height={15}
         fill={highlight ? "#3F5344" : "#FFFCF8"}
-        fillOpacity="0.94"
-        stroke={highlight ? "#B8956A" : "#E4D8CC"}
-        strokeWidth="0.7"
+        stroke={highlight ? "#B8956A" : "#D9C6B2"}
+        strokeWidth="1"
       />
       <text y="0.5" textAnchor="middle" dominantBaseline="central" fill={highlight ? "#F6F1EA" : "#2A2623"} fontSize="9">
         {shown}
@@ -32,7 +31,7 @@ function PixelGroom({ label, highlight, showName }: { label: string; highlight: 
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      <ellipse cx="0" cy="3" rx="16" ry="4" fill="#2A2623" opacity="0.16" />
+      <ellipse cx="0" cy="4" rx="15" ry="3.4" fill="#2A2623" opacity="0.2" />
       {highlight ? (
         <ellipse cx="0" cy="-40" rx="24" ry="42" fill="none" stroke="#B8956A" strokeWidth="1.3" className="wd-ring" />
       ) : null}
@@ -57,16 +56,16 @@ function PixelBride({ label, highlight, showName }: { label: string; highlight: 
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      <ellipse cx="0" cy="3" rx="16" ry="4" fill="#2A2623" opacity="0.16" />
+      <ellipse cx="0" cy="4" rx="15" ry="3.4" fill="#2A2623" opacity="0.2" />
       {highlight ? (
         <ellipse cx="0" cy="-40" rx="24" ry="42" fill="none" stroke="#B8956A" strokeWidth="1.3" className="wd-ring" />
       ) : null}
       <g className="is-idle">
         <g className="wd-bob">
-          <path d="M-14 -18 Q-18 0 -12 2 H12 Q18 0 14 -18 Z" fill="#F7F1EA" />
-          <path d="M-10 -4 Q0 4 10 -4" fill="#E8D8D4" opacity="0.55" />
-          <ellipse cx="-7" cy="2.4" rx="4.2" ry="1.8" fill="#F4E7E4" />
-          <ellipse cx="7" cy="2.4" rx="4.2" ry="1.8" fill="#F4E7E4" />
+          <rect x="-12" y="-20" width="24" height="18" fill="#F7F1EA" />
+          <rect x="-14" y="-6" width="28" height="8" fill="#FFFCF8" />
+          <rect x="-8" y="2" width="6" height="3" fill="#F4E7E4" />
+          <rect x="2" y="2" width="6" height="3" fill="#F4E7E4" />
           <image
             href="/sprites/bride.png"
             x="-20"
@@ -82,80 +81,96 @@ function PixelBride({ label, highlight, showName }: { label: string; highlight: 
   )
 }
 
+function shade(hex: string, amount: number) {
+  const n = Number.parseInt(hex.slice(1), 16)
+  const r = Math.max(0, Math.min(255, ((n >> 16) & 255) + amount))
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amount))
+  const b = Math.max(0, Math.min(255, (n & 255) + amount))
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`
+}
+
 function CatGuest({
   guest,
   mood,
   showName,
   highlight,
+  facing,
 }: {
   guest: Guest
   mood: FigureMood
   showName: boolean
   highlight: boolean
+  facing: 1 | -1
 }) {
   const look = lookForGuest(guest)
   const fur = look.hair
-  const belly = look.skin
+  const dark = shade(fur, -28)
+  const light = shade(fur, 28)
   const female = guest.gender === "female"
   const moodClass = mood === "walk" ? "is-walking" : mood === "cheer" ? "is-cheering" : "is-idle"
-  const step = `${0.4 + (guest.id.length % 5) * 0.05}s`
+  const step = `${0.36 + (guest.id.length % 4) * 0.04}s`
   const label = guest.name
 
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      <ellipse cx="0" cy="3" rx={highlight ? 16 : 12} ry="3.6" fill="#2A2623" opacity="0.14" />
+      <ellipse cx="0" cy="3" rx={highlight ? 14 : 11} ry="3.2" fill="#2A2623" opacity="0.2" />
       {highlight ? (
-        <ellipse cx="0" cy="-22" rx="20" ry="28" fill="none" stroke="#B8956A" strokeWidth="1.2" className="wd-ring" />
+        <ellipse cx="0" cy="-22" rx="18" ry="26" fill="none" stroke="#B8956A" strokeWidth="1.2" className="wd-ring" />
       ) : null}
-      <g className={moodClass} style={{ ["--wd-step" as string]: step }}>
-        <g className="wd-bob">
-          <g className="wd-tail" transform="translate(14 -10)">
-            <path d="M0 0 Q16 -10 18 8" fill="none" stroke={fur} strokeWidth="4.2" strokeLinecap="round" />
-            <path d="M0 0 Q16 -10 18 8" fill="none" stroke={look.outfitDark} strokeWidth="1.4" strokeLinecap="round" opacity="0.35" />
+      {showName && label ? <Nameplate label={label} y={-62} highlight={highlight} /> : null}
+      <g transform={`scale(${facing} 1)`}>
+        <g className={moodClass} style={{ ["--wd-step" as string]: step }}>
+          <g className="wd-bob">
+            <g className="wd-tail" transform="translate(12 -8)">
+              <rect x="0" y="-2" width="10" height="4" fill={fur} />
+              <rect x="8" y="-6" width="6" height="4" fill={dark} />
+            </g>
+            <g transform="translate(-7 0)">
+              <g className="wd-leg-l">
+                <rect x="-3" y="-1" width="5" height="8" fill={dark} />
+                <rect x="-2" y="6" width="5" height="3" fill="#2A2623" />
+              </g>
+            </g>
+            <g transform="translate(6 0)">
+              <g className="wd-leg-r">
+                <rect x="-3" y="-1" width="5" height="8" fill={fur} />
+                <rect x="-2" y="6" width="5" height="3" fill="#2A2623" />
+              </g>
+            </g>
+            <g shapeRendering="crispEdges">
+              <rect x="-13" y="-22" width="26" height="18" fill={fur} />
+              <rect x="-9" y="-18" width="16" height="10" fill={light} />
+              <rect x="-12" y="-42" width="24" height="22" fill={fur} />
+              <rect x="-16" y="-52" width="8" height="12" fill={fur} />
+              <rect x="8" y="-52" width="8" height="12" fill={fur} />
+              <rect x="-14" y="-50" width="4" height="6" fill="#E7B4B8" />
+              <rect x="10" y="-50" width="4" height="6" fill="#E7B4B8" />
+              <rect x="-7" y="-36" width="4" height="4" fill="#1A1410" />
+              <rect x="3" y="-36" width="4" height="4" fill="#1A1410" />
+              <rect x="-6" y="-35" width="2" height="2" fill="#fff" />
+              <rect x="4" y="-35" width="2" height="2" fill="#fff" />
+              <rect x="-2" y="-30" width="4" height="3" fill="#C48984" />
+              <rect x="-10" y="-32" width="6" height="2" fill="#5C3A36" />
+              <rect x="4" y="-32" width="6" height="2" fill="#5C3A36" />
+              <rect x="-6" y="-24" width="12" height="4" fill={look.accent} />
+              {female ? (
+                <>
+                  <rect x="10" y="-48" width="6" height="6" fill={look.outfit} />
+                  <rect x="14" y="-46" width="6" height="6" fill={look.outfitDark} />
+                </>
+              ) : (
+                <rect x="8" y="-20" width="4" height="4" fill={look.outfit} />
+              )}
+            </g>
+            {mood === "cheer" ? (
+              <g className="wd-heart" transform="translate(16 -54)">
+                <path d="M0 3.2 C-4.2 -2.2 -0.8 -6.2 0 -3.2 C0.8 -6.2 4.2 -2.2 0 3.2 Z" fill="#C48984" />
+              </g>
+            ) : null}
           </g>
-          <g transform="translate(-7 0)">
-            <g className="wd-leg-l">
-              <rect x="-3" y="-2" width="6" height="10" rx="3" fill={fur} />
-            </g>
-          </g>
-          <g transform="translate(7 0)">
-            <g className="wd-leg-r">
-              <rect x="-3" y="-2" width="6" height="10" rx="3" fill={look.outfitDark} />
-            </g>
-          </g>
-          <ellipse cx="0" cy="-12" rx="16" ry="13" fill={fur} />
-          <ellipse cx="0" cy="-10" rx="10" ry="8" fill={belly} opacity="0.7" />
-          <circle cx="0" cy="-32" r="13.5" fill={fur} />
-          <polygon points="-11,-42 -6,-54 -1,-43" fill={fur} />
-          <polygon points="1,-43 6,-54 11,-42" fill={fur} />
-          <polygon points="-9,-43 -6,-50 -4,-43" fill="#E7B4B8" />
-          <polygon points="4,-43 6,-50 9,-43" fill="#E7B4B8" />
-          <circle cx="-4.2" cy="-33" r="1.7" fill="#2A2623" />
-          <circle cx="4.2" cy="-33" r="1.7" fill="#2A2623" />
-          <circle cx="-3.6" cy="-33.6" r="0.5" fill="#fff" />
-          <circle cx="4.8" cy="-33.6" r="0.5" fill="#fff" />
-          <ellipse cx="0" cy="-29.4" rx="1.5" ry="1" fill="#C48984" />
-          <path d="M-3 -28.2 Q0 -26.4 3 -28.2" fill="none" stroke="#5C3A36" strokeWidth="0.8" strokeLinecap="round" />
-          <path d="M-8 -30 H-4 M8 -30 H4" stroke="#5C3A36" strokeWidth="0.6" />
-          <rect x="-5" y="-21" width="10" height="3.2" rx="1.4" fill={look.accent} />
-          {female ? (
-            <g transform="translate(10 -40) rotate(18)">
-              <circle cx="-3" cy="0" r="3.1" fill={look.outfit} />
-              <circle cx="3" cy="0" r="3.1" fill={look.outfit} />
-              <circle cx="0" cy="2" r="2.2" fill={look.outfitDark} />
-            </g>
-          ) : (
-            <circle cx="8" cy="-22" r="2.2" fill={look.accent} />
-          )}
-          {mood === "cheer" ? (
-            <g className="wd-heart" transform="translate(16 -48)">
-              <path d="M0 3.2 C-4.2 -2.2 -0.8 -6.2 0 -3.2 C0.8 -6.2 4.2 -2.2 0 3.2 Z" fill="#C48984" />
-            </g>
-          ) : null}
         </g>
       </g>
-      {showName && label ? <Nameplate label={label} y={-58} highlight={highlight} /> : null}
     </g>
   )
 }
@@ -167,6 +182,7 @@ export function Character({
   showName = true,
   highlight = false,
   name,
+  facing = 1,
 }: {
   role?: FigureRole
   guest?: Guest
@@ -174,6 +190,7 @@ export function Character({
   showName?: boolean
   highlight?: boolean
   name?: string
+  facing?: 1 | -1
 }) {
   if (role === "groom") {
     return <PixelGroom label={name ?? "Chonprakun"} highlight={highlight} showName={showName} />
@@ -187,6 +204,7 @@ export function Character({
       mood={mood}
       showName={showName}
       highlight={highlight}
+      facing={facing}
     />
   )
 }

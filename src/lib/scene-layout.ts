@@ -1,4 +1,5 @@
 import type { Guest } from "@/lib/types"
+import type { Stop } from "@/lib/walk"
 
 export const SCENE = {
   width: 640,
@@ -7,13 +8,11 @@ export const SCENE = {
   bride: { x: 374, y: 534 },
 } as const
 
-const INSIDE_ROUTES: Array<{ x: number[]; y: number[] }> = [
-  { x: [228, 402, 416, 244, 228], y: [592, 568, 608, 598, 592] },
-  { x: [408, 252, 236, 388, 408], y: [606, 578, 562, 594, 606] },
-  { x: [322, 334, 286, 360, 322], y: [604, 552, 574, 566, 604] },
-  { x: [236, 318, 396, 268, 236], y: [564, 606, 582, 552, 564] },
-  { x: [378, 424, 304, 220, 378], y: [572, 608, 590, 560, 572] },
-  { x: [268, 362, 404, 248, 268], y: [608, 560, 586, 574, 608] },
+const AISLE_LANES = [
+  { y: 576, x0: 238, x1: 402 },
+  { y: 590, x0: 226, x1: 414 },
+  { y: 604, x0: 232, x1: 408 },
+  { y: 616, x0: 244, x1: 396 },
 ]
 
 const OUTSIDE_SPOTS = [
@@ -31,25 +30,31 @@ const OUTSIDE_SPOTS = [
 
 export type PlacedGuest = {
   guest: Guest
-  x: number | number[]
-  y: number | number[]
+  path: Stop[]
+  speed: number
   scale: number
-  duration: number
   delay: number
   mood: "walk" | "cheer"
 }
 
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n))
-}
-
-function shiftRoute(route: { x: number[]; y: number[] }, slot: number) {
-  const dx = (slot % 2 === 0 ? 1 : -1) * (slot + 1) * 10
-  const dy = ((slot % 3) - 1) * 8
-  return {
-    x: route.x.map((value) => clamp(value + dx, 214, 428)),
-    y: route.y.map((value) => clamp(value + dy, 548, 610)),
+function patrol(lane: (typeof AISLE_LANES)[number], slot: number, phase: number): Stop[] {
+  const inset = (slot % 3) * 10
+  const left = lane.x0 + inset
+  const right = lane.x1 - inset
+  const mid = Math.round((left + right) / 2 + ((phase % 2) * 2 - 1) * 18)
+  if (phase % 2 === 0) {
+    return [
+      { x: left, y: lane.y, wait: 0.35 },
+      { x: mid, y: lane.y, wait: 0.55 },
+      { x: right, y: lane.y, wait: 0.8 },
+      { x: mid, y: lane.y, wait: 0.4 },
+    ]
   }
+  return [
+    { x: right, y: lane.y, wait: 0.3 },
+    { x: left, y: lane.y, wait: 0.9 },
+    { x: mid, y: lane.y, wait: 0.45 },
+  ]
 }
 
 export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[] {
@@ -62,17 +67,15 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
     .sort((a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id))
 
   const inside = attending.map((guest, index) => {
-    const route = INSIDE_ROUTES[index % INSIDE_ROUTES.length]
-    const slot = Math.floor(index / INSIDE_ROUTES.length)
-    const shifted = slot === 0 ? route : shiftRoute(route, slot)
+    const lane = AISLE_LANES[index % AISLE_LANES.length]
+    const slot = Math.floor(index / AISLE_LANES.length)
     const child = guest.ageGroup === "child"
     return {
       guest,
-      x: shifted.x,
-      y: shifted.y,
-      scale: child ? 0.76 : 0.98,
-      duration: 12 + (index % 5) * 2.2,
-      delay: index * 0.28,
+      path: patrol(lane, slot, index),
+      speed: 36 + (index % 4) * 7,
+      scale: child ? 0.78 : 1,
+      delay: index * 0.55,
       mood: "walk" as const,
     }
   })
@@ -86,10 +89,9 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
     const near = y > 820 ? 1.05 : 1
     return {
       guest,
-      x,
-      y: [y, y - 6, y],
-      scale: (child ? 0.76 : 0.98) * near,
-      duration: 2.15 + (index % 4) * 0.38,
+      path: [{ x, y, wait: 8 }],
+      speed: 20,
+      scale: (child ? 0.78 : 1) * near,
       delay: index * 0.17,
       mood: "cheer" as const,
     }
@@ -99,5 +101,5 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
 }
 
 export function footY(placed: PlacedGuest): number {
-  return Array.isArray(placed.y) ? Math.max(...placed.y) : placed.y
+  return Math.max(...placed.path.map((stop) => stop.y))
 }

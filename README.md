@@ -47,4 +47,4 @@ The screen reads and writes through `guestStore` in `src/lib/guest-store.ts`. Th
 
 ## Motion
 
-Walking cats, cheering, veil sway, bells, clouds, and falling petals are CSS and Framer Motion. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.
+Cats walk the aisle at a constant pace, face the way they are going, and bob on each step. Cheering, bells, clouds, and falling petals are CSS and Framer Motion. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.

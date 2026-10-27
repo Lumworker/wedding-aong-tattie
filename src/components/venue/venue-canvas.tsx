@@ -1,12 +1,13 @@
 "use client"
 
-import { useMemo, useRef, type ReactNode } from "react"
-import { motion, useReducedMotion } from "framer-motion"
+import { useMemo, useRef, useState, type ReactNode } from "react"
+import { motion, useAnimationFrame, useReducedMotion } from "framer-motion"
 import { PetalField } from "@/components/petal-field"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
 import { Character } from "@/components/venue/character"
 import { COUPLE } from "@/lib/event"
 import { footY, placeGuests, SCENE, type PlacedGuest } from "@/lib/scene-layout"
+import { poseOnPath, type WalkPose } from "@/lib/walk"
 import type { Guest } from "@/lib/types"
 
 function CoupleActor({
@@ -17,20 +18,11 @@ function CoupleActor({
   reduced: boolean
 }) {
   const base = role === "groom" ? SCENE.groom : SCENE.bride
-  const sway = role === "groom" ? [base.x - 4, base.x + 3, base.x - 4] : [base.x + 4, base.x - 3, base.x + 4]
   return (
     <motion.g
-      initial={{ opacity: 0, x: base.x, y: base.y + 12 }}
-      animate={reduced ? { opacity: 1, x: base.x, y: base.y } : { opacity: 1, x: sway, y: base.y }}
-      transition={
-        reduced
-          ? { duration: 0.4 }
-          : {
-              opacity: { duration: 0.8, delay: 0.15 },
-              x: { duration: role === "groom" ? 5.2 : 5.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 },
-              y: { duration: 0.8, delay: 0.15 },
-            }
-      }
+      initial={{ opacity: 0, x: base.x, y: base.y + 10 }}
+      animate={{ opacity: 1, x: base.x, y: base.y }}
+      transition={{ duration: reduced ? 0.3 : 0.7, delay: reduced ? 0 : 0.12 }}
     >
       <g transform="scale(1.22)">
         <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomShort} />
@@ -50,31 +42,45 @@ function GuestActor({
   mine: boolean
   reduced: boolean
 }) {
-  const fromX = Array.isArray(placed.x) ? placed.x[0] : placed.x
-  const fromY = Array.isArray(placed.y) ? placed.y[0] : placed.y
+  const start = placed.path[0]
+  const [pose, setPose] = useState<WalkPose>({
+    x: start.x,
+    y: start.y,
+    facing: 1,
+    walking: placed.mood === "walk",
+    hop: 0,
+  })
+
+  useAnimationFrame((time) => {
+    if (reduced || placed.mood !== "walk") return
+    const seconds = time / 1000 - placed.delay
+    if (seconds < 0) return
+    const next = poseOnPath(placed.path, placed.speed, seconds)
+    setPose((current) =>
+      current.x === next.x &&
+      current.y === next.y &&
+      current.facing === next.facing &&
+      current.walking === next.walking &&
+      Math.abs(current.hop - next.hop) < 0.15
+        ? current
+        : next
+    )
+  })
+
+  const mood = placed.mood === "cheer" ? "cheer" : pose.walking ? "walk" : "idle"
+
   return (
-    <motion.g
-      initial={{ opacity: 0, x: fromX, y: fromY + (reduced ? 0 : 10) }}
-      animate={reduced ? { opacity: 1, x: fromX, y: fromY } : { opacity: 1, x: placed.x, y: placed.y }}
-      transition={
-        reduced
-          ? { duration: 0.35, delay: Math.min(placed.delay, 0.2) }
-          : {
-              opacity: { duration: 0.55, delay: placed.delay },
-              x: { duration: placed.duration, delay: placed.delay, repeat: Infinity, ease: "easeInOut" },
-              y: { duration: placed.duration, delay: placed.delay, repeat: Infinity, ease: "easeInOut" },
-            }
-      }
-    >
+    <g transform={`translate(${pose.x} ${pose.y - pose.hop})`} opacity={1}>
       <g transform={`scale(${placed.scale})`}>
         <Character
           guest={placed.guest}
-          mood={placed.mood}
+          mood={mood}
           showName={showName}
           highlight={mine}
+          facing={pose.facing}
         />
       </g>
-    </motion.g>
+    </g>
   )
 }
 

@@ -157,8 +157,8 @@
 
 @keyframes wd-leg {
   0%,
-  100% { transform: rotate(18deg); }
-  50% { transform: rotate(-18deg); }
+  100% { transform: translate(1px, 0) rotate(10deg); }
+  50% { transform: translate(-1px, -6px) rotate(-16deg); }
 }
 
 @keyframes wd-arm {
@@ -258,7 +258,7 @@
 }
 
 .is-walking .wd-bob {
-  animation: wd-bob var(--wd-step, 0.48s) ease-in-out infinite;
+  animation: none;
   transform-origin: center bottom;
 }
 

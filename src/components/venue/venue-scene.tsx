@@ -136,7 +136,7 @@ export function VenueScene({
       <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
         <p className="text-sm leading-6 text-muted-foreground lg:hidden">บัญชีแขก {formatThaiMobile(phone)}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          ผู้ที่มาร่วมงานเดินในฉากเป็นแมว ผู้ที่มาไม่ได้ส่งใจให้นอกงาน
+          แมวที่มางานเดินบนทางเดิน แมวที่มาไม่ได้ส่งใจจากสนามด้านหน้า
         </p>
         <RosterGroup title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
         {others.length > 0 ? <RosterGroup title="แขกบนเครื่องนี้" guests={others} /> : null}

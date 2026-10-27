@@ -163,21 +163,25 @@ export function SceneBackdrop() {
         />
       ))}
 
-      {/* Floor and pews */}
-      <rect x="186" y="500" width="268" height="116" rx="6" fill="#E7CFAE" />
-      {Array.from({ length: 7 }).map((_, index) => (
+      {/* Floor, window light, and pews */}
+      <rect x="186" y="500" width="268" height="116" rx="6" fill="#E4C8A4" />
+      {Array.from({ length: 8 }).map((_, index) => (
         <line
           key={index}
           x1="196"
           x2="444"
-          y1={512 + index * 14}
-          y2={512 + index * 14}
-          stroke="#D9BC92"
+          y1={508 + index * 13}
+          y2={508 + index * 13}
+          stroke="#D3B48A"
           strokeWidth="1"
         />
       ))}
-      <rect x="292" y="500" width="56" height="116" fill="#E7C4C4" opacity="0.38" />
-      <ellipse cx="320" cy="560" rx="90" ry="22" fill="#F8E2B8" opacity="0.28" className="wd-glow" />
+      <polygon points="253,410 276,410 318,616 228,616" fill="#F8E2B8" opacity="0.16" />
+      <polygon points="364,410 387,410 430,616 340,616" fill="#F8E2B8" opacity="0.12" />
+      <rect x="288" y="500" width="64" height="116" fill="#E7C4C4" opacity="0.42" />
+      <rect x="288" y="500" width="2" height="116" fill="#F7F1EA" opacity="0.7" />
+      <rect x="350" y="500" width="2" height="116" fill="#F7F1EA" opacity="0.7" />
+      <ellipse cx="320" cy="562" rx="88" ry="18" fill="#F8E2B8" opacity="0.22" className="wd-glow" />
 
       {[0, 1, 2].map((index) => (
         <g key={index}>
