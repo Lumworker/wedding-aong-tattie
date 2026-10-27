@@ -1,28 +1,34 @@
-function Flower({ x, y, color, r = 3.2 }: { x: number; y: number; color: string; r?: number }) {
+function Candle({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <circle cx="-2.2" cy="0" r={r * 0.7} fill={color} />
-      <circle cx="2.2" cy="0" r={r * 0.7} fill={color} />
-      <circle cx="0" cy="-2" r={r * 0.7} fill={color} />
-      <circle cx="0" cy="2" r={r * 0.7} fill={color} />
-      <circle cx="0" cy="0" r={r * 0.38} fill="#F6E7C2" />
+      <rect x="-3" y="0" width="6" height="14" fill="#F4E4C4" />
+      <rect x="-2" y="2" width="2" height="10" fill="#FFF8E8" />
+      <ellipse cx="0" cy="-4" rx="3" ry="5" fill="#FFE08A" className="wd-glow" />
+      <ellipse cx="0" cy="-6" rx="8" ry="10" fill="#FFC45A" opacity="0.22" className="wd-glow" />
     </g>
   )
 }
 
-function ArchWindow({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
+function StainedGlass({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   const r = w / 2
   const d = `M${x} ${y + h} V${y + r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h} Z`
   return (
     <g>
-      <path d={d} fill="#6A4E3C" />
+      <path d={d} fill="#1A1428" />
       <path
-        d={`M${x + 4} ${y + h - 4} V${y + r} A${r - 4} ${r - 4} 0 0 1 ${x + w - 4} ${y + r} V${y + h - 4} Z`}
-        fill="#F8E2B8"
-        className="wd-glow"
+        d={`M${x + 3} ${y + h - 3} V${y + r} A${r - 3} ${r - 3} 0 0 1 ${x + w - 3} ${y + r} V${y + h - 3} Z`}
+        fill="#3A68C8"
       />
-      <path d={`M${x + w / 2} ${y + 6} V${y + h - 4}`} stroke="#E7C4C4" strokeWidth="1.4" opacity="0.7" />
-      <path d={`M${x + 6} ${y + r + 6} H${x + w - 6}`} stroke="#8FA08A" strokeWidth="1.4" opacity="0.65" />
+      <path d={`M${x + w / 2} ${y + 8} V${y + h - 4}`} stroke="#F2C15A" strokeWidth="2" />
+      <path d={`M${x + 6} ${y + r + 8} H${x + w - 6}`} stroke="#F2C15A" strokeWidth="2" />
+      <path
+        d={`M${x + 8} ${y + r - 6} A${r - 10} ${r - 10} 0 0 1 ${x + w - 8} ${y + r - 6} V${y + r + 10} H${x + 8} Z`}
+        fill="#C43A4A"
+        opacity="0.85"
+      />
+      <rect x={x + 8} y={y + r + 16} width={(w - 16) / 2 - 2} height={h - r - 24} fill="#2E9A6A" opacity="0.8" />
+      <rect x={x + w / 2 + 2} y={y + r + 16} width={(w - 16) / 2 - 2} height={h - r - 24} fill="#E8A040" opacity="0.75" />
+      <ellipse cx={x + w / 2} cy={y + r} rx={w * 0.42} ry={h * 0.28} fill="#F8E2B8" opacity="0.18" className="wd-glow" />
     </g>
   )
 }
@@ -32,143 +38,167 @@ export function SceneBackdrop() {
     <g>
       <defs>
         <linearGradient id="wd-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#F8D5CC" />
-          <stop offset="70%" stopColor="#F7E6DA" />
-          <stop offset="100%" stopColor="#E4EFE3" />
+          <stop offset="0%" stopColor="#1B2744" />
+          <stop offset="55%" stopColor="#3A2A48" />
+          <stop offset="100%" stopColor="#5A3A3A" />
         </linearGradient>
-        <radialGradient id="wd-sun" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFE7C4" stopOpacity="0.95" />
-          <stop offset="48%" stopColor="#F6C9B4" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#F6C9B4" stopOpacity="0" />
+        <linearGradient id="wd-nave" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2A2438" />
+          <stop offset="100%" stopColor="#1A1524" />
+        </linearGradient>
+        <linearGradient id="wd-floor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6A4A32" />
+          <stop offset="100%" stopColor="#3E2A1C" />
+        </linearGradient>
+        <radialGradient id="wd-spot" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor="#FFE6A8" stopOpacity="0.55" />
+          <stop offset="42%" stopColor="#E8A050" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="#E8A050" stopOpacity="0" />
         </radialGradient>
+        <linearGradient id="wd-shaft" x1="0" y1="0" x2="0.35" y2="1">
+          <stop offset="0%" stopColor="#FFE7B0" stopOpacity="0.42" />
+          <stop offset="100%" stopColor="#FFE7B0" stopOpacity="0" />
+        </linearGradient>
+        <filter id="wd-soft" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
+        <filter id="wd-bloom" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
       <rect width="640" height="900" fill="url(#wd-sky)" />
-      <circle cx="520" cy="70" r="90" fill="url(#wd-sun)" />
+      <circle cx="520" cy="64" r="70" fill="#F4C878" opacity="0.35" filter="url(#wd-soft)" />
 
-      <g transform="translate(70 36)">
-        <g className="wd-cloud">
-          <ellipse cx="0" cy="0" rx="36" ry="14" fill="#fff" opacity="0.78" />
-          <ellipse cx="-22" cy="5" rx="18" ry="10" fill="#fff" opacity="0.78" />
-          <ellipse cx="24" cy="6" rx="20" ry="11" fill="#fff" opacity="0.78" />
-        </g>
-      </g>
+      <path d="M8 156 L320 8 L632 156 L572 156 L320 58 L68 156 Z" fill="#4A2030" />
+      <path d="M68 156 L320 58 L572 156 L520 156 L320 86 L120 156 Z" fill="#6A3044" />
+      <path d="M320 0 V28" stroke="#E8C878" strokeWidth="4" strokeLinecap="round" />
+      <path d="M304 14 H336" stroke="#E8C878" strokeWidth="4" strokeLinecap="round" />
 
-      {/* Roof */}
-      <path d="M18 168 L320 18 L622 168 L560 168 L320 72 L80 168 Z" fill="#C17B73" />
-      <path d="M80 168 L320 72 L560 168 L510 168 L320 102 L130 168 Z" fill="#D08A82" opacity="0.55" />
-      <path d="M320 4 V32" stroke="#D4B06A" strokeWidth="4" strokeLinecap="round" />
-      <path d="M306 16 H334" stroke="#D4B06A" strokeWidth="4" strokeLinecap="round" />
-
-      {/* Bell tower */}
-      <g transform="translate(86 52)">
-        <path d="M-6 86 L22 36 L50 86 Z" fill="#C17B73" />
-        <rect x="4" y="84" width="36" height="92" fill="#F4EADF" />
-        <rect x="12" y="98" width="20" height="30" rx="10" fill="#6A4E3C" />
-        <g transform="translate(22 116)">
+      <g transform="translate(78 42)">
+        <path d="M-8 90 L24 28 L56 90 Z" fill="#4A2030" />
+        <rect x="6" y="88" width="36" height="78" fill="#3A3048" />
+        <rect x="14" y="100" width="20" height="28" rx="10" fill="#120C1C" />
+        <g transform="translate(24 116)">
           <g className="wd-bell">
-            <rect x="-1.5" y="-12" width="3" height="12" fill="#A68545" />
-            <path d="M-8 0 L-10 16 Q0 24 10 16 L8 0 Z" fill="#D4B06A" />
-            <circle cx="0" cy="18" r="2.2" fill="#8A6A32" />
+            <rect x="-1.5" y="-12" width="3" height="12" fill="#E8C878" />
+            <path d="M-8 0 L-10 16 Q0 24 10 16 L8 0 Z" fill="#F2C15A" />
           </g>
         </g>
       </g>
 
-      {/* Side walls */}
-      <path d="M86 164 L18 214 L18 812 L86 772 Z" fill="#E7D5C4" />
-      <path d="M554 164 L622 214 L622 812 L554 772 Z" fill="#E4D0BE" />
+      <path d="M72 152 L10 208 L10 808 L72 768 Z" fill="#2A2236" />
+      <path d="M568 152 L630 208 L630 808 L568 768 Z" fill="#241C30" />
+      <rect x="72" y="152" width="496" height="628" fill="url(#wd-nave)" />
 
-      {/* Nave */}
-      <rect x="86" y="164" width="468" height="616" fill="#F7F1E8" />
-      <g transform="translate(320 132)">
-        <circle r="38" fill="#E7D3C4" />
-        <circle r="29" fill="#F8E7DC" />
-        {Array.from({ length: 8 }).map((_, index) => (
-          <ellipse
-            key={index}
-            cx="0"
-            cy="-14"
-            rx="4.4"
-            ry="10"
-            fill={index % 2 === 0 ? "#E7C4C4" : "#8FA08A"}
-            opacity="0.9"
-            transform={`rotate(${index * 45})`}
-          />
-        ))}
-        <circle r="5" fill="#D4B06A" />
+      <g transform="translate(320 124)" filter="url(#wd-bloom)">
+        <circle r="40" fill="#3A2A28" />
+        <circle r="30" fill="#C43A4A" opacity="0.9" />
+        <circle r="18" fill="#F2C15A" opacity="0.85" />
+        <circle r="8" fill="#FFF4D0" />
       </g>
 
-      <ArchWindow x={128} y={188} w={70} h={118} />
-      <ArchWindow x={246} y={188} w={70} h={118} />
-      <ArchWindow x={324} y={188} w={70} h={118} />
-      <ArchWindow x={442} y={188} w={70} h={118} />
+      <StainedGlass x={108} y={176} w={78} h={128} />
+      <StainedGlass x={230} y={176} w={78} h={128} />
+      <StainedGlass x={332} y={176} w={78} h={128} />
+      <StainedGlass x={454} y={176} w={78} h={128} />
 
-      {Array.from({ length: 16 }).map((_, index) => (
+      <polygon points="120,300 186,300 250,790 70,790" fill="url(#wd-shaft)" className="wd-shaft" />
+      <polygon points="454,300 520,300 570,790 390,790" fill="url(#wd-shaft)" className="wd-shaft" />
+
+      {Array.from({ length: 14 }).map((_, index) => (
         <circle
           key={index}
-          cx={92 + index * 29}
-          cy={172 + Math.sin(index * 0.7) * 3}
-          r="3"
-          fill="#F8E2B8"
+          cx={96 + index * 34}
+          cy={164}
+          r="3.2"
+          fill="#F2C15A"
           className="wd-glow"
-          style={{ animationDelay: `${index * 0.16}s` }}
+          style={{ animationDelay: `${index * 0.14}s` }}
         />
       ))}
 
-      {/* Nave floor */}
-      <rect x="78" y="512" width="484" height="268" fill="#E4C8A4" />
-      {Array.from({ length: 12 }).map((_, index) => (
-        <line
+      <rect x="70" y="508" width="500" height="276" fill="url(#wd-floor)" />
+      {Array.from({ length: 10 }).map((_, index) => (
+        <path
           key={index}
-          x1="96"
-          x2="544"
-          y1={524 + index * 20}
-          y2={524 + index * 20}
-          stroke="#D3B48A"
+          d={`M90 ${522 + index * 24} H550`}
+          stroke="#8A6244"
           strokeWidth="1"
+          opacity="0.35"
         />
       ))}
-      <rect x="286" y="512" width="68" height="268" fill="#E7C4C4" opacity="0.38" />
-      <rect x="286" y="512" width="2" height="268" fill="#F7F1EA" opacity="0.75" />
-      <rect x="352" y="512" width="2" height="268" fill="#F7F1EA" opacity="0.75" />
-      <polygon points="128,306 198,306 250,780 78,780" fill="#F8E2B8" opacity="0.14" />
-      <polygon points="442,306 512,306 562,780 390,780" fill="#F8E2B8" opacity="0.11" />
+      <rect x="292" y="508" width="56" height="276" fill="#C48984" opacity="0.22" />
+      <rect x="292" y="508" width="2" height="276" fill="#F8E2B8" opacity="0.35" />
+      <rect x="346" y="508" width="2" height="276" fill="#F8E2B8" opacity="0.35" />
+      <path d="M300 520 L338 780" stroke="#FFE7B0" strokeWidth="10" opacity="0.08" />
 
-      {[0, 1, 2, 3, 4].map((index) => (
-        <g key={index}>
-          <rect x="102" y={536 + index * 42} width="168" height="14" rx="3" fill="#7A5642" />
-          <rect x="370" y={536 + index * 42} width="168" height="14" rx="3" fill="#7A5642" />
+      {[86, 554].map((x) => (
+        <g key={x}>
+          <rect x={x} y="220" width="28" height="560" fill="#1C1628" />
+          <rect x={x + 4} y="220" width="8" height="560" fill="#3A3048" />
+          <rect x={x} y="360" width="28" height="14" fill="#4A3A28" />
+          <rect x={x} y="520" width="28" height="14" fill="#4A3A28" />
         </g>
       ))}
 
-      {/* Sanctuary platform — couple only */}
-      <rect x="148" y="488" width="344" height="28" fill="#D9B48A" />
-      <rect x="132" y="508" width="376" height="12" fill="#C9A072" />
-      <rect x="116" y="518" width="408" height="10" fill="#B89064" />
-      <rect x="168" y="398" width="304" height="92" fill="#EFE3D4" />
-      <rect x="168" y="398" width="304" height="8" fill="#F7F1EA" />
-      <path d="M168 490 H472" stroke="#A68545" strokeWidth="3" />
-      <ellipse cx="320" cy="458" rx="118" ry="16" fill="#F8E2B8" opacity="0.28" className="wd-glow" />
+      {[0, 1, 2, 3, 4].map((index) => (
+        <g key={index}>
+          <rect x="96" y={538 + index * 42} width="176" height="16" fill="#2A1C14" />
+          <rect x="96" y={534 + index * 42} width="176" height="10" fill="#5A3A28" />
+          <rect x="368" y={538 + index * 42} width="176" height="16" fill="#2A1C14" />
+          <rect x="368" y={534 + index * 42} width="176" height="10" fill="#5A3A28" />
+        </g>
+      ))}
 
-      {/* Altar behind the couple */}
-      <g transform="translate(320 412)">
-        <rect x="-52" y="-8" width="104" height="12" rx="2" fill="#E7D5C4" />
-        <rect x="-44" y="-32" width="88" height="26" rx="3" fill="#FFFCF8" />
-        <rect x="-4" y="-62" width="8" height="32" rx="1" fill="#D4B06A" />
-        <rect x="-14" y="-54" width="28" height="6" rx="1" fill="#D4B06A" />
-        <Flower x={-36} y={-36} color="#E7C4C4" r={3.6} />
-        <Flower x={36} y={-34} color="#FFFCF8" r={3.4} />
-        <Flower x={-22} y={-44} color="#F7F1EA" r={2.6} />
-        <Flower x={22} y={-44} color="#E7B4B8" r={2.6} />
+      <ellipse cx="320" cy="456" rx="170" ry="90" fill="url(#wd-spot)" />
+      <rect x="150" y="486" width="340" height="26" fill="#5A3A22" />
+      <rect x="134" y="506" width="372" height="12" fill="#3E2818" />
+      <rect x="118" y="516" width="404" height="10" fill="#2A1C12" />
+      <rect x="176" y="392" width="288" height="96" fill="#4A3424" />
+      <rect x="176" y="392" width="288" height="8" fill="#E8C878" opacity="0.35" />
+      <path d="M176 488 H464" stroke="#E8C878" strokeWidth="2" opacity="0.7" />
+
+      <g transform="translate(320 404)" filter="url(#wd-bloom)">
+        <rect x="-56" y="-10" width="112" height="14" fill="#6A4A28" />
+        <rect x="-48" y="-36" width="96" height="28" fill="#F4E4C4" />
+        <rect x="-5" y="-70" width="10" height="36" fill="#E8C878" />
+        <rect x="-16" y="-60" width="32" height="7" fill="#E8C878" />
       </g>
+      <Candle x={232} y={428} />
+      <Candle x={408} y={428} />
+      <Candle x={248} y={436} />
+      <Candle x={392} y={436} />
 
-      {/* Door threshold, tiny yard */}
-      <rect x="96" y="780" width="448" height="22" fill="#EFE3D4" />
-      <rect x="64" y="800" width="512" height="18" fill="#E6D5C2" />
-      <rect x="0" y="816" width="640" height="84" fill="#C5D8C2" />
-      <path d="M292 818 L348 818 L372 900 L268 900 Z" fill="#EFE3D2" />
-      <Flower x={118} y={838} color="#E7C4C4" />
-      <Flower x={522} y={838} color="#FFFCF8" r={2.8} />
+      {[
+        [210, 360],
+        [250, 420],
+        [390, 350],
+        [430, 430],
+        [300, 500],
+        [340, 560],
+        [180, 480],
+        [460, 500],
+      ].map(([cx, cy], index) => (
+        <circle
+          key={index}
+          cx={cx}
+          cy={cy}
+          r="1.6"
+          fill="#FFF6D0"
+          className="wd-mote"
+          style={{ animationDelay: `${index * 0.7}s` }}
+        />
+      ))}
+
+      <rect x="88" y="784" width="464" height="20" fill="#3A2A20" />
+      <rect x="56" y="802" width="528" height="16" fill="#2A1E18" />
+      <rect x="0" y="816" width="640" height="84" fill="#121018" />
+      <path d="M292 818 L348 818 L368 900 L272 900 Z" fill="#2A2418" />
     </g>
   )
 }
@@ -176,8 +206,7 @@ export function SceneBackdrop() {
 export function SceneForeground() {
   return (
     <g>
-      <ellipse cx="36" cy="888" rx="34" ry="12" fill="#7E9A78" />
-      <ellipse cx="604" cy="888" rx="34" ry="12" fill="#8FA98A" />
+      <rect x="0" y="0" width="640" height="900" fill="none" stroke="#0A0810" strokeWidth="18" opacity="0.35" />
     </g>
   )
 }

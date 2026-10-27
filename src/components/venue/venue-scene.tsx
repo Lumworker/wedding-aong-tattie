@@ -101,7 +101,7 @@ export function VenueScene({
       <section
         id="venue"
         aria-labelledby="venue-title"
-        className="relative min-h-[88dvh] h-[88dvh] overflow-hidden bg-[linear-gradient(180deg,#f8d5cc_0%,#f7e6da_42%,#d5e6d2_100%)] sm:min-h-[90dvh] sm:h-[90dvh] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
+        className="relative min-h-[88dvh] h-[88dvh] overflow-hidden bg-[#121018] sm:min-h-[90dvh] sm:h-[90dvh] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
       >
         <h2 id="venue-title" className="sr-only">
           ฉากงานมงคลสมรสของ {COUPLE.groomNickname} และ {COUPLE.brideNickname}
@@ -109,7 +109,7 @@ export function VenueScene({
         <VenueCanvas guests={guests} phone={phone} showNames={showNames} />
 
         <motion.p
-          className="pointer-events-none absolute top-4 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white/75 px-4 py-1.5 font-serif text-sm text-rose shadow-sm backdrop-blur"
+          className="hd2d-hud pointer-events-none absolute top-4 left-1/2 z-10 -translate-x-1/2 px-4 py-1.5 font-serif text-sm"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: [0, 1, 1, 0], y: [8, 0, 0, -6] }}
           transition={{ duration: 3.4, times: [0, 0.12, 0.72, 1], ease: "easeOut" }}
@@ -118,14 +118,14 @@ export function VenueScene({
         </motion.p>
 
         <div className="absolute inset-x-3 bottom-3 z-10 flex flex-wrap items-center justify-between gap-2">
-          <p className="rounded-full bg-white/80 px-3 py-1.5 text-xs text-ink shadow-sm backdrop-blur">
+          <p className="hd2d-hud px-3 py-1.5">
             มาร่วมงาน {inside} · ส่งความยินดี {outside}
           </p>
           <Button
             type="button"
             variant="outline"
             aria-pressed={showNames}
-            className="h-9 rounded-full bg-white/85 px-3 text-xs backdrop-blur"
+            className="hd2d-hud h-9 rounded-none border-[#e8c878] px-3 text-xs hover:bg-[#2a2438] hover:text-[#f8e2b8]"
             onClick={() => setShowNames((current) => !current)}
           >
             {showNames ? "ซ่อนชื่อแขก" : "แสดงชื่อแขก"}
@@ -136,7 +136,7 @@ export function VenueScene({
       <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
         <p className="text-sm leading-6 text-muted-foreground lg:hidden">บัญชีแขก {formatThaiMobile(phone)}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          แมวที่มางานเดินในโถงโบสถ์ ขึ้นแท่นบ่าวสาวไม่ได้ แมวที่มาไม่ได้ส่งใจที่ธรณีประตู
+          แมวนั่งในเพว์ บางตัวเดินทางเดินกลาง ขึ้นแท่นบ่าวสาวไม่ได้
         </p>
         <RosterGroup title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
         {others.length > 0 ? <RosterGroup title="แขกบนเครื่องนี้" guests={others} /> : null}

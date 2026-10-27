@@ -2,7 +2,6 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react"
 import { motion, useAnimationFrame, useReducedMotion } from "framer-motion"
-import { PetalField } from "@/components/petal-field"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
 import { Character } from "@/components/venue/character"
 import { COUPLE } from "@/lib/event"
@@ -46,7 +45,7 @@ function GuestActor({
   const [pose, setPose] = useState<WalkPose>({
     x: start.x,
     y: start.y,
-    facing: 1,
+    facing: placed.facing,
     walking: placed.mood === "walk",
     hop: 0,
   })
@@ -67,55 +66,46 @@ function GuestActor({
     )
   })
 
-  const mood = placed.mood === "cheer" ? "cheer" : pose.walking ? "walk" : "idle"
+  const mood = placed.mood === "walk" ? (pose.walking ? "walk" : "idle") : placed.mood
+  const facing = placed.mood === "walk" ? pose.facing : placed.facing
 
   return (
-    <g transform={`translate(${pose.x} ${pose.y - pose.hop})`} opacity={1}>
+    <g transform={`translate(${pose.x} ${pose.y - pose.hop})`}>
       <g transform={`scale(${placed.scale})`}>
         <Character
           guest={placed.guest}
           mood={mood}
           showName={showName}
           highlight={mine}
-          facing={pose.facing}
+          facing={facing}
         />
       </g>
     </g>
   )
 }
 
-function Hearts({ reduced }: { reduced: boolean }) {
-  const x = (SCENE.groom.x + SCENE.bride.x) / 2
-  if (reduced) {
-    return (
-      <text x={x} y="390" textAnchor="middle" fill="#C48984" fontSize="16" opacity="0.85">
-        ♥
-      </text>
-    )
-  }
+function DustMotes({ reduced }: { reduced: boolean }) {
+  if (reduced) return null
+  const motes = [
+    { left: "28%", delay: 0, dur: 9 },
+    { left: "36%", delay: 1.4, dur: 11 },
+    { left: "48%", delay: 0.6, dur: 8 },
+    { left: "58%", delay: 2.2, dur: 12 },
+    { left: "64%", delay: 0.9, dur: 10 },
+    { left: "42%", delay: 3, dur: 13 },
+  ]
   return (
-    <g>
-      {[0, 1].map((index) => (
-        <motion.text
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      {motes.map((mote, index) => (
+        <motion.span
           key={index}
-          x={x + (index === 0 ? -8 : 10)}
-          textAnchor="middle"
-          fill="#C48984"
-          fontSize={index === 0 ? 16 : 11}
-          initial={{ opacity: 0, y: 430 }}
-          animate={{ y: [438, 388], opacity: [0, 1, 0] }}
-          transition={{
-            duration: 3.8,
-            repeat: Infinity,
-            ease: "easeOut",
-            delay: 0.6 + index * 1.4,
-            times: [0, 0.35, 1],
-          }}
-        >
-          ♥
-        </motion.text>
+          className="absolute block rounded-full bg-[#fff6d0]"
+          style={{ left: mote.left, width: 3, height: 3, top: "18%" }}
+          animate={{ y: [0, 220], opacity: [0, 0.8, 0], x: [0, index % 2 === 0 ? 18 : -14] }}
+          transition={{ duration: mote.dur, delay: mote.delay, repeat: Infinity, ease: "linear" }}
+        />
       ))}
-    </g>
+    </div>
   )
 }
 
@@ -136,30 +126,35 @@ export function VenueCanvas({
   const ordered = useMemo(() => [...placed].sort((a, b) => footY(a) - footY(b)), [placed])
 
   return (
-    <div className="absolute inset-0">
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${SCENE.width} ${SCENE.height}`}
-        className="h-full w-full font-sans"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
-        <SceneBackdrop />
-        <Hearts reduced={reduced} />
-        <CoupleActor role="groom" reduced={reduced} />
-        <CoupleActor role="bride" reduced={reduced} />
-        {ordered.map((guest) => (
-          <GuestActor
-            key={guest.guest.id}
-            placed={guest}
-            showName={showNames}
-            mine={Boolean(phone) && guest.guest.partyPhone === phone}
-            reduced={reduced}
-          />
-        ))}
-        <SceneForeground />
-      </svg>
-      <PetalField />
+    <div className="hd2d-stage absolute inset-0 overflow-hidden bg-[#121018]">
+      <div className="hd2d-world">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${SCENE.width} ${SCENE.height}`}
+          className="h-full w-full font-sans"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+        >
+          <SceneBackdrop />
+          <CoupleActor role="groom" reduced={reduced} />
+          <CoupleActor role="bride" reduced={reduced} />
+          {ordered.map((guest) => (
+            <GuestActor
+              key={guest.guest.id}
+              placed={guest}
+              showName={showNames}
+              mine={Boolean(phone) && guest.guest.partyPhone === phone}
+              reduced={reduced}
+            />
+          ))}
+          <SceneForeground />
+        </svg>
+      </div>
+      <div className="hd2d-dof hd2d-dof-top" />
+      <div className="hd2d-dof hd2d-dof-bot" />
+      <div className="hd2d-vignette" />
+      <div className="hd2d-grain" />
+      <DustMotes reduced={reduced} />
       {children}
     </div>
   )

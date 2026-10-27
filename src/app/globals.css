@@ -241,6 +241,90 @@
   50% { opacity: 1; }
 }
 
+@keyframes wd-shaft {
+  0%,
+  100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes wd-mote {
+  0% { transform: translate(0, 0); opacity: 0.15; }
+  50% { transform: translate(6px, -18px); opacity: 0.85; }
+  100% { transform: translate(-4px, -36px); opacity: 0.1; }
+}
+
+.wd-shaft {
+  animation: wd-shaft 5.5s ease-in-out infinite;
+}
+
+.wd-mote {
+  animation: wd-mote 7s ease-in-out infinite;
+}
+
+.hd2d-stage {
+  isolation: isolate;
+}
+
+.hd2d-world {
+  position: absolute;
+  inset: -6%;
+  transform: perspective(1200px) rotateX(7deg) scale(1.08);
+  transform-origin: 50% 58%;
+}
+
+.hd2d-dof-top,
+.hd2d-dof-bot {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  backdrop-filter: blur(7px);
+}
+
+.hd2d-dof-top {
+  top: 0;
+  height: 18%;
+  mask-image: linear-gradient(to bottom, #000 20%, transparent);
+}
+
+.hd2d-dof-bot {
+  bottom: 0;
+  height: 16%;
+  mask-image: linear-gradient(to top, #000 10%, transparent);
+}
+
+.hd2d-vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 46%, transparent 36%, #05040a 100%);
+  opacity: 0.72;
+}
+
+.hd2d-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: repeating-linear-gradient(
+    0deg,
+    #fff 0,
+    #fff 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.hd2d-hud {
+  border: 2px solid #e8c878;
+  background: #121018eb;
+  color: #f8e2b8;
+  box-shadow: 0 0 0 1px #3a2a18, 4px 4px 0 #05040a;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
 .wd-bob,
 .wd-leg-l,
 .wd-leg-r,
@@ -359,6 +443,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .hd2d-world {
+    inset: 0;
+    transform: none;
+  }
+  .hd2d-dof-top,
+  .hd2d-dof-bot {
+    backdrop-filter: none;
+  }
   .wd-bob,
   .wd-leg-l,
   .wd-leg-r,
@@ -376,6 +468,8 @@
   .wd-cloud,
   .wd-bird,
   .wd-ring,
+  .wd-shaft,
+  .wd-mote,
   .is-walking .wd-bob,
   .is-idle .wd-bob,
   .is-cheering .wd-bob,

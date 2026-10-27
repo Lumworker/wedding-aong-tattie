@@ -4,7 +4,7 @@ Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prach
 
 Place it on disk at `~/aong/wedding-aong-tattie`.
 
-Guests enter with a mobile number, register their party, then land in an animated scene: the couple stands as pixel sprites, guests who are coming walk inside as cats, and guests who cannot come cheer from outside.
+Guests enter with a mobile number, register their party, then land in an HD-2D ceremony scene in the Octopath sense: pixel sprites on a lit diorama church, a few cats walking the aisle, the rest seated in pews, and the couple alone on the sanctuary.
 
 ## Run
 
@@ -47,4 +47,4 @@ The screen reads and writes through `guestStore` in `src/lib/guest-store.ts`. Th
 
 ## Motion
 
-Cats walk the aisle at a constant pace, face the way they are going, and bob on each step. Cheering, bells, clouds, and falling petals are CSS and Framer Motion. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.
+The venue uses a tilt-shift diorama camera, stained-glass shafts, and a small HUD. A few cats walk the aisle; the rest sit. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.
