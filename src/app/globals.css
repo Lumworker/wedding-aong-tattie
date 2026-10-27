@@ -217,10 +217,10 @@
   50% { transform: rotate(-8deg); }
 }
 
-@keyframes wd-peek {
+@keyframes wd-tail {
   0%,
-  100% { transform: translateY(4px); }
-  50% { transform: translateY(-6px); }
+  100% { transform: rotate(16deg); }
+  50% { transform: rotate(-26deg); }
 }
 
 @keyframes wd-drift {
@@ -252,7 +252,8 @@
 .wd-veil,
 .wd-heart,
 .wd-sway,
-.wd-bell {
+.wd-bell,
+.wd-tail {
   transform-box: fill-box;
 }
 
@@ -267,9 +268,15 @@
   transform-origin: center bottom;
 }
 
-.is-peeking .wd-bob {
-  animation: wd-peek 2.4s ease-in-out infinite;
-  transform-origin: center bottom;
+.is-idle .wd-tail,
+.is-walking .wd-tail,
+.is-cheering .wd-tail {
+  animation: wd-tail 0.72s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.is-cheering .wd-tail {
+  animation-duration: 0.42s;
 }
 
 .is-walking .wd-leg-l {
@@ -365,13 +372,13 @@
   .wd-glow,
   .wd-sway,
   .wd-bell,
+  .wd-tail,
   .wd-cloud,
   .wd-bird,
   .wd-ring,
   .is-walking .wd-bob,
   .is-idle .wd-bob,
   .is-cheering .wd-bob,
-  .is-peeking .wd-bob,
   .is-cheering .wd-arm-r {
     animation: none !important;
   }

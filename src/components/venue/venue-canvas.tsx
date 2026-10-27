@@ -32,7 +32,7 @@ function CoupleActor({
             }
       }
     >
-      <g transform="scale(1.14)">
+      <g transform="scale(1.22)">
         <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomShort} />
       </g>
     </motion.g>
@@ -82,7 +82,7 @@ function Hearts({ reduced }: { reduced: boolean }) {
   const x = (SCENE.groom.x + SCENE.bride.x) / 2
   if (reduced) {
     return (
-      <text x={x} y="548" textAnchor="middle" fill="#E07070" fontSize="16" opacity="0.85">
+      <text x={x} y="470" textAnchor="middle" fill="#C48984" fontSize="16" opacity="0.85">
         ♥
       </text>
     )
@@ -94,10 +94,10 @@ function Hearts({ reduced }: { reduced: boolean }) {
           key={index}
           x={x + (index === 0 ? -8 : 10)}
           textAnchor="middle"
-          fill="#E07070"
+          fill="#C48984"
           fontSize={index === 0 ? 16 : 11}
-          initial={{ opacity: 0, y: 590 }}
-          animate={{ y: [600, 548], opacity: [0, 1, 0] }}
+          initial={{ opacity: 0, y: 500 }}
+          animate={{ y: [508, 458], opacity: [0, 1, 0] }}
           transition={{
             duration: 3.8,
             repeat: Infinity,

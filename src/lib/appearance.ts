@@ -9,8 +9,8 @@ export type Look = {
   shoe: string
 }
 
-const SKINS = ["#F6D3BD", "#F0C4A4", "#E0AA84", "#C6865A", "#8D5524"]
-const HAIRS = ["#231C19", "#3B2A22", "#5A3A2A", "#1A1A1A", "#6A4328"]
+const SKINS = ["#FFF6E8", "#F6D3BD", "#F0C4A4", "#E8D8C8", "#F7F1EA"]
+const HAIRS = ["#E8C48A", "#C6865A", "#8D5524", "#3A2C28", "#EEE6D8", "#7A8B6A", "#D4A0C0"]
 
 const BY_GENDER = {
   female: [
@@ -56,19 +56,19 @@ export function lookForGuest(guest: Guest): Look {
 }
 
 export const GROOM_LOOK: Look = {
-  skin: "#E8B896",
-  hair: "#1A1410",
+  skin: "#F0C4A4",
+  hair: "#241C18",
   outfit: "#2C3338",
   outfitDark: "#1C2126",
-  accent: "#E07070",
+  accent: "#E7B4B8",
   shoe: "#1A1614",
 }
 
 export const BRIDE_LOOK: Look = {
-  skin: "#F3C4A8",
-  hair: "#6B4428",
+  skin: "#F6D3BD",
+  hair: "#3B2A22",
   outfit: "#FFFCF8",
   outfitDark: "#F3E4E2",
-  accent: "#E07070",
+  accent: "#E7B4B8",
   shoe: "#F7F1EA",
 }

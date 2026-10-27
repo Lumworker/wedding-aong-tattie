@@ -4,7 +4,7 @@ Thai-first wedding site for **Chonprakun Panusetgul** and **Prachayaphorn Muangp
 
 Place it on disk at `~/aong/wedding-aong-tattie`.
 
-Guests enter with a mobile number, register their party, then land in an animated pixel scene inspired by a Doraemon vacant lot: the couple stands among concrete pipes, guests who are coming walk the yard, and guests who cannot come peek out of the trees.
+Guests enter with a mobile number, register their party, then land in an animated scene: the couple stands as pixel sprites, guests who are coming walk inside as cats, and guests who cannot come cheer from outside.
 
 ## Run
 
@@ -47,4 +47,4 @@ The screen reads and writes through `guestStore` in `src/lib/guest-store.ts`. Th
 
 ## Motion
 
-Walking, tree-peeking, clouds, and falling petals are CSS and Framer Motion. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.
+Walking cats, cheering, veil sway, bells, clouds, and falling petals are CSS and Framer Motion. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.

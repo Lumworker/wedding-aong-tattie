@@ -1,6 +1,6 @@
 import type { Guest } from "@/lib/types"
 
-/** Demo crowd so the vacant lot is alive before any real parties join. */
+/** Demo crowd of cats so the scene is alive before any real parties join. */
 export const SEED_PARTY_PHONE = "seed"
 
 export const SEED_GUESTS: Guest[] = [
