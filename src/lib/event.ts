@@ -5,8 +5,6 @@ export const COUPLE = {
   brideShort: "Prachayaphorn",
   brideNickname: "แทต",
   dateThai: "25 ธันวาคม 2570",
-  venueThai: "โบสถ์แม่พระฟาติมา",
-  venueEn: "Our Lady of Fatima Church",
 } as const
 
 export const PARTY_MIN = 1

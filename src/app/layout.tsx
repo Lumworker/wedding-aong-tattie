@@ -28,7 +28,7 @@ const display = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Chonprakun & Prachayaphorn · 25 ธันวาคม 2570",
   description:
-    "ตอบรับคำเชิญงานมงคลสมรสของ Chonprakun Panusetgul และ Prachayaphorn Muangphrae (แทต) วันที่ 25 ธันวาคม 2570 ณ โบสถ์แม่พระฟาติมา",
+    "ตอบรับคำเชิญงานมงคลสมรสของ Chonprakun Panusetgul และ Prachayaphorn Muangphrae (แทต) วันที่ 25 ธันวาคม 2570",
 }
 
 export const viewport: Viewport = {

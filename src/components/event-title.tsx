@@ -24,9 +24,7 @@ export function EventTitle({
           <span className="px-1.5 text-rose">&</span>
           {COUPLE.brideShort}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {COUPLE.dateThai} · {COUPLE.venueThai}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{COUPLE.dateThai}</p>
       </div>
     )
   }
@@ -47,12 +45,12 @@ export function EventTitle({
       {variant === "hero" ? (
         <p className="mt-2 font-serif text-lg text-rose">{COUPLE.brideNickname}</p>
       ) : (
-        <p className="mt-2 font-serif text-base text-rose">{COUPLE.bride} · {COUPLE.brideNickname}</p>
+        <p className="mt-2 font-serif text-base text-rose">
+          {COUPLE.bride} · {COUPLE.brideNickname}
+        </p>
       )}
       <Ornament className="my-4" />
       <p className="font-serif text-xl text-ink">{COUPLE.dateThai}</p>
-      <p className="mt-1 text-sm text-foreground">{COUPLE.venueThai}</p>
-      <p className="text-xs tracking-wide text-muted-foreground">{COUPLE.venueEn}</p>
       {variant === "panel" ? (
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           {COUPLE.groom} และ {COUPLE.bride}

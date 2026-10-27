@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from "react"
 import { Minus, Plus } from "lucide-react"
+import { PetalField } from "@/components/petal-field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { COUPLE, PARTY_MAX, PARTY_MIN } from "@/lib/event"
+import { PARTY_MAX, PARTY_MIN } from "@/lib/event"
 import { formatThaiMobile } from "@/lib/phone"
 import type { AgeGroup, Attendance, Gender, Guest, Party } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -100,13 +101,11 @@ export function RsvpForm({
   party,
   onSubmit,
   onChangePhone,
-  onClose,
 }: {
   phone: string
   party: Party | null
   onSubmit: (party: Party) => void
   onChangePhone: () => void
-  onClose?: () => void
 }) {
   const initial = party?.guests?.length ? party.guests.map(fromGuest) : [blankGuest()]
   const [people, setPeople] = useState<DraftGuest[]>(initial)
@@ -172,19 +171,14 @@ export function RsvpForm({
   const coming = visible.filter((person) => person.attendance === "attending").length
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-8 sm:px-6">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-8 sm:px-6">
+      <PetalField />
+      <div className="relative z-10 flex flex-1 flex-col">
       <header>
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
-          {onClose ? (
-            <Button type="button" variant="ghost" className="h-9 rounded-full px-3 text-sm" onClick={onClose}>
-              ปิด
-            </Button>
-          ) : null}
-        </div>
+        <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          บอกเราว่าใครอยู่ในคณะของ {formatThaiMobile(phone)} จะได้พาทุกคนเข้า {COUPLE.venueThai}
+          บอกเราว่าใครอยู่ในคณะของ {formatThaiMobile(phone)} จะได้พาทุกคนเข้าฉากงาน
         </p>
         <button
           type="button"
@@ -288,8 +282,8 @@ export function RsvpForm({
                   value={person.attendance}
                   onChange={(attendance) => update(person.id, { attendance })}
                   options={[
-                    { value: "attending", label: "มาร่วมงาน", hint: "เดินในโบสถ์" },
-                    { value: "not_attending", label: "ไม่ได้มา", hint: "ยืนให้กำลังใจด้านนอก" },
+                    { value: "attending", label: "มาร่วมงาน", hint: "เดินในงาน" },
+                    { value: "not_attending", label: "ไม่ได้มา", hint: "ยืนส่งความยินดีด้านนอก" },
                   ]}
                 />
               </div>
@@ -312,6 +306,7 @@ export function RsvpForm({
           </Button>
         </div>
       </form>
+      </div>
     </div>
   )
 }

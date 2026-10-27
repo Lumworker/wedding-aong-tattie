@@ -2,7 +2,7 @@
   "name": "webding-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Thai-first wedding RSVP and animated venue for Chonprakun & Prachayaphorn.",
+  "description": "Thai-first wedding RSVP and animated scene for Chonprakun & Prachayaphorn.",
   "scripts": {
     "dev": "next dev -p 43123 -H 0.0.0.0",
     "build": "next build",

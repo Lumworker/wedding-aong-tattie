@@ -1,8 +1,8 @@
 # webding-web
 
-Thai-first wedding site for **Chonprakun Panusetgul** and **Prachayaphorn Muangphrae** (แทต). The celebration is on **25 ธันวาคม 2570** at **โบสถ์แม่พระฟาติมา** (Our Lady of Fatima Church).
+Thai-first wedding site for **Chonprakun Panusetgul** and **Prachayaphorn Muangphrae** (แทต) on **25 ธันวาคม 2570**.
 
-The first screen is the church: the couple stands at the altar, guests who are coming walk inside, and guests who cannot come cheer from the garden. Scroll down for the date, place, and event details. Phone number is asked only after **ลงทะเบียน**.
+Guests enter with a mobile number, register their party, then land in an animated scene: the couple stands together, guests who are coming walk inside, and guests who cannot come cheer from outside.
 
 ## Run
 
@@ -22,20 +22,19 @@ npm start
 
 ## Guest flow
 
-1. **หน้าแรก** — full-screen animated venue. Seeded guests are already in the scene so the church is never empty.
-2. **ลงทะเบียน** — the button sits under the couple’s feet. Event details (date, venue, story) are on the next screen after you scroll.
-3. **เบอร์มือถือ** — asked only after that button. Thai mobiles (`06` / `08` / `09`, 10 digits). `+66` and a missing trunk `0` are accepted. The number is the account id.
-4. **ตอบรับ** — how many people (1–10), then name, gender, adult or child, and whether each person is coming. Submit returns to the church with your party in the scene.
+1. **เบอร์มือถือ** — enter a Thai mobile number (`06` / `08` / `09`, 10 digits). `+66` and a missing trunk `0` are accepted. The number is the account id. There is no password and no third-party auth. This is the first screen on a fresh visit.
+2. **ตอบรับ** — choose how many people are in the party (1–10). For each person: name, gender, adult or child, and whether they are coming.
+3. **ฉากงาน** — the animated main page. Use **แก้ไขการตอบรับ** to change the party, or **ใช้เบอร์อื่น** to switch accounts.
 
-A return visit on this device keeps the scene public. **แก้ไขการตอบรับ** opens the saved party.
+A return visit with the same number on this device skips the phone step and opens the scene, with the saved party restored.
 
 ## What is stored
 
-- `localStorage` key `webding-web:session` — the current phone, after someone registers.
+- `localStorage` key `webding-web:session` — the current phone.
 - `localStorage` key `webding-web:party:<phone>` — that party’s guests.
 - Cookie `webding_phone` — a backup of the phone so a cleared session key can still be recognized. The party itself stays in `localStorage`.
 
-A small seeded guest list (`src/lib/seed-guests.ts`) is always mixed into the scene. Those names are labeled **แขกในฉาก** in the roster below the fold.
+A small seeded guest list (`src/lib/seed-guests.ts`) is always mixed into the scene so it is not empty during a demo. Those names are labeled **แขกตัวอย่าง** in the roster.
 
 ## Swapping in a backend
 
