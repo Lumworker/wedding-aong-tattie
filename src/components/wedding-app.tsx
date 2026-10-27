@@ -14,7 +14,7 @@ const sheet = {
   initial: { opacity: 0, y: 24 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: 16 },
-  transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+  transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
 }
 
 export function WeddingApp() {
@@ -64,28 +64,36 @@ export function WeddingApp() {
         party={snapshot.party}
         onRegister={openRegister}
       />
-      <AnimatePresence>
-        {overlay ? (
+      <AnimatePresence mode="wait">
+        {overlay === "phone" ? (
           <motion.div
-            key={overlay}
+            key="phone"
             role="dialog"
             aria-modal="true"
-            aria-label={overlay === "phone" ? "ลงทะเบียนด้วยเบอร์มือถือ" : "ตอบรับคำเชิญ"}
+            aria-label="ลงทะเบียนด้วยเบอร์มือถือ"
             className="fixed inset-0 z-50 overflow-y-auto bg-background/92 backdrop-blur-md"
             {...sheet}
           >
-            {overlay === "phone" ? (
-              <PhoneForm onContinue={continueWithPhone} onClose={() => setOverlay(null)} />
-            ) : snapshot.phone ? (
-              <RsvpForm
-                key={`${snapshot.phone}:${snapshot.party?.updatedAt ?? "new"}`}
-                phone={snapshot.phone}
-                party={snapshot.party}
-                onSubmit={saveParty}
-                onChangePhone={changePhone}
-                onClose={() => setOverlay(null)}
-              />
-            ) : null}
+            <PhoneForm onContinue={continueWithPhone} onClose={() => setOverlay(null)} />
+          </motion.div>
+        ) : null}
+        {overlay === "rsvp" && snapshot.phone ? (
+          <motion.div
+            key="rsvp"
+            role="dialog"
+            aria-modal="true"
+            aria-label="ตอบรับคำเชิญ"
+            className="fixed inset-0 z-50 overflow-y-auto bg-background/92 backdrop-blur-md"
+            {...sheet}
+          >
+            <RsvpForm
+              key={`${snapshot.phone}:${snapshot.party?.updatedAt ?? "new"}`}
+              phone={snapshot.phone}
+              party={snapshot.party}
+              onSubmit={saveParty}
+              onChangePhone={changePhone}
+              onClose={() => setOverlay(null)}
+            />
           </motion.div>
         ) : null}
       </AnimatePresence>
