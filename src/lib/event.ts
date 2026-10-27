@@ -1,6 +1,7 @@
 export const COUPLE = {
   groom: "Chonprakun Panusetgul",
   groomShort: "Chonprakun",
+  groomNickname: "อ๋อง",
   bride: "Prachayaphorn Muangphrae",
   brideShort: "Prachayaphorn",
   brideNickname: "แทต",

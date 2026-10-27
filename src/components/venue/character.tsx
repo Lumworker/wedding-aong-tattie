@@ -177,7 +177,7 @@ export function Character({
   facing?: 1 | -1
 }) {
   if (role === "groom") {
-    return <PixelCouple href="/sprites/groom.png?v=2" label={name ?? "Chonprakun"} highlight={highlight} showName={showName} />
+    return <PixelCouple href="/sprites/groom.png?v=2" label={name ?? "อ๋อง"} highlight={highlight} showName={showName} />
   }
   if (role === "bride") {
     return <PixelCouple href="/sprites/bride.png?v=2" label={name ?? "แทต"} highlight={highlight} showName={showName} />

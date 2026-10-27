@@ -20,9 +20,9 @@ export function EventTitle({
     return (
       <div>
         <h1 className="font-display text-[1.65rem] leading-none text-ink">
-          {COUPLE.groomShort}
+          {COUPLE.groomNickname}
           <span className="px-1.5 text-rose">&</span>
-          {COUPLE.brideShort}
+          {COUPLE.brideNickname}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">{COUPLE.dateThai}</p>
       </div>
@@ -43,23 +43,25 @@ export function EventTitle({
         <span className="block">{COUPLE.brideShort}</span>
       </h1>
       {variant === "hero" ? (
-        <p className="mt-2 font-serif text-lg text-rose">{COUPLE.brideNickname}</p>
+        <p className="mt-2 font-serif text-lg text-rose">
+          {COUPLE.groomNickname} · {COUPLE.brideNickname}
+        </p>
       ) : (
         <p className="mt-2 font-serif text-base text-rose">
-          {COUPLE.bride} · {COUPLE.brideNickname}
+          {COUPLE.groom} ({COUPLE.groomNickname}) · {COUPLE.bride} ({COUPLE.brideNickname})
         </p>
       )}
       <Ornament className="my-4" />
       <p className="font-serif text-xl text-ink">{COUPLE.dateThai}</p>
       {variant === "panel" ? (
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          {COUPLE.groom} และ {COUPLE.bride}
+          {COUPLE.groom} ({COUPLE.groomNickname}) และ {COUPLE.bride} ({COUPLE.brideNickname})
         </p>
       ) : (
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          {COUPLE.groom}
+          {COUPLE.groom} ({COUPLE.groomNickname})
           <br />
-          {COUPLE.bride}
+          {COUPLE.bride} ({COUPLE.brideNickname})
         </p>
       )}
     </div>

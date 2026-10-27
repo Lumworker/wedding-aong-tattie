@@ -104,7 +104,7 @@ export function VenueScene({
         className="relative min-h-[74dvh] bg-[linear-gradient(180deg,#f8d5cc_0%,#f7e6da_42%,#d5e6d2_100%)] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
       >
         <h2 id="venue-title" className="sr-only">
-          ฉากงานมงคลสมรสของ {COUPLE.groomShort} และ {COUPLE.brideShort}
+          ฉากงานมงคลสมรสของ {COUPLE.groomNickname} และ {COUPLE.brideNickname}
         </h2>
         <VenueCanvas guests={guests} phone={phone} showNames={showNames} />
 

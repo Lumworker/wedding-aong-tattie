@@ -25,7 +25,7 @@ function CoupleActor({
       transition={{ duration: reduced ? 0.3 : 0.7, delay: reduced ? 0 : 0.12 }}
     >
       <g transform="scale(1.15)">
-        <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomShort} />
+        <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname} />
       </g>
     </motion.g>
   )
