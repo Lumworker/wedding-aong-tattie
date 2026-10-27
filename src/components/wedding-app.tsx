@@ -52,7 +52,7 @@ export function WeddingApp() {
     <div className="relative min-h-dvh bg-background">
       {view !== "venue" ? <PetalField /> : null}
       <div className="relative z-10">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {!snapshot.ready ? (
             <motion.div key="splash" {...page}>
               <Splash />
