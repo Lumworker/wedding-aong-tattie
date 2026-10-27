@@ -1,4 +1,5 @@
-import { lookForGuest } from "@/lib/appearance"
+import { spriteForGuest } from "@/lib/appearance"
+import { GUEST_ATLAS } from "@/lib/guest-atlas"
 import type { Guest } from "@/lib/types"
 
 export type FigureRole = "guest" | "groom" | "bride"
@@ -77,15 +78,7 @@ function PixelCouple({
   )
 }
 
-function shade(hex: string, amount: number) {
-  const n = Number.parseInt(hex.slice(1), 16)
-  const r = Math.max(0, Math.min(255, ((n >> 16) & 255) + amount))
-  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amount))
-  const b = Math.max(0, Math.min(255, (n & 255) + amount))
-  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`
-}
-
-function CatGuest({
+function AtlasGuest({
   guest,
   mood,
   showName,
@@ -98,81 +91,51 @@ function CatGuest({
   highlight: boolean
   facing: 1 | -1
 }) {
-  const look = lookForGuest(guest)
-  const fur = look.hair
-  const dark = shade(fur, -28)
-  const light = shade(fur, 28)
-  const female = guest.gender === "female"
+  const sprite = spriteForGuest(guest)
   const sitting = mood === "sit"
-  const moodClass =
-    mood === "walk" ? "is-walking" : mood === "cheer" ? "is-cheering" : mood === "sit" ? "is-sitting" : "is-idle"
-  const step = `${0.36 + (guest.id.length % 4) * 0.04}s`
+  const walking = mood === "walk"
+  const col = (walking ? GUEST_ATLAS.sideCol : GUEST_ATLAS.idleCol) + sprite.type
+  const sx = col * GUEST_ATLAS.cell
+  const sy = sprite.row * GUEST_ATLAS.cell
+  const size = sitting ? 22 : 26
+  const moodClass = walking ? "is-walking" : mood === "cheer" ? "is-cheering" : sitting ? "is-sitting" : "is-idle"
   const label = guest.name
 
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      {showName && label ? <Nameplate label={label} y={sitting ? -28 : -34} highlight={highlight} /> : null}
-      <g transform={`scale(${facing * 0.56} 0.56)`}>
-        <ellipse cx="2" cy="4" rx={highlight ? 15 : 12} ry="3.4" fill="#05040A" opacity="0.5" />
+      {showName && label ? <Nameplate label={label} y={sitting ? -size - 6 : -size - 8} highlight={highlight} /> : null}
+      <g transform={`scale(${facing} 1)`}>
+        <ellipse cx="1" cy="3" rx={highlight ? 10 : 8} ry="2.6" fill="#05040A" opacity="0.45" />
         {highlight ? (
-          <ellipse cx="0" cy="-22" rx="18" ry="26" fill="none" stroke="#E8C878" strokeWidth="1.2" className="wd-ring" />
+          <ellipse cx="0" cy={-size / 2} rx="16" ry="18" fill="none" stroke="#E8C878" strokeWidth="1.2" className="wd-ring" />
         ) : null}
-        <g className={moodClass} style={{ ["--wd-step" as string]: step }}>
+        <g className={moodClass}>
           <g className="wd-bob">
-            <g className="wd-tail" transform={`translate(12 ${sitting ? -4 : -8})`}>
-              <rect x="0" y="-2" width="10" height="4" fill={fur} />
-              <rect x="8" y={sitting ? 2 : -6} width="6" height="4" fill={dark} />
-            </g>
-            {sitting ? (
-              <g shapeRendering="crispEdges">
-                <rect x="-16" y="-16" width="30" height="16" fill={fur} />
-                <rect x="-10" y="-12" width="16" height="8" fill={light} />
-              </g>
-            ) : (
-              <>
-                <g transform="translate(-7 0)">
-                  <g className="wd-leg-l">
-                    <rect x="-3" y="-1" width="5" height="8" fill={dark} />
-                    <rect x="-2" y="6" width="5" height="3" fill="#1A1410" />
-                  </g>
-                </g>
-                <g transform="translate(6 0)">
-                  <g className="wd-leg-r">
-                    <rect x="-3" y="-1" width="5" height="8" fill={fur} />
-                    <rect x="-2" y="6" width="5" height="3" fill="#1A1410" />
-                  </g>
-                </g>
-                <g shapeRendering="crispEdges">
-                  <rect x="-13" y="-22" width="26" height="18" fill={fur} />
-                  <rect x="-9" y="-18" width="16" height="10" fill={light} />
-                </g>
-              </>
-            )}
-            <g shapeRendering="crispEdges">
-              <rect x="-12" y={sitting ? -34 : -42} width="24" height="22" fill={fur} />
-              <rect x="-16" y={sitting ? -44 : -52} width="8" height="12" fill={fur} />
-              <rect x="8" y={sitting ? -44 : -52} width="8" height="12" fill={fur} />
-              <rect x="-14" y={sitting ? -42 : -50} width="4" height="6" fill="#E7B4B8" />
-              <rect x="10" y={sitting ? -42 : -50} width="4" height="6" fill="#E7B4B8" />
-              <rect x="-7" y={sitting ? -28 : -36} width="4" height="4" fill="#1A1410" />
-              <rect x="3" y={sitting ? -28 : -36} width="4" height="4" fill="#1A1410" />
-              <rect x="-6" y={sitting ? -27 : -35} width="2" height="2" fill="#fff" />
-              <rect x="4" y={sitting ? -27 : -35} width="2" height="2" fill="#fff" />
-              <rect x="-2" y={sitting ? -22 : -30} width="4" height="3" fill="#C48984" />
-              <rect x="-6" y={sitting ? -16 : -24} width="12" height="4" fill={look.accent} />
-              {female ? (
-                <>
-                  <rect x="10" y={sitting ? -40 : -48} width="6" height="6" fill={look.outfit} />
-                  <rect x="14" y={sitting ? -38 : -46} width="6" height="6" fill={look.outfitDark} />
-                </>
-              ) : (
-                <rect x="8" y={sitting ? -12 : -20} width="4" height="4" fill={look.outfit} />
-              )}
+            <g
+              style={{
+                filter: `hue-rotate(${sprite.hue}deg) saturate(${sprite.saturate}) brightness(${sprite.brightness})`,
+              }}
+            >
+              <svg
+                x={-size / 2}
+                y={-size}
+                width={size}
+                height={size}
+                viewBox={`${sx} ${sy} ${GUEST_ATLAS.cell} ${GUEST_ATLAS.cell}`}
+                overflow="hidden"
+              >
+                <image
+                  href="/sprites/guests.png"
+                  width={GUEST_ATLAS.width}
+                  height={GUEST_ATLAS.height}
+                  style={{ imageRendering: "pixelated" }}
+                />
+              </svg>
             </g>
             {mood === "cheer" ? (
-              <g className="wd-heart" transform="translate(10 -58)">
-                <image href="/assets/tiddybub/ui/heart.svg" width="14" height="14" />
+              <g className="wd-heart" transform={`translate(${size / 2 - 2} ${-size - 6})`}>
+                <image href="/assets/tiddybub/ui/heart.svg" width="12" height="12" />
               </g>
             ) : null}
           </g>
@@ -206,7 +169,7 @@ export function Character({
     return <PixelCouple href="/sprites/bride.png?v=3" label={name ?? "แทต"} showName={showName} w={28} h={39} />
   }
   return (
-    <CatGuest
+    <AtlasGuest
       guest={guest as Guest}
       mood={mood}
       showName={showName}

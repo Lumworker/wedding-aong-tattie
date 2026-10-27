@@ -7,7 +7,6 @@ import { EventTitle } from "@/components/event-title"
 import { VenueCanvas } from "@/components/venue/venue-canvas"
 import { COUPLE } from "@/lib/event"
 import { ageLabel, attendanceLabel } from "@/lib/labels"
-import { formatThaiMobile } from "@/lib/phone"
 import { SEED_PARTY_PHONE } from "@/lib/seed-guests"
 import type { Guest } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -124,10 +123,10 @@ export function VenueScene({
             แก้ไขการตอบรับ
           </Button>
           <Button type="button" variant="ghost" className="h-10 rounded-full px-4" onClick={onChangePhone}>
-            ใช้เบอร์อื่น
+            ใช้รหัสอื่น
           </Button>
         </div>
-        <p className="mt-3 hidden text-xs text-muted-foreground lg:block">บัญชีแขก {formatThaiMobile(phone)}</p>
+        <p className="mt-3 hidden text-xs text-muted-foreground lg:block">เข้าด้วยรหัสบนเครื่องนี้แล้ว</p>
       </header>
 
       <section
@@ -166,9 +165,9 @@ export function VenueScene({
       </section>
 
       <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
-        <p className="text-sm leading-6 text-muted-foreground lg:hidden">บัญชีแขก {formatThaiMobile(phone)}</p>
+        <p className="text-sm leading-6 text-muted-foreground lg:hidden">เข้าด้วยรหัสบนเครื่องนี้แล้ว</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          เพว์เก้าแถวรองรับแขกมาร่วมงานได้กว่า 100 คน แมวนั่งในที่ บางตัวเดินทางเดินกลาง ขึ้นแท่นบ่าวสาวไม่ได้
+          เพว์เก้าแถวรองรับแขกมาร่วมงานได้กว่า 100 คน นั่งในที่ บางคนเดินทางเดินกลาง ขึ้นแท่นบ่าวสาวไม่ได้
         </p>
         <RosterGroup title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
         {others.length > 0 ? <RosterGroup title="แขกบนเครื่องนี้" guests={others} /> : null}

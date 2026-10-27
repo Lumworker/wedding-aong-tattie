@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PARTY_MAX, PARTY_MIN } from "@/lib/event"
-import { formatThaiMobile } from "@/lib/phone"
 import type { AgeGroup, Attendance, Gender, Guest, Party } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -178,7 +177,7 @@ export function RsvpForm({
         <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          บอกเราว่าใครอยู่ในคณะของ {formatThaiMobile(phone)} จะได้พาทุกคนเข้าฉากงาน
+          บอกเราว่าใครอยู่ในคณะนี้ จะได้พาทุกคนเข้าฉากงาน
           โบสถ์รองรับแขกทั้งงานได้กว่า 100 คน — แบบนี้เก็บเฉพาะคณะของคุณ ครั้งละไม่เกิน {PARTY_MAX} คน
         </p>
         <button
@@ -186,7 +185,7 @@ export function RsvpForm({
           onClick={onChangePhone}
           className="mt-2 cursor-pointer text-sm font-medium text-rose underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
         >
-          ใช้เบอร์อื่น
+          ใช้รหัสอื่น
         </button>
       </header>
 

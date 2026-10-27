@@ -41,6 +41,28 @@ function hash(id: string): number {
   return h >>> 0
 }
 
+const HUES = [8, 22, 36, 52, 68, 88, 112, 138, 158, 178, 198, 218, 242, 268, 292, 318, 338, 14]
+
+export type GuestSprite = {
+  type: number
+  row: number
+  hue: number
+  saturate: number
+  brightness: number
+}
+
+export function spriteForGuest(guest: Guest): GuestSprite {
+  const n = hash(guest.id)
+  const femaleBias = guest.gender === "female" ? 0 : guest.gender === "male" ? 12 : 6
+  return {
+    type: n % 9,
+    row: (femaleBias + ((n >>> 3) % 24)) % 36,
+    hue: HUES[n % HUES.length],
+    saturate: 1.4 + ((n >>> 7) % 6) * 0.16,
+    brightness: 0.86 + ((n >>> 11) % 6) * 0.06,
+  }
+}
+
 export function lookForGuest(guest: Guest): Look {
   const n = hash(guest.id)
   const clothes = BY_GENDER[guest.gender]

@@ -4,7 +4,7 @@ Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prach
 
 Place it on disk at `~/wedding-aong-tattie`.
 
-Guests enter with a mobile number, register their party, then land in an HD-2D ceremony scene in the Octopath sense: pixel sprites on a lit diorama church, a few cats walking the aisle, the rest seated in nine pew rows (108 seats, plus standing room), and the couple alone on the sanctuary. The nave is built to hold **more than 100 guests** in one scene.
+Guests enter with an invite code, register their party, then land in an HD-2D ceremony in front of the pixel church from the building sheet. Guests are the 3-tone character sprites, each recolored so people in a pew do not share a palette. A few walk the aisle; the rest sit in nine pew rows (108 seats). The couple stay on the sanctuary. The scene holds **more than 100 guests**.
 
 Ceremony lighting, dust, HUD panels, and altar flowers come from a CC0 subset of [Tiddybub/2d-assets](https://github.com/Tiddybub/2d-assets) (Kenney light masks, particle pack, pixel UI, and OGA flowers). Notes are in `public/assets/tiddybub/ATTRIBUTION.md`. Guest cats stay custom pixel art — that pack has no cat sprites that fit this scene.
 
@@ -27,11 +27,11 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 ## Guest flow
 
-1. **เบอร์มือถือ** — enter a Thai mobile number (`06` / `08` / `09`, 10 digits). `+66` and a missing trunk `0` are accepted. The number is the account id. There is no password and no third-party auth. This is the first screen on a fresh visit.
+1. **รหัสเข้างาน** — a 10-digit invite code (the same value we store as the party id). The field is labeled and placeholder-texted as รหัสเข้างาน so it does not look like a filled-in phone number. There is no password.
 2. **ตอบรับ** — choose how many people are in the party (1–10). For each person: name, gender, adult or child, and whether they are coming. One party stays small; the church holds every attending party together.
-3. **ฉากงาน** — the animated main page. Use **แก้ไขการตอบรับ** to change the party, or **ใช้เบอร์อื่น** to switch accounts.
+3. **ฉากงาน** — the animated main page. Use **แก้ไขการตอบรับ** to change the party, or **ใช้รหัสอื่น** to switch accounts.
 
-A return visit with the same number on this device skips the phone step and opens the scene, with the saved party restored.
+A return visit with the same code on this device skips the gate and opens the scene, with the saved party restored. The code itself is not printed on the venue.
 
 ## What is stored
 

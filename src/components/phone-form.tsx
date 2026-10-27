@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Character } from "@/components/venue/character"
 import { EventTitle, Ornament } from "@/components/event-title"
 import { PetalField } from "@/components/petal-field"
-import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
+import { maskInviteInput, normalizeThaiMobile } from "@/lib/phone"
 
 export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void }) {
   const [value, setValue] = useState("")
@@ -15,13 +15,13 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const phone = normalizeThaiMobile(value)
-    if (!phone) {
-      setError("กรุณากรอกเบอร์มือถือไทย 10 หลัก ขึ้นต้นด้วย 06, 08 หรือ 09")
+    const code = normalizeThaiMobile(value)
+    if (!code) {
+      setError(value.trim() ? "รหัสนี้เข้างานไม่ได้" : "กรุณากรอกรหัสเข้างาน")
       return
     }
     setError(null)
-    onContinue(phone)
+    onContinue(code)
   }
 
   return (
@@ -48,32 +48,36 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
         <form
           onSubmit={handleSubmit}
           className="mt-8 rounded-[1.7rem] border border-border bg-card/90 p-5 shadow-[0_24px_60px_-36px_rgba(42,38,35,0.55)] backdrop-blur-sm"
+          autoComplete="off"
           noValidate
         >
-          <Label htmlFor="phone" className="text-base text-ink">
-            เบอร์มือถือ
+          <Label htmlFor="invite-code" className="text-base text-ink">
+            รหัสเข้างาน
           </Label>
-          <p id="phone-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
-            ใช้เป็นรหัสเข้างาน แขกที่เคยตอบรับแล้วจะกลับมาที่ฉากงานได้ทันที
+          <p id="invite-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
+            แขกที่เคยตอบรับแล้วจะกลับมาที่ฉากงานได้ทันที
           </p>
           <Input
-            id="phone"
-            name="tel"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="081-234-5678"
+            id="invite-code"
+            name="invite-code"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            placeholder="รหัสเข้างาน"
             value={value}
             aria-invalid={error ? true : undefined}
-            aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
-            className="mt-3 h-12 rounded-2xl bg-background px-4 text-base md:text-base"
+            aria-describedby={error ? "invite-error invite-hint" : "invite-hint"}
+            className="mt-3 h-12 rounded-2xl bg-background px-4 text-base tracking-[0.18em] md:text-base"
             onChange={(event) => {
-              setValue(maskPhoneInput(event.target.value))
+              setValue(maskInviteInput(event.target.value))
               if (error) setError(null)
             }}
           />
           {error ? (
-            <p id="phone-error" role="alert" className="mt-2 text-sm text-destructive">
+            <p id="invite-error" role="alert" className="mt-2 text-sm text-destructive">
               {error}
             </p>
           ) : null}
@@ -82,7 +86,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
           </Button>
           <Ornament className="mt-5" />
           <p className="text-center text-xs leading-5 text-muted-foreground">
-            ตัวอย่างเบอร์ 0812345678 หรือ +66812345678
+            ใช้รหัสชุดเดิมเมื่อกลับมา ระบบพาเข้าฉากให้เลย
           </p>
         </form>
       </div>

@@ -342,7 +342,7 @@
 }
 
 .is-walking .wd-bob {
-  animation: none;
+  animation: wd-bob 0.38s ease-in-out infinite;
   transform-origin: center bottom;
 }
 
