@@ -1,91 +1,94 @@
 "use client"
 
-import { useState, useSyncExternalStore } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { PetalField } from "@/components/petal-field"
-import { PhoneGate } from "@/components/phone-gate"
+import { LandingPage } from "@/components/landing-page"
+import { PhoneForm } from "@/components/phone-form"
 import { RsvpForm } from "@/components/rsvp-form"
-import { VenueScene } from "@/components/venue/venue-scene"
 import { guestStore } from "@/lib/guest-store"
 import type { Party } from "@/lib/types"
 
-type View = "phone" | "rsvp" | "venue"
+type Overlay = "phone" | "rsvp"
 
-const page = {
-  initial: { opacity: 0, y: 16 },
+const sheet = {
+  initial: { opacity: 0, y: 24 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
-  transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
-}
-
-function Splash() {
-  return (
-    <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      <p className="font-display text-5xl text-rose italic motion-safe:animate-pulse">C & P</p>
-      <p className="mt-4 text-sm text-muted-foreground">กำลังเปิดคำเชิญ</p>
-    </div>
-  )
+  exit: { opacity: 0, y: 16 },
+  transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
 }
 
 export function WeddingApp() {
   const snapshot = useSyncExternalStore(guestStore.subscribe, guestStore.getSnapshot, guestStore.getServerSnapshot)
-  const [override, setOverride] = useState<View | null>(null)
-  const auto: View = snapshot.phone && snapshot.party ? "venue" : snapshot.phone ? "rsvp" : "phone"
-  const view = override ?? auto
+  const [overlay, setOverlay] = useState<Overlay | null>(null)
+
+  useEffect(() => {
+    document.body.style.overflow = overlay ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [overlay])
+
+  useEffect(() => {
+    if (!overlay) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOverlay(null)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [overlay])
+
+  function openRegister() {
+    setOverlay(snapshot.phone ? "rsvp" : "phone")
+  }
 
   function continueWithPhone(phone: string) {
     guestStore.setPhone(phone)
-    setOverride(null)
+    setOverlay("rsvp")
   }
 
   function saveParty(party: Party) {
     guestStore.saveParty(party)
-    setOverride(null)
+    setOverlay(null)
   }
 
   function changePhone() {
     guestStore.clearPhone()
-    setOverride(null)
+    setOverlay("phone")
   }
 
   return (
     <div className="relative min-h-dvh bg-background">
-      {view !== "venue" ? <PetalField /> : null}
-      <div className="relative z-10">
-        <AnimatePresence mode="wait" initial={false}>
-          {!snapshot.ready ? (
-            <motion.div key="splash" {...page}>
-              <Splash />
-            </motion.div>
-          ) : null}
-          {snapshot.ready && view === "phone" ? (
-            <motion.div key="phone" {...page}>
-              <PhoneGate onContinue={continueWithPhone} />
-            </motion.div>
-          ) : null}
-          {snapshot.ready && view === "rsvp" && snapshot.phone ? (
-            <motion.div key="rsvp" {...page}>
+      <LandingPage
+        guests={snapshot.guests}
+        phone={snapshot.phone}
+        party={snapshot.party}
+        onRegister={openRegister}
+      />
+      <AnimatePresence>
+        {overlay ? (
+          <motion.div
+            key={overlay}
+            role="dialog"
+            aria-modal="true"
+            aria-label={overlay === "phone" ? "ลงทะเบียนด้วยเบอร์มือถือ" : "ตอบรับคำเชิญ"}
+            className="fixed inset-0 z-50 overflow-y-auto bg-background/92 backdrop-blur-md"
+            {...sheet}
+          >
+            {overlay === "phone" ? (
+              <PhoneForm onContinue={continueWithPhone} onClose={() => setOverlay(null)} />
+            ) : snapshot.phone ? (
               <RsvpForm
                 key={`${snapshot.phone}:${snapshot.party?.updatedAt ?? "new"}`}
                 phone={snapshot.phone}
                 party={snapshot.party}
                 onSubmit={saveParty}
                 onChangePhone={changePhone}
+                onClose={() => setOverlay(null)}
               />
-            </motion.div>
-          ) : null}
-          {snapshot.ready && view === "venue" && snapshot.phone ? (
-            <motion.div key="venue" {...page}>
-              <VenueScene
-                guests={snapshot.guests}
-                phone={snapshot.phone}
-                onEdit={() => setOverride("rsvp")}
-                onChangePhone={changePhone}
-              />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
+            ) : null}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   )
 }

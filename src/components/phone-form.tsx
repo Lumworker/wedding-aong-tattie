@@ -4,11 +4,16 @@ import { FormEvent, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Character } from "@/components/venue/character"
-import { EventTitle, Ornament } from "@/components/event-title"
+import { Ornament } from "@/components/event-title"
 import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
 
-export function PhoneGate({ onContinue }: { onContinue: (phone: string) => void }) {
+export function PhoneForm({
+  onContinue,
+  onClose,
+}: {
+  onContinue: (phone: string) => void
+  onClose?: () => void
+}) {
   const [value, setValue] = useState("")
   const [error, setError] = useState<string | null>(null)
 
@@ -25,33 +30,28 @@ export function PhoneGate({ onContinue }: { onContinue: (phone: string) => void 
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-5 py-10">
-      <div className="mb-6 flex justify-center" aria-hidden="true">
-        <svg viewBox="0 0 220 150" className="h-36 w-56 overflow-visible">
-          <ellipse cx="110" cy="138" rx="70" ry="8" fill="#2A2623" opacity="0.06" />
-          <g transform="translate(78 142) scale(0.92)">
-            <Character role="groom" mood="idle" showName={false} />
-          </g>
-          <g transform="translate(142 142) scale(0.92)">
-            <Character role="bride" mood="idle" showName={false} />
-          </g>
-          <text x="110" y="58" textAnchor="middle" fill="#C48984" fontSize="16" className="wd-heart">
-            ♥
-          </text>
-        </svg>
-      </div>
-
-      <EventTitle variant="hero" />
-
+      {onClose ? (
+        <div className="mb-4 flex justify-end">
+          <Button type="button" variant="ghost" className="h-9 rounded-full px-3" onClick={onClose}>
+            ปิด
+          </Button>
+        </div>
+      ) : null}
+      <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">ลงทะเบียน</p>
+      <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">เบอร์มือถือ</h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        ใช้เบอร์เป็นรหัสของคณะแขก ครั้งหน้าเครื่องนี้จะจำการตอบรับไว้ให้
+      </p>
       <form
         onSubmit={handleSubmit}
-        className="mt-8 rounded-[1.7rem] border border-border bg-card/90 p-5 shadow-[0_24px_60px_-36px_rgba(42,38,35,0.55)] backdrop-blur-sm"
+        className="mt-6 rounded-[1.7rem] border border-border bg-card/90 p-5 shadow-[0_24px_60px_-36px_rgba(42,38,35,0.55)] backdrop-blur-sm"
         noValidate
       >
         <Label htmlFor="phone" className="text-base text-ink">
           เบอร์มือถือ
         </Label>
         <p id="phone-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
-          ใช้เป็นรหัสเข้างาน แขกที่เคยตอบรับแล้วจะกลับเข้าโบสถ์ได้ทันที
+          กรอกเมื่อพร้อมลงทะเบียน ไม่ต้องใส่ตั้งแต่เปิดหน้าเว็บ
         </p>
         <Input
           id="phone"

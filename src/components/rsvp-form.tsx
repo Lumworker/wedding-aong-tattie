@@ -100,11 +100,13 @@ export function RsvpForm({
   party,
   onSubmit,
   onChangePhone,
+  onClose,
 }: {
   phone: string
   party: Party | null
   onSubmit: (party: Party) => void
   onChangePhone: () => void
+  onClose?: () => void
 }) {
   const initial = party?.guests?.length ? party.guests.map(fromGuest) : [blankGuest()]
   const [people, setPeople] = useState<DraftGuest[]>(initial)
@@ -172,7 +174,14 @@ export function RsvpForm({
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-8 sm:px-6">
       <header>
-        <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
+          {onClose ? (
+            <Button type="button" variant="ghost" className="h-9 rounded-full px-3 text-sm" onClick={onClose}>
+              ปิด
+            </Button>
+          ) : null}
+        </div>
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           บอกเราว่าใครอยู่ในคณะของ {formatThaiMobile(phone)} จะได้พาทุกคนเข้า {COUPLE.venueThai}
