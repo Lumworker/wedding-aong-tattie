@@ -1,12 +1,10 @@
 # wedding-aong-tattie
 
-Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทต) on **25 ธันวาคม 2570**.
+Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทตตี้) on **25 ธันวาคม 2570**.
 
 Place it on disk at `~/wedding-aong-tattie`.
 
-Guests enter with an invite code, register their party, then land in an HD-2D ceremony in front of the pixel church from the building sheet. Guests are the 3-tone character sprites, each recolored so people in a pew do not share a palette. A few walk the aisle; the rest sit in nine pew rows (108 seats). The couple stay on the sanctuary. The scene holds **more than 100 guests**.
-
-Ceremony lighting, dust, HUD panels, and altar flowers come from a CC0 subset of [Tiddybub/2d-assets](https://github.com/Tiddybub/2d-assets) (Kenney light masks, particle pack, pixel UI, and OGA flowers). Notes are in `public/assets/tiddybub/ATTRIBUTION.md`. Guest cats stay custom pixel art — that pack has no cat sprites that fit this scene.
+Guests enter with a mobile number, register their party, then land in an HD-2D ceremony in front of the pixel church. Hover or tap the couple to enlarge them and open `/story`. Blessings can float over the nave. Guest names stay hidden until someone turns them on. There is no demo crowd.
 
 ## Run
 
@@ -27,17 +25,16 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 ## Guest flow
 
-1. **เบอร์มือถือ** — labeled เบอร์มือถือ. Hint: ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ. Thai mobiles `06` / `08` / `09`, 10 digits.
-2. **ตอบรับ** — always the next screen: how many people (1–10), then name, gender, adult or child, and whether they are coming. A saved party is prefilled so you can check it and enter the scene.
-3. **ฉากงาน** — after **บันทึกและเข้างาน**. Use **แก้ไขการตอบรับ** to open the form again, or **ใช้เบอร์อื่น** to switch accounts.
+1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. The couple illustration is a link to their story.
+2. **ตอบรับ** — name, gender, adult or child, and whether they are coming (1–10 people).
+3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map is a placeholder pin until the real address is set.
 
 ## What is stored
 
 - `localStorage` key `webding-web:session` — the current phone.
 - `localStorage` key `webding-web:party:<phone>` — that party’s guests.
+- `localStorage` key `webding-web:wishes` — guest blessings.
 - Cookie `webding_phone` — a backup of the phone so a cleared session key can still be recognized. The party itself stays in `localStorage`.
-
-A seeded congregation of about 120 cats (`src/lib/seed-guests.ts`) is always mixed into the scene so the pews look full during a demo. Those names are labeled **แขกตัวอย่าง** in the roster (collapsed after the first twelve).
 
 ## Swapping in a backend
 
@@ -45,4 +42,4 @@ The screen reads and writes through `guestStore` in `src/lib/guest-store.ts`. Th
 
 ## Motion
 
-The venue uses a tilt-shift diorama camera, stained-glass shafts, Kenney light cones, and a pixel HUD. A few cats walk the aisle; sitters do not run a walk loop. `prefers-reduced-motion` settles characters in place and turns off the ambient loops.
+The venue uses a tilt-shift diorama camera, Kenney light cones, and a pixel HUD. `prefers-reduced-motion` settles characters and shows blessings as a short static stack.

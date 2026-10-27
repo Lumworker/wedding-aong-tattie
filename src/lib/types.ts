@@ -24,3 +24,11 @@ export type Party = {
   guests: Guest[]
   updatedAt: string
 }
+
+export type Wish = {
+  id: string
+  text: string
+  from: string
+  partyPhone: string
+  createdAt: string
+}

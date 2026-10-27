@@ -166,7 +166,7 @@ export function Character({
     return <PixelCouple href="/sprites/groom.png?v=4" label={name ?? "อ๋อง"} showName={showName} w={48} h={68} />
   }
   if (role === "bride") {
-    return <PixelCouple href="/sprites/bride.png?v=4" label={name ?? "แทต"} showName={showName} w={48} h={68} />
+    return <PixelCouple href="/sprites/bride.png?v=4" label={name ?? "แทตตี้"} showName={showName} w={48} h={68} />
   }
   return (
     <AtlasGuest

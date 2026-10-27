@@ -1,6 +1,5 @@
 import { createLocalWeddingRepository, type WeddingRepository } from "@/lib/repository"
-import { SEED_GUESTS } from "@/lib/seed-guests"
-import type { Guest, Party } from "@/lib/types"
+import type { Guest, Party, Wish } from "@/lib/types"
 
 export type GuestSnapshot = {
   /** False during server render and hydration, then true once this browser has been read. */
@@ -8,17 +7,19 @@ export type GuestSnapshot = {
   phone: string | null
   party: Party | null
   guests: Guest[]
+  wishes: Wish[]
 }
 
 const SERVER_SNAPSHOT: GuestSnapshot = {
   ready: false,
   phone: null,
   party: null,
-  guests: SEED_GUESTS,
+  guests: [],
+  wishes: [],
 }
 
 function mergeGuests(parties: Party[]): Guest[] {
-  return [...SEED_GUESTS, ...parties.flatMap((party) => party.guests)]
+  return parties.flatMap((party) => party.guests)
 }
 
 /**
@@ -44,6 +45,7 @@ export function createGuestStore(repo: WeddingRepository = createLocalWeddingRep
       phone,
       party,
       guests: mergeGuests(repo.readAllParties()),
+      wishes: repo.readWishes(),
     }
   }
 
@@ -72,6 +74,7 @@ export function createGuestStore(repo: WeddingRepository = createLocalWeddingRep
         phone,
         party: repo.readParty(phone),
         guests: mergeGuests(repo.readAllParties()),
+        wishes: repo.readWishes(),
       })
     },
     clearPhone() {
@@ -81,6 +84,7 @@ export function createGuestStore(repo: WeddingRepository = createLocalWeddingRep
         phone: null,
         party: null,
         guests: mergeGuests(repo.readAllParties()),
+        wishes: repo.readWishes(),
       })
     },
     saveParty(party: Party) {
@@ -91,6 +95,15 @@ export function createGuestStore(repo: WeddingRepository = createLocalWeddingRep
         phone: party.phone,
         party,
         guests: mergeGuests(repo.readAllParties()),
+        wishes: repo.readWishes(),
+      })
+    },
+    addWish(wish: Wish) {
+      repo.writeWish(wish)
+      emit({
+        ...snapshot,
+        ready: true,
+        wishes: repo.readWishes(),
       })
     },
   }

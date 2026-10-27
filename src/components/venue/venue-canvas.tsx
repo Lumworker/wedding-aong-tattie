@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useRef, useState, type ReactNode } from "react"
+import { useRouter } from "next/navigation"
 import { motion, useAnimationFrame, useReducedMotion } from "framer-motion"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
 import { Character } from "@/components/venue/character"
@@ -16,16 +17,21 @@ function CoupleActor({
   role: "groom" | "bride"
   reduced: boolean
 }) {
+  const router = useRouter()
   const base = role === "groom" ? SCENE.groom : SCENE.bride
   return (
     <motion.g
-      initial={{ opacity: 0, x: base.x, y: base.y + 10 }}
-      animate={{ opacity: 1, x: base.x, y: base.y }}
-      transition={{ duration: reduced ? 0.3 : 0.7, delay: reduced ? 0 : 0.12 }}
+      initial={{ opacity: 0, x: base.x, y: base.y + 10, scale: 1.15 }}
+      animate={{ opacity: 1, x: base.x, y: base.y, scale: 1.15 }}
+      whileHover={reduced ? undefined : { scale: 1.42 }}
+      whileTap={reduced ? undefined : { scale: 1.52 }}
+      transition={{ type: "spring", stiffness: 280, damping: 18 }}
+      style={{ cursor: "pointer" }}
+      onClick={() => router.push("/story")}
     >
-      <g transform="scale(1.15)">
-        <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname} />
-      </g>
+      <title>{`อ่านประวัติ${role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname}`}</title>
+      <rect x={-32} y={-82} width={64} height={90} fill="transparent" />
+      <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname} />
     </motion.g>
   )
 }
@@ -181,14 +187,13 @@ export function VenueCanvas({
           viewBox={`0 0 ${SCENE.width} ${SCENE.height}`}
           className="h-full w-full font-sans"
           preserveAspectRatio="xMidYMid slice"
-          aria-hidden="true"
         >
           <SceneBackdrop />
           <CoupleActor role="groom" reduced={reduced} />
           <CoupleActor role="bride" reduced={reduced} />
           {ordered.map((guest) => {
             const mine = Boolean(phone) && guest.guest.partyPhone === phone
-            const labeled = mine || (showNames && guest.mood !== "sit")
+            const labeled = showNames && (mine || guest.mood !== "sit")
             return (
               <GuestActor
                 key={guest.guest.id}

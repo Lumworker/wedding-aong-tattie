@@ -75,6 +75,7 @@ export function WeddingApp() {
           <motion.div key="venue" {...page}>
             <VenueScene
               guests={snapshot.guests}
+              wishes={snapshot.wishes}
               phone={snapshot.phone}
               onEdit={() => setOverride("rsvp")}
               onChangePhone={changePhone}

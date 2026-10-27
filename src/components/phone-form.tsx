@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Character } from "@/components/venue/character"
+import { CoupleHero } from "@/components/couple-hero"
 import { EventTitle, Ornament } from "@/components/event-title"
 import { PetalField } from "@/components/petal-field"
 import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
@@ -28,20 +28,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
     <div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-5 py-10">
       <PetalField />
       <div className="relative z-10">
-        <div className="mb-6 flex justify-center" aria-hidden="true">
-          <svg viewBox="0 0 220 150" className="h-36 w-56 overflow-visible">
-            <ellipse cx="110" cy="138" rx="70" ry="8" fill="#2A2623" opacity="0.06" />
-            <g transform="translate(78 142) scale(0.92)">
-              <Character role="groom" mood="idle" showName={false} />
-            </g>
-            <g transform="translate(142 142) scale(0.92)">
-              <Character role="bride" mood="idle" showName={false} />
-            </g>
-            <text x="110" y="58" textAnchor="middle" fill="#C48984" fontSize="16" className="wd-heart">
-              ♥
-            </text>
-          </svg>
-        </div>
+        <CoupleHero className="mb-6" />
 
         <EventTitle variant="hero" />
 

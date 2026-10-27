@@ -1,4 +1,4 @@
-import type { Party } from "@/lib/types"
+import type { Party, Wish } from "@/lib/types"
 
 /**
  * Persistence boundary. The UI talks to `guestStore`, which calls this.
@@ -12,11 +12,15 @@ export interface WeddingRepository {
   readParty(phone: string): Party | null
   writeParty(party: Party): void
   readAllParties(): Party[]
+  readWishes(): Wish[]
+  writeWish(wish: Wish): void
 }
 
 const SESSION_KEY = "webding-web:session"
 const PARTY_PREFIX = "webding-web:party:"
+const WISH_KEY = "webding-web:wishes"
 const COOKIE = "webding_phone"
+const WISH_MAX = 80
 
 const memory = new Map<string, string>()
 
@@ -77,6 +81,24 @@ function clearCookiePhone() {
   document.cookie = `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
 }
 
+function parseWishes(raw: string | null): Wish[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw) as Wish[]
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(
+      (wish) =>
+        wish &&
+        typeof wish.id === "string" &&
+        typeof wish.text === "string" &&
+        typeof wish.from === "string" &&
+        typeof wish.partyPhone === "string"
+    )
+  } catch {
+    return []
+  }
+}
+
 function parseParty(raw: string | null): Party | null {
   if (!raw) return null
   try {
@@ -117,6 +139,13 @@ export function createLocalWeddingRepository(): WeddingRepository {
         if (party) parties.push(party)
       }
       return parties
+    },
+    readWishes() {
+      return parseWishes(readRaw(WISH_KEY)).slice(-WISH_MAX)
+    },
+    writeWish(wish) {
+      const next = [...parseWishes(readRaw(WISH_KEY)), wish].slice(-WISH_MAX)
+      writeRaw(WISH_KEY, JSON.stringify(next))
     },
   }
 }
