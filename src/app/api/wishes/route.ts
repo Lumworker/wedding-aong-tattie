@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { errorMessage } from "@/lib/api-error"
 import { readWishes, updateWish, writeWish } from "@/lib/excel-db"
 import type { Wish } from "@/lib/types"
 
@@ -8,7 +9,10 @@ export async function GET() {
     return NextResponse.json({ wishes })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "อ่านความคิดเห็นไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "อ่านความคิดเห็นไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }
 
@@ -29,7 +33,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ wish })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "บันทึกความคิดเห็นไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "บันทึกความคิดเห็นไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }
 
@@ -43,6 +50,9 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ wish: body })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "แก้ไขความคิดเห็นไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "แก้ไขความคิดเห็นไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }

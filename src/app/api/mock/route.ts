@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { errorMessage } from "@/lib/api-error"
 import { replaceWishes, upsertParties } from "@/lib/excel-db"
 import { buildMockParties, buildMockWishes } from "@/lib/mock-guests"
 
@@ -18,6 +19,9 @@ export async function POST() {
     })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "สร้างข้อมูล mock ไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "สร้างข้อมูล mock ไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }

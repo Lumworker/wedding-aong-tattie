@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { errorMessage } from "@/lib/api-error"
 import { readAllParties, writeParty } from "@/lib/excel-db"
 import type { Party } from "@/lib/types"
 
@@ -8,7 +9,10 @@ export async function GET() {
     return NextResponse.json({ parties })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "อ่านข้อมูลผู้ลงทะเบียนไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "อ่านข้อมูลผู้ลงทะเบียนไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }
 
@@ -27,6 +31,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ party })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "บันทึกผู้ลงทะเบียนไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "บันทึกผู้ลงทะเบียนไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }

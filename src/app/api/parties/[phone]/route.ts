@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { errorMessage } from "@/lib/api-error"
 import { deleteParty, readParty } from "@/lib/excel-db"
 
 export async function GET(_request: Request, context: { params: Promise<{ phone: string }> }) {
@@ -9,7 +10,7 @@ export async function GET(_request: Request, context: { params: Promise<{ phone:
     return NextResponse.json({ party })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "อ่านข้อมูลไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(error, "อ่านข้อมูลไม่สำเร็จ") }, { status: 500 })
   }
 }
 
@@ -20,6 +21,9 @@ export async function DELETE(_request: Request, context: { params: Promise<{ pho
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "ลบการลงทะเบียนไม่สำเร็จ" }, { status: 500 })
+    return NextResponse.json(
+      { error: errorMessage(error, "ลบการลงทะเบียนไม่สำเร็จ") },
+      { status: 500 }
+    )
   }
 }
