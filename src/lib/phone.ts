@@ -2,8 +2,12 @@
 
 const LOCAL_MOBILE = /^0[689]\d{8}$/
 
-export function digitsOnly(input: string): string {
+export function digitsOnly(input: string) {
   return input.replace(/\D/g, "")
+}
+
+export function isThaiMobile(value: string) {
+  return LOCAL_MOBILE.test(value)
 }
 
 /**
@@ -25,8 +29,7 @@ export function normalizeThaiMobile(input: string): string | null {
     digits = `0${digits}`
   }
 
-  if (!LOCAL_MOBILE.test(digits)) return null
-  return digits
+  return isThaiMobile(digits) ? digits : null
 }
 
 export function formatThaiMobile(phone: string): string {

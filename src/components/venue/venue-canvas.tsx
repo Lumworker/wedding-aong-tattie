@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef, useState, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import { motion, useAnimationFrame, useReducedMotion } from "framer-motion"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
@@ -175,7 +175,6 @@ export function VenueCanvas({
   children?: ReactNode
 }) {
   const reduced = useReducedMotion() === true
-  const svgRef = useRef<SVGSVGElement>(null)
   const placed = useMemo(() => placeGuests(guests, phone), [guests, phone])
   const ordered = useMemo(() => [...placed].sort((a, b) => footY(a) - footY(b)), [placed])
 
@@ -183,7 +182,6 @@ export function VenueCanvas({
     <div className="hd2d-stage absolute inset-0 overflow-hidden bg-[#121018]">
       <div className="hd2d-world">
         <svg
-          ref={svgRef}
           viewBox={`0 0 ${SCENE.width} ${SCENE.height}`}
           className="h-full w-full font-sans"
           preserveAspectRatio="xMidYMid slice"
@@ -216,5 +214,3 @@ export function VenueCanvas({
     </div>
   )
 }
-
-export { SCENE }

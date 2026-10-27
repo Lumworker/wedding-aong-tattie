@@ -11,12 +11,45 @@ function Candle({ x, y }: { x: number; y: number }) {
   )
 }
 
+function Pixel({
+  href,
+  x,
+  y,
+  width,
+  height,
+  opacity,
+  blend,
+  className,
+}: {
+  href: string
+  x: number
+  y: number
+  width: number
+  height: number
+  opacity?: number
+  blend?: "screen"
+  className?: string
+}) {
+  return (
+    <image
+      href={href}
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      opacity={opacity}
+      className={className}
+      style={{ imageRendering: "pixelated", mixBlendMode: blend }}
+    />
+  )
+}
+
 function AltarFlowers({ x, y }: { x: number; y: number }) {
   return (
-    <g transform={`translate(${x} ${y})`} style={{ imageRendering: "pixelated" }}>
-      <image href="/assets/tiddybub/flowers/flower_01.png" x="-18" y="-22" width="22" height="22" />
-      <image href="/assets/tiddybub/flowers/flower_03.png" x="-4" y="-26" width="20" height="20" />
-      <image href="/assets/tiddybub/flowers/flower_02.png" x="8" y="-20" width="18" height="18" />
+    <g transform={`translate(${x} ${y})`}>
+      <Pixel href="/assets/tiddybub/flowers/flower_01.png" x={-18} y={-22} width={22} height={22} />
+      <Pixel href="/assets/tiddybub/flowers/flower_03.png" x={-4} y={-26} width={20} height={20} />
+      <Pixel href="/assets/tiddybub/flowers/flower_02.png" x={8} y={-20} width={18} height={18} />
     </g>
   )
 }
@@ -59,53 +92,11 @@ export function SceneBackdrop() {
       <rect width="640" height="900" fill="url(#wd-sky)" />
       <circle cx="520" cy="64" r="70" fill="#F4C878" opacity="0.35" filter="url(#wd-soft)" />
 
-      <image
-        href="/sprites/church.png"
-        x={churchX}
-        y={churchY}
-        width={churchW}
-        height={churchH}
-        style={{ imageRendering: "pixelated" }}
-      />
-
-      <image
-        href="/assets/tiddybub/light/window-glow.png"
-        x={churchX + 40}
-        y={churchY + 80}
-        width={churchW - 80}
-        height={180}
-        opacity="0.5"
-        style={{ mixBlendMode: "screen" }}
-      />
-      <image
-        href="/assets/tiddybub/light/cone.png"
-        x="70"
-        y="250"
-        width="220"
-        height="520"
-        opacity="0.28"
-        style={{ mixBlendMode: "screen" }}
-        className="wd-shaft"
-      />
-      <image
-        href="/assets/tiddybub/light/cone.png"
-        x="350"
-        y="250"
-        width="220"
-        height="520"
-        opacity="0.28"
-        style={{ mixBlendMode: "screen" }}
-        className="wd-shaft"
-      />
-      <image
-        href="/assets/tiddybub/light/streaks.png"
-        x="90"
-        y="200"
-        width="460"
-        height="320"
-        opacity="0.2"
-        style={{ mixBlendMode: "screen" }}
-      />
+      <Pixel href="/sprites/church.png" x={churchX} y={churchY} width={churchW} height={churchH} />
+      <Pixel href="/assets/tiddybub/light/window-glow.png" x={churchX + 40} y={churchY + 80} width={churchW - 80} height={180} opacity={0.5} blend="screen" />
+      <Pixel href="/assets/tiddybub/light/cone.png" x={70} y={250} width={220} height={520} opacity={0.28} blend="screen" className="wd-shaft" />
+      <Pixel href="/assets/tiddybub/light/cone.png" x={350} y={250} width={220} height={520} opacity={0.28} blend="screen" className="wd-shaft" />
+      <Pixel href="/assets/tiddybub/light/streaks.png" x={90} y={200} width={460} height={320} opacity={0.2} blend="screen" />
 
       <rect x="70" y="508" width="500" height="276" fill="url(#wd-floor)" />
       {Array.from({ length: 10 }).map((_, index) => (
@@ -131,22 +122,8 @@ export function SceneBackdrop() {
             <rect x={PEW.rightX} y={y + 4} width={PEW.width} height="9" fill="#5A3A28" />
             {index % 2 === 0 ? (
               <>
-                <image
-                  href="/assets/tiddybub/flowers/flower_04.png"
-                  x={PEW.leftX - 4}
-                  y={y - 6}
-                  width="14"
-                  height="14"
-                  style={{ imageRendering: "pixelated" }}
-                />
-                <image
-                  href="/assets/tiddybub/flowers/flower_04.png"
-                  x={PEW.rightX + PEW.width - 10}
-                  y={y - 6}
-                  width="14"
-                  height="14"
-                  style={{ imageRendering: "pixelated" }}
-                />
+                <Pixel href="/assets/tiddybub/flowers/flower_04.png" x={PEW.leftX - 4} y={y - 6} width={14} height={14} />
+                <Pixel href="/assets/tiddybub/flowers/flower_04.png" x={PEW.rightX + PEW.width - 10} y={y - 6} width={14} height={14} />
               </>
             ) : null}
           </g>

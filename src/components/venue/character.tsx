@@ -1,4 +1,5 @@
 import { spriteForGuest } from "@/lib/appearance"
+import { COUPLE } from "@/lib/event"
 import { GUEST_ATLAS } from "@/lib/guest-atlas"
 import type { Guest } from "@/lib/types"
 
@@ -163,10 +164,10 @@ export function Character({
   facing?: 1 | -1
 }) {
   if (role === "groom") {
-    return <PixelCouple href="/sprites/groom.png?v=4" label={name ?? "อ๋อง"} showName={showName} w={48} h={68} />
+    return <PixelCouple href="/sprites/groom.png?v=4" label={name ?? COUPLE.groomNickname} showName={showName} w={48} h={68} />
   }
   if (role === "bride") {
-    return <PixelCouple href="/sprites/bride.png?v=4" label={name ?? "แทตตี้"} showName={showName} w={48} h={68} />
+    return <PixelCouple href="/sprites/bride.png?v=4" label={name ?? COUPLE.brideNickname} showName={showName} w={48} h={68} />
   }
   return (
     <AtlasGuest

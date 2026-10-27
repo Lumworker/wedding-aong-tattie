@@ -1,11 +1,7 @@
+import { isThaiMobile } from "@/lib/phone"
 import type { Party, Wish } from "@/lib/types"
 
-/**
- * Persistence boundary. The UI talks to `guestStore`, which calls this.
- * Replace `createLocalWeddingRepository` with an HTTP implementation
- * that keeps the same methods when a backend exists.
- */
-export interface WeddingRepository {
+export type WeddingRepository = {
   readSessionPhone(): string | null
   writeSessionPhone(phone: string): void
   clearSessionPhone(): void
@@ -24,7 +20,7 @@ const WISH_MAX = 80
 
 const memory = new Map<string, string>()
 
-function readRaw(key: string): string | null {
+function readRaw(key: string) {
   try {
     return window.localStorage.getItem(key)
   } catch {
@@ -37,7 +33,7 @@ function writeRaw(key: string, value: string) {
   try {
     window.localStorage.setItem(key, value)
   } catch {
-    // Private mode or a full quota: keep the in-memory copy for this visit.
+    /* keep the in-memory copy */
   }
 }
 
@@ -46,106 +42,92 @@ function removeRaw(key: string) {
   try {
     window.localStorage.removeItem(key)
   } catch {
-    // Ignore storage failures; the memory map is already cleared.
+    /* ignore */
   }
 }
 
-function storageKeys(): string[] {
-  const keys = new Set(memory.keys())
+function parseJson<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback
   try {
-    for (let i = 0; i < window.localStorage.length; i += 1) {
-      const key = window.localStorage.key(i)
-      if (key) keys.add(key)
-    }
+    return JSON.parse(raw) as T
   } catch {
-    // localStorage unavailable
+    return fallback
   }
-  return [...keys]
 }
 
-function readCookiePhone(): string | null {
+function asParty(value: unknown): Party | null {
+  if (!value || typeof value !== "object") return null
+  const party = value as Party
+  if (typeof party.phone !== "string" || !Array.isArray(party.guests)) return null
+  return party
+}
+
+function asWishes(value: unknown): Wish[] {
+  if (!Array.isArray(value)) return []
+  return value.filter(
+    (wish): wish is Wish =>
+      Boolean(wish) &&
+      typeof wish.id === "string" &&
+      typeof wish.text === "string" &&
+      typeof wish.from === "string" &&
+      typeof wish.partyPhone === "string"
+  )
+}
+
+function cookiePhone() {
   if (typeof document === "undefined") return null
   const match = document.cookie.match(/(?:^|; )webding_phone=([^;]*)/)
-  if (!match) return null
-  const value = decodeURIComponent(match[1])
-  return /^0[689]\d{8}$/.test(value) ? value : null
+  const value = match ? decodeURIComponent(match[1]) : ""
+  return isThaiMobile(value) ? value : null
 }
 
-function writeCookiePhone(phone: string) {
+function setCookie(phone: string | null) {
   if (typeof document === "undefined") return
-  document.cookie = `${COOKIE}=${encodeURIComponent(phone)}; Path=/; Max-Age=31536000; SameSite=Lax`
-}
-
-function clearCookiePhone() {
-  if (typeof document === "undefined") return
-  document.cookie = `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
-}
-
-function parseWishes(raw: string | null): Wish[] {
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw) as Wish[]
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter(
-      (wish) =>
-        wish &&
-        typeof wish.id === "string" &&
-        typeof wish.text === "string" &&
-        typeof wish.from === "string" &&
-        typeof wish.partyPhone === "string"
-    )
-  } catch {
-    return []
-  }
-}
-
-function parseParty(raw: string | null): Party | null {
-  if (!raw) return null
-  try {
-    const parsed = JSON.parse(raw) as Party
-    if (!parsed || typeof parsed.phone !== "string" || !Array.isArray(parsed.guests)) return null
-    return parsed
-  } catch {
-    return null
-  }
+  document.cookie = phone
+    ? `${COOKIE}=${encodeURIComponent(phone)}; Path=/; Max-Age=31536000; SameSite=Lax`
+    : `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
 }
 
 export function createLocalWeddingRepository(): WeddingRepository {
   return {
     readSessionPhone() {
       const stored = readRaw(SESSION_KEY)
-      if (stored && /^0[689]\d{8}$/.test(stored)) return stored
-      return readCookiePhone()
+      return stored && isThaiMobile(stored) ? stored : cookiePhone()
     },
     writeSessionPhone(phone) {
       writeRaw(SESSION_KEY, phone)
-      writeCookiePhone(phone)
+      setCookie(phone)
     },
     clearSessionPhone() {
       removeRaw(SESSION_KEY)
-      clearCookiePhone()
+      setCookie(null)
     },
     readParty(phone) {
-      return parseParty(readRaw(`${PARTY_PREFIX}${phone}`))
+      return asParty(parseJson(readRaw(`${PARTY_PREFIX}${phone}`), null))
     },
     writeParty(party) {
       writeRaw(`${PARTY_PREFIX}${party.phone}`, JSON.stringify(party))
     },
     readAllParties() {
-      const parties: Party[] = []
-      for (const key of storageKeys()) {
-        if (!key.startsWith(PARTY_PREFIX)) continue
-        const party = parseParty(readRaw(key))
-        if (party) parties.push(party)
+      const keys = new Set(memory.keys())
+      try {
+        for (let i = 0; i < window.localStorage.length; i += 1) {
+          const key = window.localStorage.key(i)
+          if (key) keys.add(key)
+        }
+      } catch {
+        /* localStorage unavailable */
       }
-      return parties
+      return [...keys]
+        .filter((key) => key.startsWith(PARTY_PREFIX))
+        .map((key) => asParty(parseJson(readRaw(key), null)))
+        .filter((party): party is Party => party !== null)
     },
     readWishes() {
-      return parseWishes(readRaw(WISH_KEY)).slice(-WISH_MAX)
+      return asWishes(parseJson(readRaw(WISH_KEY), [])).slice(-WISH_MAX)
     },
     writeWish(wish) {
-      const next = [...parseWishes(readRaw(WISH_KEY)), wish].slice(-WISH_MAX)
-      writeRaw(WISH_KEY, JSON.stringify(next))
+      writeRaw(WISH_KEY, JSON.stringify([...asWishes(parseJson(readRaw(WISH_KEY), [])), wish].slice(-WISH_MAX)))
     },
   }
 }

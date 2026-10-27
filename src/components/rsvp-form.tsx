@@ -2,15 +2,16 @@
 
 import { FormEvent, useState } from "react"
 import { Minus, Plus } from "lucide-react"
-import { PetalField } from "@/components/petal-field"
+import { Choice } from "@/components/choice"
+import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PARTY_MAX, PARTY_MIN } from "@/lib/event"
+import { newId } from "@/lib/id"
 import type { AgeGroup, Attendance, Gender, Guest, Party } from "@/lib/types"
-import { cn } from "@/lib/utils"
 
-type DraftGuest = {
+type Draft = {
   id: string
   name: string
   gender: Gender | null
@@ -18,81 +19,8 @@ type DraftGuest = {
   attendance: Attendance
 }
 
-function createId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID()
-  return `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
-}
-
-function blankGuest(): DraftGuest {
-  return {
-    id: createId(),
-    name: "",
-    gender: null,
-    ageGroup: "adult",
-    attendance: "attending",
-  }
-}
-
-function fromGuest(guest: Guest): DraftGuest {
-  return {
-    id: guest.id,
-    name: guest.name,
-    gender: guest.gender,
-    ageGroup: guest.ageGroup,
-    attendance: guest.attendance,
-  }
-}
-
-function Choice<T extends string>({
-  legend,
-  name,
-  value,
-  onChange,
-  options,
-}: {
-  legend: string
-  name: string
-  value: T | null
-  onChange: (value: T) => void
-  options: { value: T; label: string; hint?: string }[]
-}) {
-  return (
-    <fieldset>
-      <legend className="mb-2 text-sm font-medium">{legend}</legend>
-      <div className={cn("grid gap-2", options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
-        {options.map((option) => {
-          const selected = value === option.value
-          return (
-            <label
-              key={option.value}
-              className={cn(
-                "cursor-pointer rounded-2xl border px-2 py-3 text-center transition-colors",
-                "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
-                selected
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-background text-foreground hover:bg-muted"
-              )}
-            >
-              <input
-                type="radio"
-                className="sr-only"
-                name={name}
-                value={option.value}
-                checked={selected}
-                onChange={() => onChange(option.value)}
-              />
-              <span className="block text-sm font-medium">{option.label}</span>
-              {option.hint ? (
-                <span className={cn("mt-0.5 block text-[11px] leading-4", selected ? "text-primary-foreground/80" : "text-muted-foreground")}>
-                  {option.hint}
-                </span>
-              ) : null}
-            </label>
-          )
-        })}
-      </div>
-    </fieldset>
-  )
+function blank(): Draft {
+  return { id: newId("guest"), name: "", gender: null, ageGroup: "adult", attendance: "attending" }
 }
 
 export function RsvpForm({
@@ -106,23 +34,24 @@ export function RsvpForm({
   onSubmit: (party: Party) => void
   onChangePhone: () => void
 }) {
-  const initial = party?.guests?.length ? party.guests.map(fromGuest) : [blankGuest()]
-  const [people, setPeople] = useState<DraftGuest[]>(initial)
+  const initial = party?.guests.length ? party.guests.map(fromGuest) : [blank()]
+  const [people, setPeople] = useState<Draft[]>(initial)
   const [count, setCount] = useState(initial.length)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [summary, setSummary] = useState<string | null>(null)
+  const visible = people.slice(0, count)
+  const coming = visible.filter((person) => person.attendance === "attending").length
 
   function setCountTo(next: number) {
     const clamped = Math.min(PARTY_MAX, Math.max(PARTY_MIN, next))
-    setPeople((current) => {
-      if (current.length >= clamped) return current
-      return [...current, ...Array.from({ length: clamped - current.length }, blankGuest)]
-    })
+    setPeople((current) =>
+      current.length >= clamped ? current : [...current, ...Array.from({ length: clamped - current.length }, blank)]
+    )
     setCount(clamped)
     setSummary(null)
   }
 
-  function update(id: string, patch: Partial<DraftGuest>) {
+  function update(id: string, patch: Partial<Draft>) {
     setPeople((current) => current.map((person) => (person.id === id ? { ...person, ...patch } : person)))
     setErrors((current) => {
       if (!current[id]) return current
@@ -135,7 +64,6 @@ export function RsvpForm({
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const visible = people.slice(0, count)
     const nextErrors: Record<string, string> = {}
     for (const person of visible) {
       if (!person.name.trim()) nextErrors[person.id] = "กรุณากรอกชื่อ"
@@ -166,24 +94,16 @@ export function RsvpForm({
     })
   }
 
-  const visible = people.slice(0, count)
-  const coming = visible.filter((person) => person.attendance === "attending").length
-
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-8 sm:px-6">
-      <PetalField />
-      <div className="relative z-10 flex flex-1 flex-col">
+    <ScreenShell width="max-w-xl" className="px-4 sm:px-6">
       <header>
         <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          กรอกชื่อ เพศ วัย และการร่วมงานของทุกคนในคณะ
-          โบสถ์รองรับแขกทั้งงานได้กว่า 100 คน — แบบนี้เก็บเฉพาะคณะของคุณ ครั้งละไม่เกิน {PARTY_MAX} คน
+          กรอกชื่อ เพศ วัย และการร่วมงานของทุกคนในคณะ โบสถ์รองรับแขกทั้งงานได้กว่า 100 คน — แบบนี้เก็บเฉพาะคณะของคุณ ครั้งละไม่เกิน {PARTY_MAX} คน
         </p>
-        {party?.guests?.length ? (
-          <p className="mt-2 text-sm leading-6 text-sage-deep">
-            คณะนี้เคยบันทึกแล้ว ตรวจรายชื่อแล้วกดเข้างานได้
-          </p>
+        {party?.guests.length ? (
+          <p className="mt-2 text-sm leading-6 text-sage-deep">คณะนี้เคยบันทึกแล้ว ตรวจรายชื่อแล้วกดเข้างานได้</p>
         ) : null}
         <button
           type="button"
@@ -199,7 +119,9 @@ export function RsvpForm({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium">จำนวนคนในคณะ</p>
-              <p className="text-xs text-muted-foreground">ได้ตั้งแต่ {PARTY_MIN} ถึง {PARTY_MAX} คน</p>
+              <p className="text-xs text-muted-foreground">
+                ได้ตั้งแต่ {PARTY_MIN} ถึง {PARTY_MAX} คน
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -311,7 +233,16 @@ export function RsvpForm({
           </Button>
         </div>
       </form>
-      </div>
-    </div>
+    </ScreenShell>
   )
+}
+
+function fromGuest(guest: Guest): Draft {
+  return {
+    id: guest.id,
+    name: guest.name,
+    gender: guest.gender,
+    ageGroup: guest.ageGroup,
+    attendance: guest.attendance,
+  }
 }
