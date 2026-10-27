@@ -17,34 +17,12 @@ function ArchWindow({ x, y, w, h }: { x: number; y: number; w: number; h: number
     <g>
       <path d={d} fill="#6A4E3C" />
       <path
-        d={`M${x + 3} ${y + h - 3} V${y + r} A${r - 3} ${r - 3} 0 0 1 ${x + w - 3} ${y + r} V${y + h - 3} Z`}
+        d={`M${x + 4} ${y + h - 4} V${y + r} A${r - 4} ${r - 4} 0 0 1 ${x + w - 4} ${y + r} V${y + h - 4} Z`}
         fill="#F8E2B8"
         className="wd-glow"
       />
-      <path d={`M${x + w / 2} ${y + 4} V${y + h - 3}`} stroke="#E7C4C4" strokeWidth="1.2" opacity="0.7" />
-      <path d={`M${x + 4} ${y + r + 4} H${x + w - 4}`} stroke="#8FA08A" strokeWidth="1.2" opacity="0.65" />
-    </g>
-  )
-}
-
-function Tree({ x, y, blossom = false }: { x: number; y: number; blossom?: boolean }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <g className="wd-sway">
-        <rect x="-6" y="-10" width="12" height="54" rx="4" fill="#6E5344" />
-        <ellipse cx="-16" cy="-28" rx="24" ry="20" fill="#7E9A78" />
-        <ellipse cx="16" cy="-24" rx="22" ry="18" fill="#8FA98A" />
-        <ellipse cx="0" cy="-46" rx="26" ry="22" fill="#6E8F6C" />
-        <ellipse cx="0" cy="-30" rx="18" ry="14" fill="#A3C09A" opacity="0.65" />
-        {blossom ? (
-          <>
-            <circle cx="-12" cy="-40" r="3" fill="#F0C9C6" />
-            <circle cx="8" cy="-50" r="2.6" fill="#E7C4C4" />
-            <circle cx="14" cy="-30" r="2.4" fill="#FFFCF8" />
-            <circle cx="-4" cy="-24" r="2.2" fill="#E7B4B8" />
-          </>
-        ) : null}
-      </g>
+      <path d={`M${x + w / 2} ${y + 6} V${y + h - 4}`} stroke="#E7C4C4" strokeWidth="1.4" opacity="0.7" />
+      <path d={`M${x + 6} ${y + r + 6} H${x + w - 6}`} stroke="#8FA08A" strokeWidth="1.4" opacity="0.65" />
     </g>
   )
 }
@@ -55,7 +33,7 @@ export function SceneBackdrop() {
       <defs>
         <linearGradient id="wd-sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#F8D5CC" />
-          <stop offset="46%" stopColor="#F7E6DA" />
+          <stop offset="70%" stopColor="#F7E6DA" />
           <stop offset="100%" stopColor="#E4EFE3" />
         </linearGradient>
         <radialGradient id="wd-sun" cx="50%" cy="50%" r="50%">
@@ -63,154 +41,134 @@ export function SceneBackdrop() {
           <stop offset="48%" stopColor="#F6C9B4" stopOpacity="0.35" />
           <stop offset="100%" stopColor="#F6C9B4" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="wd-lawn" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#D5E6D2" />
-          <stop offset="100%" stopColor="#C5D8C2" />
-        </linearGradient>
       </defs>
 
       <rect width="640" height="900" fill="url(#wd-sky)" />
-      <circle cx="470" cy="168" r="130" fill="url(#wd-sun)" />
+      <circle cx="520" cy="70" r="90" fill="url(#wd-sun)" />
 
-      <g transform="translate(120 92)">
+      <g transform="translate(70 36)">
         <g className="wd-cloud">
-          <ellipse cx="0" cy="0" rx="40" ry="16" fill="#fff" opacity="0.8" />
-          <ellipse cx="-26" cy="6" rx="22" ry="12" fill="#fff" opacity="0.8" />
-          <ellipse cx="28" cy="7" rx="26" ry="13" fill="#fff" opacity="0.8" />
-        </g>
-      </g>
-      <g transform="translate(430 70)">
-        <g className="wd-cloud" style={{ animationDelay: "-6s", animationDuration: "26s" }}>
-          <ellipse cx="0" cy="0" rx="32" ry="13" fill="#fff" opacity="0.72" />
-          <ellipse cx="-20" cy="5" rx="16" ry="10" fill="#fff" opacity="0.72" />
-          <ellipse cx="22" cy="6" rx="18" ry="10" fill="#fff" opacity="0.72" />
-        </g>
-      </g>
-
-      <g transform="translate(90 128)" className="wd-bird">
-        <path d="M-8 2 L0 -3 L8 2" fill="none" stroke="#8F5E58" strokeWidth="1.4" strokeLinecap="round" />
-      </g>
-      <g transform="translate(150 108)" className="wd-bird" style={{ animationDelay: "-7s" }}>
-        <path d="M-7 2 L0 -2 L7 2" fill="none" stroke="#5E564F" strokeWidth="1.3" strokeLinecap="round" />
-      </g>
-
-      <path d="M0 500 C140 450 250 490 340 470 C450 446 540 490 640 460 V560 H0 Z" fill="#D7E7D4" />
-      <path d="M0 545 C180 510 320 560 460 530 C540 514 600 540 640 528 V640 H0 Z" fill="#C9DCC6" />
-
-      <rect x="0" y="590" width="640" height="310" fill="url(#wd-lawn)" />
-      <path d="M292 648 L348 648 L392 900 L248 900 Z" fill="#EFE3D2" />
-      <path d="M308 648 L332 648 L348 900 L292 900 Z" fill="#E7D7C2" opacity="0.65" />
-
-      <Tree x={78} y={560} blossom />
-      <Tree x={560} y={548} />
-
-      {/* Bell tower */}
-      <g transform="translate(168 176)">
-        <path d="M-4 78 L17 36 L38 78 Z" fill="#C17B73" />
-        <rect x="2" y="76" width="30" height="150" fill="#F4EADF" />
-        <rect x="8" y="96" width="18" height="26" rx="8" fill="#6A4E3C" />
-        <g transform="translate(17 112)">
-          <g className="wd-bell">
-            <rect x="-1" y="-10" width="2" height="10" fill="#A68545" />
-            <path d="M-7 0 L-9 14 Q0 20 9 14 L7 0 Z" fill="#D4B06A" />
-            <circle cx="0" cy="16" r="2" fill="#8A6A32" />
-          </g>
+          <ellipse cx="0" cy="0" rx="36" ry="14" fill="#fff" opacity="0.78" />
+          <ellipse cx="-22" cy="5" rx="18" ry="10" fill="#fff" opacity="0.78" />
+          <ellipse cx="24" cy="6" rx="20" ry="11" fill="#fff" opacity="0.78" />
         </g>
       </g>
 
       {/* Roof */}
-      <path d="M118 318 L320 132 L522 318 L470 318 L320 196 L170 318 Z" fill="#C17B73" />
-      <path d="M170 318 L320 196 L470 318 L430 318 L320 230 L210 318 Z" fill="#D08A82" opacity="0.55" />
-      <path d="M320 108 V138" stroke="#D4B06A" strokeWidth="3" strokeLinecap="round" />
-      <path d="M310 118 H330" stroke="#D4B06A" strokeWidth="3" strokeLinecap="round" />
+      <path d="M18 168 L320 18 L622 168 L560 168 L320 72 L80 168 Z" fill="#C17B73" />
+      <path d="M80 168 L320 72 L560 168 L510 168 L320 102 L130 168 Z" fill="#D08A82" opacity="0.55" />
+      <path d="M320 4 V32" stroke="#D4B06A" strokeWidth="4" strokeLinecap="round" />
+      <path d="M306 16 H334" stroke="#D4B06A" strokeWidth="4" strokeLinecap="round" />
+
+      {/* Bell tower */}
+      <g transform="translate(86 52)">
+        <path d="M-6 86 L22 36 L50 86 Z" fill="#C17B73" />
+        <rect x="4" y="84" width="36" height="92" fill="#F4EADF" />
+        <rect x="12" y="98" width="20" height="30" rx="10" fill="#6A4E3C" />
+        <g transform="translate(22 116)">
+          <g className="wd-bell">
+            <rect x="-1.5" y="-12" width="3" height="12" fill="#A68545" />
+            <path d="M-8 0 L-10 16 Q0 24 10 16 L8 0 Z" fill="#D4B06A" />
+            <circle cx="0" cy="18" r="2.2" fill="#8A6A32" />
+          </g>
+        </g>
+      </g>
 
       {/* Side walls */}
-      <path d="M196 312 L150 348 L150 608 L196 578 Z" fill="#E7D5C4" />
-      <path d="M444 312 L490 348 L490 608 L444 578 Z" fill="#E4D0BE" />
+      <path d="M86 164 L18 214 L18 812 L86 772 Z" fill="#E7D5C4" />
+      <path d="M554 164 L622 214 L622 812 L554 772 Z" fill="#E4D0BE" />
 
       {/* Nave */}
-      <rect x="196" y="312" width="248" height="300" fill="#F7F1E8" />
-      <g transform="translate(320 236)">
-        <circle r="30" fill="#E7D3C4" />
-        <circle r="23" fill="#F8E7DC" />
+      <rect x="86" y="164" width="468" height="616" fill="#F7F1E8" />
+      <g transform="translate(320 132)">
+        <circle r="38" fill="#E7D3C4" />
+        <circle r="29" fill="#F8E7DC" />
         {Array.from({ length: 8 }).map((_, index) => (
           <ellipse
             key={index}
             cx="0"
-            cy="-12"
-            rx="3.6"
-            ry="8"
+            cy="-14"
+            rx="4.4"
+            ry="10"
             fill={index % 2 === 0 ? "#E7C4C4" : "#8FA08A"}
             opacity="0.9"
             transform={`rotate(${index * 45})`}
           />
         ))}
-        <circle r="4" fill="#D4B06A" />
+        <circle r="5" fill="#D4B06A" />
       </g>
 
-      <ArchWindow x={230} y={332} w={46} h={78} />
-      <ArchWindow x={364} y={332} w={46} h={78} />
+      <ArchWindow x={128} y={188} w={70} h={118} />
+      <ArchWindow x={246} y={188} w={70} h={118} />
+      <ArchWindow x={324} y={188} w={70} h={118} />
+      <ArchWindow x={442} y={188} w={70} h={118} />
 
-      {Array.from({ length: 12 }).map((_, index) => (
+      {Array.from({ length: 16 }).map((_, index) => (
         <circle
           key={index}
-          cx={168 + index * 28}
-          cy={326 + Math.sin(index * 0.7) * 3}
-          r="2.6"
+          cx={92 + index * 29}
+          cy={172 + Math.sin(index * 0.7) * 3}
+          r="3"
           fill="#F8E2B8"
           className="wd-glow"
-          style={{ animationDelay: `${index * 0.18}s` }}
+          style={{ animationDelay: `${index * 0.16}s` }}
         />
       ))}
 
-      {/* Floor, window light, and pews */}
-      <rect x="186" y="500" width="268" height="116" rx="6" fill="#E4C8A4" />
-      {Array.from({ length: 8 }).map((_, index) => (
+      {/* Nave floor */}
+      <rect x="78" y="512" width="484" height="268" fill="#E4C8A4" />
+      {Array.from({ length: 12 }).map((_, index) => (
         <line
           key={index}
-          x1="196"
-          x2="444"
-          y1={508 + index * 13}
-          y2={508 + index * 13}
+          x1="96"
+          x2="544"
+          y1={524 + index * 20}
+          y2={524 + index * 20}
           stroke="#D3B48A"
           strokeWidth="1"
         />
       ))}
-      <polygon points="253,410 276,410 318,616 228,616" fill="#F8E2B8" opacity="0.16" />
-      <polygon points="364,410 387,410 430,616 340,616" fill="#F8E2B8" opacity="0.12" />
-      <rect x="288" y="500" width="64" height="116" fill="#E7C4C4" opacity="0.42" />
-      <rect x="288" y="500" width="2" height="116" fill="#F7F1EA" opacity="0.7" />
-      <rect x="350" y="500" width="2" height="116" fill="#F7F1EA" opacity="0.7" />
-      <ellipse cx="320" cy="562" rx="88" ry="18" fill="#F8E2B8" opacity="0.22" className="wd-glow" />
+      <rect x="286" y="512" width="68" height="268" fill="#E7C4C4" opacity="0.38" />
+      <rect x="286" y="512" width="2" height="268" fill="#F7F1EA" opacity="0.75" />
+      <rect x="352" y="512" width="2" height="268" fill="#F7F1EA" opacity="0.75" />
+      <polygon points="128,306 198,306 250,780 78,780" fill="#F8E2B8" opacity="0.14" />
+      <polygon points="442,306 512,306 562,780 390,780" fill="#F8E2B8" opacity="0.11" />
 
-      {[0, 1, 2].map((index) => (
+      {[0, 1, 2, 3, 4].map((index) => (
         <g key={index}>
-          <rect x="206" y={508 + index * 24} width="74" height="11" rx="3" fill="#7A5642" />
-          <rect x="360" y={508 + index * 24} width="74" height="11" rx="3" fill="#7A5642" />
+          <rect x="102" y={536 + index * 42} width="168" height="14" rx="3" fill="#7A5642" />
+          <rect x="370" y={536 + index * 42} width="168" height="14" rx="3" fill="#7A5642" />
         </g>
       ))}
 
-      {/* Altar */}
-      <g transform="translate(320 492)">
-        <rect x="-40" y="-6" width="80" height="10" rx="2" fill="#E7D5C4" />
-        <rect x="-34" y="-26" width="68" height="22" rx="3" fill="#FFFCF8" />
-        <rect x="-3" y="-52" width="6" height="26" rx="1" fill="#D4B06A" />
-        <rect x="-10" y="-46" width="20" height="5" rx="1" fill="#D4B06A" />
-        <Flower x={-28} y={-30} color="#E7C4C4" r={3.4} />
-        <Flower x={28} y={-28} color="#FFFCF8" r={3.2} />
-        <Flower x={-18} y={-36} color="#F7F1EA" r={2.4} />
-        <Flower x={18} y={-36} color="#E7B4B8" r={2.4} />
+      {/* Sanctuary platform — couple only */}
+      <rect x="148" y="488" width="344" height="28" fill="#D9B48A" />
+      <rect x="132" y="508" width="376" height="12" fill="#C9A072" />
+      <rect x="116" y="518" width="408" height="10" fill="#B89064" />
+      <rect x="168" y="398" width="304" height="92" fill="#EFE3D4" />
+      <rect x="168" y="398" width="304" height="8" fill="#F7F1EA" />
+      <path d="M168 490 H472" stroke="#A68545" strokeWidth="3" />
+      <ellipse cx="320" cy="458" rx="118" ry="16" fill="#F8E2B8" opacity="0.28" className="wd-glow" />
+
+      {/* Altar behind the couple */}
+      <g transform="translate(320 412)">
+        <rect x="-52" y="-8" width="104" height="12" rx="2" fill="#E7D5C4" />
+        <rect x="-44" y="-32" width="88" height="26" rx="3" fill="#FFFCF8" />
+        <rect x="-4" y="-62" width="8" height="32" rx="1" fill="#D4B06A" />
+        <rect x="-14" y="-54" width="28" height="6" rx="1" fill="#D4B06A" />
+        <Flower x={-36} y={-36} color="#E7C4C4" r={3.6} />
+        <Flower x={36} y={-34} color="#FFFCF8" r={3.4} />
+        <Flower x={-22} y={-44} color="#F7F1EA" r={2.6} />
+        <Flower x={22} y={-44} color="#E7B4B8" r={2.6} />
       </g>
 
-      {/* Steps */}
-      <rect x="214" y="616" width="212" height="14" rx="2" fill="#EFE3D4" />
-      <rect x="192" y="630" width="256" height="14" rx="2" fill="#E6D5C2" />
-      <rect x="170" y="644" width="300" height="16" rx="3" fill="#DCC9B2" />
-
-      <Flower x={168} y={668} color="#E7C4C4" />
-      <Flower x={188} y={676} color="#FFFCF8" r={2.6} />
-      <Flower x={452} y={668} color="#E7C4C4" />
-      <Flower x={474} y={678} color="#F7F1EA" r={2.6} />
+      {/* Door threshold, tiny yard */}
+      <rect x="96" y="780" width="448" height="22" fill="#EFE3D4" />
+      <rect x="64" y="800" width="512" height="18" fill="#E6D5C2" />
+      <rect x="0" y="816" width="640" height="84" fill="#C5D8C2" />
+      <path d="M292 818 L348 818 L372 900 L268 900 Z" fill="#EFE3D2" />
+      <Flower x={118} y={838} color="#E7C4C4" />
+      <Flower x={522} y={838} color="#FFFCF8" r={2.8} />
     </g>
   )
 }
@@ -218,18 +176,8 @@ export function SceneBackdrop() {
 export function SceneForeground() {
   return (
     <g>
-      <g className="wd-sway" style={{ transformOrigin: "80px 900px" }}>
-        <ellipse cx="46" cy="886" rx="42" ry="16" fill="#7E9A78" />
-        <ellipse cx="78" cy="894" rx="28" ry="12" fill="#6E8F6C" />
-      </g>
-      <g className="wd-sway" style={{ animationDelay: "-2s", transformOrigin: "560px 900px" }}>
-        <ellipse cx="600" cy="888" rx="40" ry="16" fill="#8FA98A" />
-        <ellipse cx="566" cy="896" rx="26" ry="12" fill="#6E8F6C" />
-      </g>
-      <Flower x={36} y={868} color="#E7C4C4" r={3} />
-      <Flower x={108} y={888} color="#FFFCF8" r={2.8} />
-      <Flower x={534} y={886} color="#E7C4C4" r={3} />
-      <Flower x={602} y={868} color="#F7F1EA" r={2.6} />
+      <ellipse cx="36" cy="888" rx="34" ry="12" fill="#7E9A78" />
+      <ellipse cx="604" cy="888" rx="34" ry="12" fill="#8FA98A" />
     </g>
   )
 }

@@ -88,7 +88,7 @@ function Hearts({ reduced }: { reduced: boolean }) {
   const x = (SCENE.groom.x + SCENE.bride.x) / 2
   if (reduced) {
     return (
-      <text x={x} y="470" textAnchor="middle" fill="#C48984" fontSize="16" opacity="0.85">
+      <text x={x} y="390" textAnchor="middle" fill="#C48984" fontSize="16" opacity="0.85">
         ♥
       </text>
     )
@@ -102,8 +102,8 @@ function Hearts({ reduced }: { reduced: boolean }) {
           textAnchor="middle"
           fill="#C48984"
           fontSize={index === 0 ? 16 : 11}
-          initial={{ opacity: 0, y: 500 }}
-          animate={{ y: [508, 458], opacity: [0, 1, 0] }}
+          initial={{ opacity: 0, y: 430 }}
+          animate={{ y: [438, 388], opacity: [0, 1, 0] }}
           transition={{
             duration: 3.8,
             repeat: Infinity,
@@ -141,7 +141,7 @@ export function VenueCanvas({
         ref={svgRef}
         viewBox={`0 0 ${SCENE.width} ${SCENE.height}`}
         className="h-full w-full font-sans"
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio="xMidYMid slice"
         aria-hidden="true"
       >
         <SceneBackdrop />

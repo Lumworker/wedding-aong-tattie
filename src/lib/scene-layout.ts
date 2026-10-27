@@ -4,28 +4,32 @@ import type { Stop } from "@/lib/walk"
 export const SCENE = {
   width: 640,
   height: 900,
-  groom: { x: 268, y: 534 },
-  bride: { x: 374, y: 534 },
+  groom: { x: 268, y: 458 },
+  bride: { x: 372, y: 458 },
+} as const
+
+/** Raised sanctuary. Guests stay on the nave floor below this line. */
+export const PLATFORM = {
+  y: 458,
+  edge: 512,
+  left: 168,
+  right: 472,
 } as const
 
 const AISLE_LANES = [
-  { y: 576, x0: 238, x1: 402 },
-  { y: 590, x0: 226, x1: 414 },
-  { y: 604, x0: 232, x1: 408 },
-  { y: 616, x0: 244, x1: 396 },
+  { y: 548, x0: 118, x1: 522 },
+  { y: 582, x0: 108, x1: 532 },
+  { y: 616, x0: 102, x1: 538 },
+  { y: 650, x0: 108, x1: 532 },
+  { y: 684, x0: 118, x1: 522 },
+  { y: 718, x0: 132, x1: 508 },
 ]
 
 const OUTSIDE_SPOTS = [
-  { x: 92, y: 728 },
-  { x: 140, y: 804 },
-  { x: 74, y: 868 },
-  { x: 548, y: 722 },
-  { x: 498, y: 798 },
-  { x: 574, y: 862 },
-  { x: 198, y: 870 },
-  { x: 446, y: 874 },
-  { x: 154, y: 758 },
-  { x: 488, y: 746 },
+  { x: 86, y: 848 },
+  { x: 148, y: 862 },
+  { x: 554, y: 848 },
+  { x: 492, y: 862 },
 ]
 
 export type PlacedGuest = {
@@ -38,10 +42,10 @@ export type PlacedGuest = {
 }
 
 function patrol(lane: (typeof AISLE_LANES)[number], slot: number, phase: number): Stop[] {
-  const inset = (slot % 3) * 10
+  const inset = (slot % 3) * 14
   const left = lane.x0 + inset
   const right = lane.x1 - inset
-  const mid = Math.round((left + right) / 2 + ((phase % 2) * 2 - 1) * 18)
+  const mid = Math.round((left + right) / 2 + ((phase % 2) * 2 - 1) * 22)
   if (phase % 2 === 0) {
     return [
       { x: left, y: lane.y, wait: 0.35 },
@@ -72,8 +76,8 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
     const child = guest.ageGroup === "child"
     return {
       guest,
-      path: patrol(lane, slot, index),
-      speed: 36 + (index % 4) * 7,
+      path: patrol(lane, slot, index).map((stop) => ({ ...stop, y: Math.max(stop.y, PLATFORM.edge + 16) })),
+      speed: 40 + (index % 4) * 8,
       scale: child ? 0.72 : 0.88,
       delay: index * 0.55,
       mood: "walk" as const,
@@ -83,15 +87,14 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
   const outside = absent.map((guest, index) => {
     const spot = OUTSIDE_SPOTS[index % OUTSIDE_SPOTS.length]
     const slot = Math.floor(index / OUTSIDE_SPOTS.length)
-    const x = spot.x + (slot % 2 === 0 ? slot * 12 : -slot * 12)
-    const y = spot.y - slot * 8
+    const x = spot.x + (slot % 2 === 0 ? slot * 10 : -slot * 10)
+    const y = spot.y
     const child = guest.ageGroup === "child"
-    const near = y > 820 ? 1.05 : 1
     return {
       guest,
       path: [{ x, y, wait: 8 }],
       speed: 20,
-      scale: (child ? 0.72 : 0.88) * near,
+      scale: child ? 0.68 : 0.82,
       delay: index * 0.17,
       mood: "cheer" as const,
     }

@@ -101,7 +101,7 @@ export function VenueScene({
       <section
         id="venue"
         aria-labelledby="venue-title"
-        className="relative min-h-[74dvh] bg-[linear-gradient(180deg,#f8d5cc_0%,#f7e6da_42%,#d5e6d2_100%)] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
+        className="relative min-h-[88dvh] h-[88dvh] overflow-hidden bg-[linear-gradient(180deg,#f8d5cc_0%,#f7e6da_42%,#d5e6d2_100%)] sm:min-h-[90dvh] sm:h-[90dvh] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
       >
         <h2 id="venue-title" className="sr-only">
           ฉากงานมงคลสมรสของ {COUPLE.groomNickname} และ {COUPLE.brideNickname}
@@ -136,7 +136,7 @@ export function VenueScene({
       <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
         <p className="text-sm leading-6 text-muted-foreground lg:hidden">บัญชีแขก {formatThaiMobile(phone)}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          แมวที่มางานเดินบนทางเดิน แมวที่มาไม่ได้ส่งใจจากสนามด้านหน้า
+          แมวที่มางานเดินในโถงโบสถ์ ขึ้นแท่นบ่าวสาวไม่ได้ แมวที่มาไม่ได้ส่งใจที่ธรณีประตู
         </p>
         <RosterGroup title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
         {others.length > 0 ? <RosterGroup title="แขกบนเครื่องนี้" guests={others} /> : null}
