@@ -27,56 +27,40 @@ function Nameplate({ label, y, highlight }: { label: string; y: number; highligh
   )
 }
 
-function PixelGroom({ label, highlight, showName }: { label: string; highlight: boolean; showName: boolean }) {
-  return (
-    <g>
-      {label ? <title>{label}</title> : null}
-      <ellipse cx="0" cy="4" rx="15" ry="3.4" fill="#2A2623" opacity="0.2" />
-      {highlight ? (
-        <ellipse cx="0" cy="-40" rx="24" ry="42" fill="none" stroke="#B8956A" strokeWidth="1.3" className="wd-ring" />
-      ) : null}
-      <g className="is-idle">
-        <g className="wd-bob">
-          <image
-            href="/sprites/groom.png"
-            x="-23"
-            y="-82"
-            width="46"
-            height="82"
-            style={{ imageRendering: "pixelated" }}
-          />
-        </g>
-      </g>
-      {showName && label ? <Nameplate label={label} y={-90} highlight /> : null}
-    </g>
-  )
-}
+const COUPLE_SPRITE = { w: 50, h: 85 }
 
-function PixelBride({ label, highlight, showName }: { label: string; highlight: boolean; showName: boolean }) {
+function PixelCouple({
+  href,
+  label,
+  highlight,
+  showName,
+}: {
+  href: string
+  label: string
+  highlight: boolean
+  showName: boolean
+}) {
+  const { w, h } = COUPLE_SPRITE
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      <ellipse cx="0" cy="4" rx="15" ry="3.4" fill="#2A2623" opacity="0.2" />
+      <ellipse cx="0" cy="3" rx="14" ry="3.2" fill="#2A2623" opacity="0.18" />
       {highlight ? (
-        <ellipse cx="0" cy="-40" rx="24" ry="42" fill="none" stroke="#B8956A" strokeWidth="1.3" className="wd-ring" />
+        <ellipse cx="0" cy={-h / 2} rx="22" ry={h / 2 + 4} fill="none" stroke="#B8956A" strokeWidth="1.3" className="wd-ring" />
       ) : null}
       <g className="is-idle">
         <g className="wd-bob">
-          <rect x="-12" y="-20" width="24" height="18" fill="#F7F1EA" />
-          <rect x="-14" y="-6" width="28" height="8" fill="#FFFCF8" />
-          <rect x="-8" y="2" width="6" height="3" fill="#F4E7E4" />
-          <rect x="2" y="2" width="6" height="3" fill="#F4E7E4" />
           <image
-            href="/sprites/bride.png"
-            x="-20"
-            y="-76"
-            width="40"
-            height="58"
+            href={href}
+            x={-w / 2}
+            y={-h}
+            width={w}
+            height={h}
             style={{ imageRendering: "pixelated" }}
           />
         </g>
       </g>
-      {showName && label ? <Nameplate label={label} y={-88} highlight /> : null}
+      {showName && label ? <Nameplate label={label} y={-h - 8} highlight /> : null}
     </g>
   )
 }
@@ -114,12 +98,12 @@ function CatGuest({
   return (
     <g>
       {label ? <title>{label}</title> : null}
+      {showName && label ? <Nameplate label={label} y={-34} highlight={highlight} /> : null}
+      <g transform={`scale(${facing * 0.56} 0.56)`}>
       <ellipse cx="0" cy="3" rx={highlight ? 14 : 11} ry="3.2" fill="#2A2623" opacity="0.2" />
       {highlight ? (
         <ellipse cx="0" cy="-22" rx="18" ry="26" fill="none" stroke="#B8956A" strokeWidth="1.2" className="wd-ring" />
       ) : null}
-      {showName && label ? <Nameplate label={label} y={-62} highlight={highlight} /> : null}
-      <g transform={`scale(${facing} 1)`}>
         <g className={moodClass} style={{ ["--wd-step" as string]: step }}>
           <g className="wd-bob">
             <g className="wd-tail" transform="translate(12 -8)">
@@ -193,10 +177,10 @@ export function Character({
   facing?: 1 | -1
 }) {
   if (role === "groom") {
-    return <PixelGroom label={name ?? "Chonprakun"} highlight={highlight} showName={showName} />
+    return <PixelCouple href="/sprites/groom.png?v=2" label={name ?? "Chonprakun"} highlight={highlight} showName={showName} />
   }
   if (role === "bride") {
-    return <PixelBride label={name ?? "แทต"} highlight={highlight} showName={showName} />
+    return <PixelCouple href="/sprites/bride.png?v=2" label={name ?? "แทต"} highlight={highlight} showName={showName} />
   }
   return (
     <CatGuest

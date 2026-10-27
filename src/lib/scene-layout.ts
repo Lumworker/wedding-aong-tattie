@@ -74,7 +74,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       guest,
       path: patrol(lane, slot, index),
       speed: 36 + (index % 4) * 7,
-      scale: child ? 0.78 : 1,
+      scale: child ? 0.72 : 0.88,
       delay: index * 0.55,
       mood: "walk" as const,
     }
@@ -91,7 +91,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       guest,
       path: [{ x, y, wait: 8 }],
       speed: 20,
-      scale: (child ? 0.78 : 1) * near,
+      scale: (child ? 0.72 : 0.88) * near,
       delay: index * 0.17,
       mood: "cheer" as const,
     }
