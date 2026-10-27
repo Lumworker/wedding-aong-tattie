@@ -1,17 +1,28 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useSyncExternalStore } from "react"
 import { motion } from "framer-motion"
-import { GuestRoster } from "@/components/guest-roster"
+import { PartySummary } from "@/components/guest-roster"
 import { Button } from "@/components/ui/button"
 import { EventTitle } from "@/components/event-title"
 import { VenueCanvas } from "@/components/venue/venue-canvas"
-import { WishField } from "@/components/venue/wish-field"
 import { WishComposer } from "@/components/wish-composer"
 import { COUPLE, VENUE_MAP } from "@/lib/event"
 import { guestStore } from "@/lib/guest-store"
 import { newId } from "@/lib/id"
+import { formatThaiMobile } from "@/lib/phone"
 import type { Guest, Wish } from "@/lib/types"
+
+function useIsAdmin() {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("popstate", onStoreChange)
+      return () => window.removeEventListener("popstate", onStoreChange)
+    },
+    () => new URLSearchParams(window.location.search).has("admin"),
+    () => false
+  )
+}
 
 function HudToggle({
   on,
@@ -37,6 +48,17 @@ function HudToggle({
   )
 }
 
+function StatChip({ label, value, tone }: { label: string; value: number; tone: "sage" | "blush" }) {
+  return (
+    <div className="min-w-0 flex-1 rounded-2xl border border-border bg-card px-3 py-2.5">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className={`mt-0.5 font-display text-3xl leading-none ${tone === "sage" ? "text-sage-deep" : "text-rose"}`}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
 export function VenueScene({
   guests,
   wishes,
@@ -50,90 +72,116 @@ export function VenueScene({
   onEdit: () => void
   onChangePhone: () => void
 }) {
-  const [showNames, setShowNames] = useState(false)
+  const isAdmin = useIsAdmin()
   const [showWishes, setShowWishes] = useState(true)
   const mine = useMemo(() => guests.filter((guest) => guest.partyPhone === phone), [guests, phone])
-  const others = useMemo(() => guests.filter((guest) => guest.partyPhone !== phone), [guests, phone])
   const inside = guests.filter((guest) => guest.attendance === "attending").length
+  const unsure = guests.length - inside
 
   return (
-    <div className="min-h-dvh bg-background lg:grid lg:h-dvh lg:grid-cols-[minmax(280px,400px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-md lg:static lg:col-start-1 lg:row-start-1 lg:border-r lg:border-b-0 lg:px-8 lg:py-8">
+    <div className="min-h-dvh bg-background lg:grid lg:h-dvh lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-md lg:static lg:col-start-1 lg:row-start-1 lg:border-r lg:border-b-0 lg:px-6 lg:pt-6 lg:pb-4">
         <div className="lg:hidden">
           <EventTitle variant="compact" />
         </div>
         <div className="hidden lg:block">
-          <EventTitle variant="panel" />
+          <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
+          <h1 className="mt-2 font-display text-4xl leading-none text-ink">
+            {COUPLE.groomNickname}
+            <span className="px-2 text-rose">&</span>
+            {COUPLE.brideNickname}
+          </h1>
+          <p className="mt-2 font-serif text-base text-ink">{COUPLE.dateThai}</p>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2 lg:mt-6">
-          <Button type="button" variant="outline" className="h-10 rounded-full bg-card px-4" onClick={onEdit}>
-            แก้ไขการตอบรับ
-          </Button>
-          <Button type="button" variant="ghost" className="h-10 rounded-full px-4" onClick={onChangePhone}>
-            ใช้เบอร์อื่น
-          </Button>
-        </div>
-        <p className="mt-3 hidden text-xs text-muted-foreground lg:block">ลงทะเบียนด้วยเบอร์บนเครื่องนี้แล้ว</p>
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          <span aria-hidden="true">📱</span>
+          {formatThaiMobile(phone)}
+        </p>
       </header>
 
       <section
         id="venue"
         aria-labelledby="venue-title"
-        className="relative h-[88dvh] min-h-[88dvh] overflow-hidden bg-[#121018] sm:h-[90dvh] sm:min-h-[90dvh] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
+        className="relative h-[72dvh] min-h-[72dvh] overflow-hidden bg-[#121018] sm:h-[78dvh] sm:min-h-[78dvh] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
       >
         <h2 id="venue-title" className="sr-only">
           ฉากงานมงคลสมรสของ {COUPLE.groomNickname} และ {COUPLE.brideNickname}
         </h2>
-        <VenueCanvas guests={guests} phone={phone} showNames={showNames}>
-          <WishField wishes={wishes} enabled={showWishes} />
-        </VenueCanvas>
+        <VenueCanvas guests={guests} phone={phone} wishes={wishes} showWishes={showWishes} />
         <motion.p
           className="hd2d-hud pointer-events-none absolute top-4 left-1/2 z-10 -translate-x-1/2 px-4 py-1.5 font-serif text-sm"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: [0, 1, 1, 0], y: [8, 0, 0, -6] }}
           transition={{ duration: 3.4, times: [0, 0.12, 0.72, 1], ease: "easeOut" }}
         >
-          ยินดีต้อนรับสู่งาน · แตะอ๋องหรือแทตตี้เพื่ออ่านประวัติ
+          ยินดีต้อนรับ · แตะอ๋องหรือแทตตี้เพื่ออ่านประวัติ
         </motion.p>
         <div className="absolute inset-x-3 bottom-3 z-20 flex flex-wrap items-center justify-between gap-2">
-          <p className="hd2d-hud px-3 py-1.5">
-            มาร่วมงาน {inside} · ส่งความยินดี {guests.length - inside}
-          </p>
+          {isAdmin ? (
+            <p className="hd2d-hud px-3 py-1.5">
+              เข้าร่วม {inside} · ยังไม่แน่ใจ {unsure}
+            </p>
+          ) : (
+            <span />
+          )}
           <div className="flex flex-wrap gap-2">
             <HudToggle on={showWishes} onLabel="ซ่อนคำอวยพร" offLabel="แสดงคำอวยพร" onClick={() => setShowWishes((v) => !v)} />
-            <HudToggle on={showNames} onLabel="ซ่อนชื่อแขก" offLabel="แสดงชื่อแขก" onClick={() => setShowNames((v) => !v)} />
           </div>
         </div>
       </section>
 
-      <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
-        <p className="text-sm leading-6 text-muted-foreground lg:hidden">ลงทะเบียนด้วยเบอร์บนเครื่องนี้แล้ว</p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          แตะเจ้าบ่าวเจ้าสาวบนแท่นเพื่ออ่านประวัติ เขียนคำอวยพรด้านล่างแล้วเปิดการลอยบนฉากได้
-        </p>
-        <GuestRoster title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
-        {others.length > 0 ? <GuestRoster title="แขกบนเครื่องนี้" guests={others} /> : null}
+      <section className="flex flex-col gap-5 px-4 pt-4 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-6 lg:pt-0 lg:pb-6">
+        {isAdmin ? (
+          <div className="flex gap-2">
+            <StatChip label="เข้าร่วมงาน" value={inside} tone="sage" />
+            <StatChip label="ยังไม่แน่ใจ" value={unsure} tone="blush" />
+          </div>
+        ) : null}
+
+        <section>
+          <div className="mb-2 flex items-baseline justify-between gap-3">
+            <h2 className="font-serif text-xl">คณะของคุณ</h2>
+            <p className="text-xs text-muted-foreground">{mine.length} คน</p>
+          </div>
+          <PartySummary guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" variant="outline" className="h-10 rounded-full bg-card px-4" onClick={onEdit}>
+              ✏️ แก้ไขการตอบรับ
+            </Button>
+            <Button type="button" variant="ghost" className="h-10 rounded-full px-4" onClick={onChangePhone}>
+              📱 ใช้เบอร์อื่น
+            </Button>
+          </div>
+        </section>
+
         <WishComposer
           party={mine}
+          phone={phone}
+          wishes={wishes}
           onSend={(from, text) => {
-            guestStore.addWish({
-              id: newId("wish"),
-              text,
-              from,
-              partyPhone: phone,
-              createdAt: new Date().toISOString(),
-            })
-            setShowWishes(true)
+            void guestStore
+              .addWish({
+                id: newId("wish"),
+                text,
+                from,
+                partyPhone: phone,
+                createdAt: new Date().toISOString(),
+              })
+              .then(() => setShowWishes(true))
+          }}
+          onUpdate={(wish) => {
+            void guestStore.updateWish(wish).then(() => setShowWishes(true))
           }}
         />
-        <section className="mt-6">
-          <h2 className="font-serif text-xl">สถานที่</h2>
+
+        <section>
+          <h2 className="font-serif text-xl">📍 สถานที่</h2>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{VENUE_MAP.note}</p>
           <div className="mt-3 overflow-hidden rounded-[1.4rem] border border-border bg-card">
             <iframe
               title="แผนที่สถานที่จัดงาน"
               src={`https://maps.google.com/maps?q=${VENUE_MAP.lat},${VENUE_MAP.lng}&z=16&output=embed`}
-              className="h-48 w-full border-0 grayscale-[20%]"
+              className="h-44 w-full border-0 grayscale-[20%]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />

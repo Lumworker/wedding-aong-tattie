@@ -1,3 +1,4 @@
+import { ALTAR_PLANTS, PEW_PLANTS, PlantSprite } from "@/components/venue/plant"
 import { PEW } from "@/lib/scene-layout"
 
 function Candle({ x, y }: { x: number; y: number }) {
@@ -44,12 +45,12 @@ function Pixel({
   )
 }
 
-function AltarFlowers({ x, y }: { x: number; y: number }) {
+function AltarFlowers({ x, y, seed }: { x: number; y: number; seed: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <Pixel href="/assets/tiddybub/flowers/flower_01.png" x={-18} y={-22} width={22} height={22} />
-      <Pixel href="/assets/tiddybub/flowers/flower_03.png" x={-4} y={-26} width={20} height={20} />
-      <Pixel href="/assets/tiddybub/flowers/flower_02.png" x={8} y={-20} width={18} height={18} />
+      <PlantSprite index={ALTAR_PLANTS[seed % ALTAR_PLANTS.length]} x={-30} y={-42} size={34} />
+      <PlantSprite index={ALTAR_PLANTS[(seed + 2) % ALTAR_PLANTS.length]} x={-10} y={-48} size={38} />
+      <PlantSprite index={ALTAR_PLANTS[(seed + 4) % ALTAR_PLANTS.length]} x={14} y={-40} size={32} />
     </g>
   )
 }
@@ -122,8 +123,18 @@ export function SceneBackdrop() {
             <rect x={PEW.rightX} y={y + 4} width={PEW.width} height="9" fill="#5A3A28" />
             {index % 2 === 0 ? (
               <>
-                <Pixel href="/assets/tiddybub/flowers/flower_04.png" x={PEW.leftX - 4} y={y - 6} width={14} height={14} />
-                <Pixel href="/assets/tiddybub/flowers/flower_04.png" x={PEW.rightX + PEW.width - 10} y={y - 6} width={14} height={14} />
+                <PlantSprite
+                  index={PEW_PLANTS[(index / 2) % PEW_PLANTS.length]}
+                  x={PEW.leftX - 10}
+                  y={y - 18}
+                  size={22}
+                />
+                <PlantSprite
+                  index={PEW_PLANTS[(index / 2 + 3) % PEW_PLANTS.length]}
+                  x={PEW.rightX + PEW.width - 12}
+                  y={y - 18}
+                  size={22}
+                />
               </>
             ) : null}
           </g>
@@ -135,8 +146,10 @@ export function SceneBackdrop() {
       <rect x="134" y="506" width="372" height="12" fill="#3E2818" />
       <rect x="118" y="516" width="404" height="10" fill="#2A1C12" />
 
-      <AltarFlowers x={214} y={488} />
-      <AltarFlowers x={426} y={488} />
+      <AltarFlowers x={214} y={488} seed={0} />
+      <AltarFlowers x={426} y={488} seed={3} />
+      <PlantSprite index={1} x={96} y={458} size={36} />
+      <PlantSprite index={7} x={508} y={458} size={36} />
       <g filter="url(#wd-bloom)">
         <Candle x={248} y={468} />
         <Candle x={392} y={468} />

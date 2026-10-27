@@ -14,8 +14,8 @@ export default function StoryPage() {
 
   return (
     <ScreenShell width="max-w-2xl">
-      <Link href="/" className={cn(buttonVariants({ variant: "ghost" }), "h-10 rounded-full px-3")}>
-        กลับคำเชิญ
+      <Link href="/dashboard" className={cn(buttonVariants({ variant: "ghost" }), "h-10 rounded-full px-3")}>
+        กลับงาน
       </Link>
       <motion.div
         initial={reduced ? false : { opacity: 0, y: 12 }}

@@ -1,14 +1,15 @@
 "use client"
 
-import { useMemo, useState, type ReactNode } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { motion, useAnimationFrame, useReducedMotion } from "framer-motion"
+import { AnimatePresence, motion, useAnimationFrame, useReducedMotion } from "framer-motion"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
 import { Character } from "@/components/venue/character"
+import { ChatBubble, bubbleOffsetY, useWishSlots, type WishSlot } from "@/components/venue/wish-field"
 import { COUPLE } from "@/lib/event"
 import { footY, placeGuests, SCENE, type PlacedGuest } from "@/lib/scene-layout"
 import { poseOnPath, type WalkPose } from "@/lib/walk"
-import type { Guest } from "@/lib/types"
+import type { Guest, Wish } from "@/lib/types"
 
 function CoupleActor({
   role,
@@ -36,16 +37,26 @@ function CoupleActor({
   )
 }
 
+function GuestBubble({ slot }: { slot?: WishSlot }) {
+  return (
+    <AnimatePresence>
+      {slot ? <ChatBubble key={slot.key} from={slot.wish.from} text={slot.wish.text} /> : null}
+    </AnimatePresence>
+  )
+}
+
 function WalkingGuest({
   placed,
   showName,
   mine,
   reduced,
+  slot,
 }: {
   placed: PlacedGuest
   showName: boolean
   mine: boolean
   reduced: boolean
+  slot?: WishSlot
 }) {
   const start = placed.path[0]
   const [pose, setPose] = useState<WalkPose>({
@@ -83,6 +94,9 @@ function WalkingGuest({
           facing={pose.facing}
         />
       </g>
+      <g transform={`translate(0 ${bubbleOffsetY(placed)})`}>
+        <GuestBubble slot={slot} />
+      </g>
     </g>
   )
 }
@@ -91,10 +105,12 @@ function StillGuest({
   placed,
   showName,
   mine,
+  slot,
 }: {
   placed: PlacedGuest
   showName: boolean
   mine: boolean
+  slot?: WishSlot
 }) {
   const start = placed.path[0]
   return (
@@ -108,6 +124,9 @@ function StillGuest({
           facing={placed.facing}
         />
       </g>
+      <g transform={`translate(0 ${bubbleOffsetY(placed)})`}>
+        <GuestBubble slot={slot} />
+      </g>
     </g>
   )
 }
@@ -117,16 +136,18 @@ function GuestActor({
   showName,
   mine,
   reduced,
+  slot,
 }: {
   placed: PlacedGuest
   showName: boolean
   mine: boolean
   reduced: boolean
+  slot?: WishSlot
 }) {
   if (placed.mood === "walk") {
-    return <WalkingGuest placed={placed} showName={showName} mine={mine} reduced={reduced} />
+    return <WalkingGuest placed={placed} showName={showName} mine={mine} reduced={reduced} slot={slot} />
   }
-  return <StillGuest placed={placed} showName={showName} mine={mine} />
+  return <StillGuest placed={placed} showName={showName} mine={mine} slot={slot} />
 }
 
 function DustMotes({ reduced }: { reduced: boolean }) {
@@ -166,17 +187,23 @@ function DustMotes({ reduced }: { reduced: boolean }) {
 export function VenueCanvas({
   guests,
   phone,
-  showNames,
-  children,
+  wishes = [],
+  showWishes = true,
 }: {
   guests: Guest[]
   phone: string | null
-  showNames: boolean
-  children?: ReactNode
+  wishes?: Wish[]
+  showWishes?: boolean
 }) {
   const reduced = useReducedMotion() === true
   const placed = useMemo(() => placeGuests(guests, phone), [guests, phone])
   const ordered = useMemo(() => [...placed].sort((a, b) => footY(a) - footY(b)), [placed])
+  const slots = useWishSlots(wishes, placed, showWishes)
+  const slotByGuest = useMemo(() => {
+    const map = new Map<string, WishSlot>()
+    for (const slot of slots) map.set(slot.guestId, slot)
+    return map
+  }, [slots])
 
   return (
     <div className="hd2d-stage absolute inset-0 overflow-hidden bg-[#121018]">
@@ -190,15 +217,16 @@ export function VenueCanvas({
           <CoupleActor role="groom" reduced={reduced} />
           <CoupleActor role="bride" reduced={reduced} />
           {ordered.map((guest) => {
-            const mine = Boolean(phone) && guest.guest.partyPhone === phone
-            const labeled = showNames && (mine || guest.mood !== "sit")
+            const registrant =
+              Boolean(phone) && guest.guest.partyPhone === phone && !guest.guest.isCompanion
             return (
               <GuestActor
                 key={guest.guest.id}
                 placed={guest}
-                showName={labeled}
-                mine={mine}
+                showName={registrant}
+                mine={registrant}
                 reduced={reduced}
+                slot={slotByGuest.get(guest.guest.id)}
               />
             )
           })}
@@ -210,7 +238,6 @@ export function VenueCanvas({
       <div className="hd2d-vignette" />
       <div className="hd2d-grain" />
       <DustMotes reduced={reduced} />
-      {children}
     </div>
   )
 }

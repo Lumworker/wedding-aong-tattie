@@ -1,68 +1,157 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import type { Wish } from "@/lib/types"
+import type { PlacedGuest } from "@/lib/scene-layout"
 
-const SLOTS = [
-  { left: "8%", delay: 0 },
-  { left: "28%", delay: 2.4 },
-  { left: "52%", delay: 1.1 },
-  { left: "72%", delay: 3.2 },
-]
+export type WishSlot = {
+  key: string
+  wish: Wish
+  guestId: string
+}
 
-export function WishField({ wishes, enabled }: { wishes: Wish[]; enabled: boolean }) {
+const MAX_VISIBLE = 2
+const SPAWN_MS = 4200
+const LIFE_MS = 9200
+
+function pick<T>(items: T[], exclude?: T): T | null {
+  if (!items.length) return null
+  if (items.length === 1) return items[0]
+  const pool = exclude === undefined ? items : items.filter((item) => item !== exclude)
+  const list = pool.length ? pool : items
+  return list[Math.floor(Math.random() * list.length)] ?? null
+}
+
+function guestIdForWish(wish: Wish, placed: PlacedGuest[], busy: Set<string>): string | null {
+  const party = placed.filter(
+    (item) => !item.guest.isCompanion && item.guest.partyPhone === wish.partyPhone && !busy.has(item.guest.id)
+  )
+  const named = party.find((item) => item.guest.name === wish.from)
+  if (named) return named.guest.id
+  if (party[0]) return party[0].guest.id
+
+  const open = placed.filter((item) => !item.guest.isCompanion && !busy.has(item.guest.id))
+  return pick(open)?.guest.id ?? null
+}
+
+function clipWish(text: string, max = 64) {
+  const glyphs = Array.from(text)
+  if (glyphs.length <= max) return text
+  return `${glyphs.slice(0, max - 1).join("")}…`
+}
+
+export function ChatBubble({ from, text }: { from: string; text: string }) {
+  return (
+    <motion.g
+      initial={{ opacity: 0, y: 10, scale: 0.88 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -12, scale: 0.92 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+    >
+      <motion.g
+        animate={{ y: [0, -5, 0] }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <foreignObject x={-90} y={-86} width={180} height={84} style={{ overflow: "visible" }}>
+          <div className="pointer-events-none flex justify-center">
+            <div className="relative max-w-[10.5rem] rounded-[18px] border-2 border-[#e0b85a] bg-[#fffaf0] px-3 py-2 shadow-[0_10px_24px_rgba(10,8,16,0.42)]">
+              <p className="m-0 mb-1 text-[11px] font-semibold leading-none tracking-wide text-[#b04558]">
+                {from}
+              </p>
+              <p className="m-0 font-serif text-[13px] leading-snug text-[#241f1c]">{clipWish(text)}</p>
+              <span
+                aria-hidden
+                className="absolute top-full left-1/2 -ml-[7px] border-x-[7px] border-t-[9px] border-x-transparent border-t-[#e0b85a]"
+              />
+              <span
+                aria-hidden
+                className="absolute top-full left-1/2 -ml-[5px] mt-px border-x-[5px] border-t-[7px] border-x-transparent border-t-[#fffaf0]"
+              />
+            </div>
+          </div>
+        </foreignObject>
+      </motion.g>
+    </motion.g>
+  )
+}
+
+export function useWishSlots(
+  wishes: Wish[],
+  placed: PlacedGuest[],
+  enabled: boolean
+): WishSlot[] {
   const reduced = useReducedMotion() === true
-  const [tick, setTick] = useState(0)
-  const live = enabled && wishes.length > 0
+  const live = enabled && wishes.length > 0 && placed.length > 0
+  const [slots, setSlots] = useState<WishSlot[]>([])
+  const [quietIndex, setQuietIndex] = useState(0)
+  const wishRef = useRef<string | null>(null)
+  const placedRef = useRef(placed)
+  placedRef.current = placed
+
+  const guestIds = useMemo(() => placed.map((item) => item.guest.id).join("|"), [placed])
 
   useEffect(() => {
-    if (!live || reduced) return
-    const id = window.setInterval(() => setTick((n) => n + 1), 5200)
-    return () => window.clearInterval(id)
-  }, [live, reduced])
+    if (!live) {
+      setSlots([])
+      return
+    }
 
-  const floating = useMemo(() => {
-    if (!live) return []
-    return SLOTS.map((slot, index) => {
-      const wish = wishes[(tick + index) % wishes.length]
-      return { ...slot, wish, key: `${wish.id}-${tick}-${index}` }
-    })
-  }, [live, tick, wishes])
+    if (reduced) {
+      const id = window.setInterval(() => setQuietIndex((n) => n + 1), 7000)
+      return () => window.clearInterval(id)
+    }
 
-  if (!live) return null
+    let cancelled = false
+    const timers = new Set<number>()
+
+    function spawn() {
+      if (cancelled) return
+      setSlots((current) => {
+        if (current.length >= MAX_VISIBLE) return current
+        const busy = new Set(current.map((slot) => slot.guestId))
+        const wishPool = wishes.filter((wish) => wish.id !== wishRef.current)
+        const wish = pick(wishPool.length ? wishPool : wishes)
+        if (!wish) return current
+        const guestId = guestIdForWish(wish, placedRef.current, busy)
+        if (!guestId) return current
+        wishRef.current = wish.id
+        const key = `${wish.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+        const removeId = window.setTimeout(() => {
+          timers.delete(removeId)
+          if (!cancelled) {
+            setSlots((items) => items.filter((item) => item.key !== key))
+          }
+        }, LIFE_MS)
+        timers.add(removeId)
+        return [...current, { key, wish, guestId }]
+      })
+    }
+
+    spawn()
+    const interval = window.setInterval(spawn, SPAWN_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+      timers.forEach((id) => window.clearTimeout(id))
+    }
+  }, [live, reduced, wishes, guestIds])
+
+  if (!live) return []
 
   if (reduced) {
-    return (
-      <div className="pointer-events-none absolute inset-x-3 top-16 z-10 flex flex-col gap-2" aria-live="polite">
-        {wishes.slice(-3).map((wish) => (
-          <p key={wish.id} className="max-w-[16rem] rounded-2xl bg-[#fff8e8]/90 px-3 py-2 text-sm text-ink shadow-sm">
-            <span className="block font-medium">{wish.from}</span>
-            {wish.text}
-          </p>
-        ))}
-      </div>
-    )
+    const wish = wishes[quietIndex % wishes.length]
+    const guestId = guestIdForWish(wish, placed, new Set())
+    if (!guestId) return []
+    return [{ key: `quiet-${wish.id}-${guestId}`, wish, guestId }]
   }
 
-  return (
-    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden" aria-hidden="true">
-      <AnimatePresence>
-        {floating.map((item) => (
-          <motion.p
-            key={item.key}
-            className="absolute max-w-[11.5rem] rounded-2xl border border-[#e8c878]/50 bg-[#fff8e8]/88 px-3 py-2 font-serif text-sm leading-5 text-ink shadow-[0_12px_30px_-18px_rgba(42,38,35,0.7)]"
-            style={{ left: item.left, bottom: "18%" }}
-            initial={{ opacity: 0, y: 24, scale: 0.92 }}
-            animate={{ opacity: [0, 1, 1, 0], y: [24, -8, -120, -180], scale: [0.92, 1, 1, 0.96] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 7.2, delay: item.delay * 0.08, ease: "easeOut" }}
-          >
-            <span className="mb-0.5 block text-[11px] tracking-wide text-rose">{item.wish.from}</span>
-            {item.wish.text}
-          </motion.p>
-        ))}
-      </AnimatePresence>
-    </div>
-  )
+  return slots
+}
+
+/** Head offset in scene units (outside character scale) for chat bubble anchor. */
+export function bubbleOffsetY(placed: PlacedGuest): number {
+  const sitting = placed.mood === "sit"
+  const base = placed.guest.isCompanion ? (sitting ? 18 : 20) : sitting ? 28 : 32
+  return -(base * placed.scale + 14)
 }

@@ -1,4 +1,4 @@
-import { createLocalWeddingRepository, type WeddingRepository } from "@/lib/repository"
+import { createExcelWeddingRepository, type WeddingRepository } from "@/lib/repository"
 import type { Party, Wish } from "@/lib/types"
 
 export type GuestSnapshot = {
@@ -7,6 +7,7 @@ export type GuestSnapshot = {
   party: Party | null
   guests: Party["guests"]
   wishes: Wish[]
+  error: string | null
 }
 
 const EMPTY: GuestSnapshot = {
@@ -15,32 +16,55 @@ const EMPTY: GuestSnapshot = {
   party: null,
   guests: [],
   wishes: [],
+  error: null,
 }
 
-export function createGuestStore(repo: WeddingRepository = createLocalWeddingRepository()) {
+export function createGuestStore(repo: WeddingRepository = createExcelWeddingRepository()) {
   let snapshot: GuestSnapshot = EMPTY
   let booted = false
+  let bootPromise: Promise<void> | null = null
   const listeners = new Set<() => void>()
-
-  function read(): GuestSnapshot {
-    const phone = repo.readSessionPhone()
-    const parties = repo.readAllParties()
-    return {
-      ready: true,
-      phone,
-      party: phone ? repo.readParty(phone) : null,
-      guests: parties.flatMap((party) => party.guests),
-      wishes: repo.readWishes(),
-    }
-  }
 
   function emit(next: GuestSnapshot) {
     snapshot = next
     listeners.forEach((listener) => listener())
   }
 
-  function refresh() {
-    emit(read())
+  async function load(): Promise<GuestSnapshot> {
+    const phone = repo.readSessionPhone()
+    try {
+      const [parties, wishes] = await Promise.all([repo.readAllParties(), repo.readWishes()])
+      return {
+        ready: true,
+        phone,
+        party: phone ? parties.find((party) => party.phone === phone) ?? null : null,
+        guests: parties.flatMap((party) => party.guests),
+        wishes,
+        error: null,
+      }
+    } catch (error) {
+      return {
+        ready: true,
+        phone,
+        party: null,
+        guests: [],
+        wishes: [],
+        error: error instanceof Error ? error.message : "โหลดข้อมูลไม่สำเร็จ",
+      }
+    }
+  }
+
+  async function refresh() {
+    emit(await load())
+  }
+
+  function ensureBoot() {
+    if (booted || typeof window === "undefined") return
+    if (bootPromise) return
+    bootPromise = load().then((next) => {
+      booted = true
+      emit(next)
+    })
   }
 
   return {
@@ -49,10 +73,7 @@ export function createGuestStore(repo: WeddingRepository = createLocalWeddingRep
       return () => listeners.delete(listener)
     },
     getSnapshot() {
-      if (!booted && typeof window !== "undefined") {
-        booted = true
-        snapshot = read()
-      }
+      ensureBoot()
       return snapshot
     },
     getServerSnapshot() {
@@ -60,20 +81,37 @@ export function createGuestStore(repo: WeddingRepository = createLocalWeddingRep
     },
     setPhone(phone: string) {
       repo.writeSessionPhone(phone)
-      refresh()
+      void refresh()
     },
     clearPhone() {
       repo.clearSessionPhone()
-      refresh()
+      void refresh()
     },
-    saveParty(party: Party) {
-      repo.writeParty(party)
+    async saveParty(party: Party) {
+      await repo.writeParty(party)
       repo.writeSessionPhone(party.phone)
-      refresh()
+      await refresh()
     },
-    addWish(wish: Wish) {
-      repo.writeWish(wish)
-      refresh()
+    async deleteRegistration(phone: string) {
+      await repo.deleteParty(phone)
+      repo.clearSessionPhone()
+      await refresh()
+    },
+    async addWish(wish: Wish) {
+      await repo.writeWish(wish)
+      await refresh()
+    },
+    async updateWish(wish: Wish) {
+      await repo.updateWish(wish)
+      await refresh()
+    },
+    async seedMocks() {
+      const response = await fetch("/api/mock", { method: "POST" })
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null
+        throw new Error(payload?.error || "สร้างข้อมูล mock ไม่สำเร็จ")
+      }
+      await refresh()
     },
   }
 }

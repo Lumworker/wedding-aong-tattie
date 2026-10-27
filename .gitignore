@@ -35,6 +35,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# excel wedding database (runtime data)
+/data/*.xlsx
+/data/*.xlsx.*
+
 # vercel
 .vercel
 

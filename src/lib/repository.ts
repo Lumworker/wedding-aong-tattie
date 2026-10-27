@@ -5,19 +5,17 @@ export type WeddingRepository = {
   readSessionPhone(): string | null
   writeSessionPhone(phone: string): void
   clearSessionPhone(): void
-  readParty(phone: string): Party | null
-  writeParty(party: Party): void
-  readAllParties(): Party[]
-  readWishes(): Wish[]
-  writeWish(wish: Wish): void
+  readParty(phone: string): Promise<Party | null>
+  writeParty(party: Party): Promise<void>
+  deleteParty(phone: string): Promise<void>
+  readAllParties(): Promise<Party[]>
+  readWishes(): Promise<Wish[]>
+  writeWish(wish: Wish): Promise<void>
+  updateWish(wish: Wish): Promise<void>
 }
 
 const SESSION_KEY = "webding-web:session"
-const PARTY_PREFIX = "webding-web:party:"
-const WISH_KEY = "webding-web:wishes"
 const COOKIE = "webding_phone"
-const WISH_MAX = 80
-
 const memory = new Map<string, string>()
 
 function readRaw(key: string) {
@@ -33,7 +31,7 @@ function writeRaw(key: string, value: string) {
   try {
     window.localStorage.setItem(key, value)
   } catch {
-    /* keep the in-memory copy */
+    /* keep memory */
   }
 }
 
@@ -44,34 +42,6 @@ function removeRaw(key: string) {
   } catch {
     /* ignore */
   }
-}
-
-function parseJson<T>(raw: string | null, fallback: T): T {
-  if (!raw) return fallback
-  try {
-    return JSON.parse(raw) as T
-  } catch {
-    return fallback
-  }
-}
-
-function asParty(value: unknown): Party | null {
-  if (!value || typeof value !== "object") return null
-  const party = value as Party
-  if (typeof party.phone !== "string" || !Array.isArray(party.guests)) return null
-  return party
-}
-
-function asWishes(value: unknown): Wish[] {
-  if (!Array.isArray(value)) return []
-  return value.filter(
-    (wish): wish is Wish =>
-      Boolean(wish) &&
-      typeof wish.id === "string" &&
-      typeof wish.text === "string" &&
-      typeof wish.from === "string" &&
-      typeof wish.partyPhone === "string"
-  )
 }
 
 function cookiePhone() {
@@ -88,7 +58,23 @@ function setCookie(phone: string | null) {
     : `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
 }
 
-export function createLocalWeddingRepository(): WeddingRepository {
+async function api<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+  })
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null
+    throw new Error(payload?.error || `API ${response.status}`)
+  }
+  return response.json() as Promise<T>
+}
+
+/** Session stays in the browser; parties + wishes live in Excel via API. */
+export function createExcelWeddingRepository(): WeddingRepository {
   return {
     readSessionPhone() {
       const stored = readRaw(SESSION_KEY)
@@ -102,32 +88,33 @@ export function createLocalWeddingRepository(): WeddingRepository {
       removeRaw(SESSION_KEY)
       setCookie(null)
     },
-    readParty(phone) {
-      return asParty(parseJson(readRaw(`${PARTY_PREFIX}${phone}`), null))
-    },
-    writeParty(party) {
-      writeRaw(`${PARTY_PREFIX}${party.phone}`, JSON.stringify(party))
-    },
-    readAllParties() {
-      const keys = new Set(memory.keys())
+    async readParty(phone) {
       try {
-        for (let i = 0; i < window.localStorage.length; i += 1) {
-          const key = window.localStorage.key(i)
-          if (key) keys.add(key)
-        }
+        const data = await api<{ party: Party }>(`/api/parties/${encodeURIComponent(phone)}`)
+        return data.party
       } catch {
-        /* localStorage unavailable */
+        return null
       }
-      return [...keys]
-        .filter((key) => key.startsWith(PARTY_PREFIX))
-        .map((key) => asParty(parseJson(readRaw(key), null)))
-        .filter((party): party is Party => party !== null)
     },
-    readWishes() {
-      return asWishes(parseJson(readRaw(WISH_KEY), [])).slice(-WISH_MAX)
+    async writeParty(party) {
+      await api("/api/parties", { method: "POST", body: JSON.stringify(party) })
     },
-    writeWish(wish) {
-      writeRaw(WISH_KEY, JSON.stringify([...asWishes(parseJson(readRaw(WISH_KEY), [])), wish].slice(-WISH_MAX)))
+    async deleteParty(phone) {
+      await api(`/api/parties/${encodeURIComponent(phone)}`, { method: "DELETE" })
+    },
+    async readAllParties() {
+      const data = await api<{ parties: Party[] }>("/api/parties")
+      return data.parties ?? []
+    },
+    async readWishes() {
+      const data = await api<{ wishes: Wish[] }>("/api/wishes")
+      return data.wishes ?? []
+    },
+    async writeWish(wish) {
+      await api("/api/wishes", { method: "POST", body: JSON.stringify(wish) })
+    },
+    async updateWish(wish) {
+      await api("/api/wishes", { method: "PATCH", body: JSON.stringify(wish) })
     },
   }
 }

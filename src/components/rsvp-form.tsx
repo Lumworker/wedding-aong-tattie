@@ -7,20 +7,85 @@ import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PARTY_MAX, PARTY_MIN } from "@/lib/event"
+import { COUPLE, PARTY_MAX } from "@/lib/event"
 import { newId } from "@/lib/id"
-import type { AgeGroup, Attendance, Gender, Guest, Party } from "@/lib/types"
+import type { Attendance, FamilySide, Gender, Guest, Party } from "@/lib/types"
+
+const COMPANION_MAX = PARTY_MAX - 1
 
 type Draft = {
   id: string
   name: string
   gender: Gender | null
-  ageGroup: AgeGroup
   attendance: Attendance
+  side: FamilySide | null
+}
+
+type Errors = {
+  name?: string
+  gender?: string
+  side?: string
 }
 
 function blank(): Draft {
-  return { id: newId("guest"), name: "", gender: null, ageGroup: "adult", attendance: "attending" }
+  return {
+    id: newId("guest"),
+    name: "",
+    gender: null,
+    attendance: "attending",
+    side: null,
+  }
+}
+
+function fromParty(party: Party | null): { person: Draft; companions: number } {
+  if (!party?.guests.length) return { person: blank(), companions: 0 }
+  const main = party.guests.find((guest) => !guest.isCompanion) ?? party.guests[0]
+  const companions = party.guests.filter((guest) => guest.isCompanion || guest.id !== main.id).length
+  return {
+    person: {
+      id: main.id,
+      name: main.name,
+      gender: main.gender,
+      attendance: normalizeAttendance(main.attendance),
+      side: main.side ?? null,
+    },
+    companions: Math.min(COMPANION_MAX, Math.max(0, companions)),
+  }
+}
+
+function normalizeAttendance(value: string): Attendance {
+  return value === "attending" ? "attending" : "unsure"
+}
+
+function buildCompanions(
+  count: number,
+  phone: string,
+  template: Pick<Guest, "attendance" | "side">,
+  existing: Guest[]
+): Guest[] {
+  const kept = existing.filter((guest) => guest.isCompanion).slice(0, count)
+  while (kept.length < count) {
+    kept.push({
+      id: newId("guest"),
+      name: "ผู้ติดตาม",
+      gender: "other",
+      ageGroup: "adult",
+      attendance: template.attendance,
+      side: template.side,
+      partyPhone: phone,
+      isCompanion: true,
+    })
+  }
+  return kept.map((guest, index) => ({
+    ...guest,
+    name: count === 1 ? "ผู้ติดตาม" : `ผู้ติดตาม ${index + 1}`,
+    gender: "other" as const,
+    ageGroup: "adult" as const,
+    attendance: template.attendance,
+    side: template.side,
+    partyPhone: phone,
+    isCompanion: true,
+  }))
 }
 
 export function RsvpForm({
@@ -34,63 +99,63 @@ export function RsvpForm({
   onSubmit: (party: Party) => void
   onChangePhone: () => void
 }) {
-  const initial = party?.guests.length ? party.guests.map(fromGuest) : [blank()]
-  const [people, setPeople] = useState<Draft[]>(initial)
-  const [count, setCount] = useState(initial.length)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const initial = fromParty(party)
+  const [person, setPerson] = useState<Draft>(initial.person)
+  const [companions, setCompanions] = useState(initial.companions)
+  const [errors, setErrors] = useState<Errors>({})
   const [summary, setSummary] = useState<string | null>(null)
-  const visible = people.slice(0, count)
-  const coming = visible.filter((person) => person.attendance === "attending").length
+  const partySize = 1 + companions
 
-  function setCountTo(next: number) {
-    const clamped = Math.min(PARTY_MAX, Math.max(PARTY_MIN, next))
-    setPeople((current) =>
-      current.length >= clamped ? current : [...current, ...Array.from({ length: clamped - current.length }, blank)]
-    )
-    setCount(clamped)
+  function patch(next: Partial<Draft>) {
+    setPerson((current) => ({ ...current, ...next }))
+    setErrors((current) => {
+      const cleared = { ...current }
+      if (next.name !== undefined) delete cleared.name
+      if (next.gender !== undefined) delete cleared.gender
+      if (next.side !== undefined) delete cleared.side
+      return cleared
+    })
     setSummary(null)
   }
 
-  function update(id: string, patch: Partial<Draft>) {
-    setPeople((current) => current.map((person) => (person.id === id ? { ...person, ...patch } : person)))
-    setErrors((current) => {
-      if (!current[id]) return current
-      const next = { ...current }
-      delete next[id]
-      return next
-    })
+  function setCompanionCount(next: number) {
+    setCompanions(Math.min(COMPANION_MAX, Math.max(0, next)))
     setSummary(null)
   }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const nextErrors: Record<string, string> = {}
-    for (const person of visible) {
-      if (!person.name.trim()) nextErrors[person.id] = "กรุณากรอกชื่อ"
-      else if (!person.gender) nextErrors[person.id] = "กรุณาเลือกเพศ"
-    }
+    const nextErrors: Errors = {}
+    if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อ"
+    if (!person.gender) nextErrors.gender = "กรุณาเลือกเพศ"
+    if (!person.side) nextErrors.side = "กรุณาเลือกฝั่งญาติ"
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
-      setSummary("กรุณาตรวจสอบชื่อและเพศของทุกคน")
-      const firstId = visible.find((person) => nextErrors[person.id])?.id
-      if (firstId) {
-        document.getElementById(`guest-${firstId}`)?.scrollIntoView({ behavior: "smooth", block: "center" })
-        document.getElementById(`name-${firstId}`)?.focus()
-      }
+      setSummary("กรุณาตรวจสอบข้อมูลให้ครบ")
+      document.getElementById("guest-main")?.scrollIntoView({ behavior: "smooth", block: "center" })
+      if (nextErrors.name) document.getElementById("name-main")?.focus()
       return
+    }
+
+    const gender = person.gender as Gender
+    const side = person.side as FamilySide
+    const main: Guest = {
+      id: person.id,
+      name: person.name.trim(),
+      gender,
+      ageGroup: "adult",
+      attendance: person.attendance,
+      side,
+      partyPhone: phone,
     }
 
     onSubmit({
       phone,
       updatedAt: new Date().toISOString(),
-      guests: visible.map((person) => ({
-        id: person.id,
-        name: person.name.trim(),
-        gender: person.gender as Gender,
-        ageGroup: person.ageGroup,
-        attendance: person.attendance,
-        partyPhone: phone,
-      })),
+      guests: [
+        main,
+        ...buildCompanions(companions, phone, main, party?.guests ?? []),
+      ],
     })
   }
 
@@ -100,27 +165,89 @@ export function RsvpForm({
         <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          กรอกชื่อ เพศ วัย และการร่วมงานของทุกคนในคณะ โบสถ์รองรับแขกทั้งงานได้กว่า 100 คน — แบบนี้เก็บเฉพาะคณะของคุณ ครั้งละไม่เกิน {PARTY_MAX} คน
+          กรอกข้อมูลของคุณ แล้วเพิ่มจำนวนผู้ติดตามได้ถ้ามี ผู้ติดตามไม่ต้องกรอกรายละเอียด — คณะละไม่เกิน {PARTY_MAX} คน (รวมคุณ)
         </p>
         {party?.guests.length ? (
-          <p className="mt-2 text-sm leading-6 text-sage-deep">คณะนี้เคยบันทึกแล้ว ตรวจรายชื่อแล้วกดเข้างานได้</p>
+          <p className="mt-2 text-sm leading-6 text-sage-deep">เคยบันทึกแล้ว ตรวจข้อมูลแล้วกดเข้างานได้</p>
         ) : null}
         <button
           type="button"
           onClick={onChangePhone}
           className="mt-2 cursor-pointer text-sm font-medium text-rose underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
         >
-          ใช้เบอร์อื่น
+          📱 ใช้เบอร์อื่น
         </button>
       </header>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col" noValidate>
-        <div className="rounded-[1.6rem] border border-border bg-card px-4 py-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.6)]">
+        <article
+          id="guest-main"
+          className="rounded-[1.6rem] border border-border bg-card p-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.55)]"
+        >
+          <h2 className="mb-3 font-serif text-xl">ข้อมูลของคุณ</h2>
+          <Label htmlFor="name-main">ชื่อ</Label>
+          <Input
+            id="name-main"
+            value={person.name}
+            maxLength={40}
+            placeholder="ชื่อเล่นหรือชื่อจริง"
+            autoComplete="name"
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={errors.name ? "error-name" : undefined}
+            className="mt-2 h-12 rounded-2xl bg-background px-4 text-base md:text-base"
+            onChange={(event) => patch({ name: event.target.value })}
+          />
+          {errors.name ? (
+            <p id="error-name" className="mt-2 text-sm text-destructive">
+              {errors.name}
+            </p>
+          ) : null}
+
+          <div className="mt-4 flex flex-col gap-4">
+            <Choice
+              legend="เพศ"
+              name="gender-main"
+              value={person.gender}
+              onChange={(gender) => patch({ gender })}
+              options={[
+                { value: "male", label: "ชาย" },
+                { value: "female", label: "หญิง" },
+                { value: "other", label: "อื่น ๆ" },
+              ]}
+            />
+            {errors.gender ? <p className="text-sm text-destructive">{errors.gender}</p> : null}
+
+            <Choice
+              legend="ญาติฝั่ง"
+              name="side-main"
+              value={person.side}
+              onChange={(side) => patch({ side })}
+              options={[
+                { value: "groom", label: "ฝั่งเจ้าบ่าว", hint: COUPLE.groomNickname },
+                { value: "bride", label: "ฝั่งเจ้าสาว", hint: COUPLE.brideNickname },
+              ]}
+            />
+            {errors.side ? <p className="text-sm text-destructive">{errors.side}</p> : null}
+
+            <Choice
+              legend="การร่วมงาน"
+              name="attendance-main"
+              value={person.attendance}
+              onChange={(attendance) => patch({ attendance })}
+              options={[
+                { value: "attending", label: "เข้าร่วมงาน", hint: "นั่งเพว์ในโบสถ์" },
+                { value: "unsure", label: "ยังไม่แน่ใจ", hint: "ยืนส่งความยินดีด้านนอก" },
+              ]}
+            />
+          </div>
+        </article>
+
+        <div className="mt-4 rounded-[1.6rem] border border-border bg-card px-4 py-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.6)]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">จำนวนคนในคณะ</p>
+              <p className="text-sm font-medium">จำนวนผู้ติดตาม</p>
               <p className="text-xs text-muted-foreground">
-                ได้ตั้งแต่ {PARTY_MIN} ถึง {PARTY_MAX} คน
+                ไม่ต้องกรอกข้อมูลผู้ติดตาม · ได้สูงสุด {COMPANION_MAX} คน (รวมคุณแล้วไม่เกิน {PARTY_MAX})
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -129,93 +256,28 @@ export function RsvpForm({
                 variant="outline"
                 size="icon"
                 className="size-11 rounded-full bg-background"
-                aria-label="ลดจำนวนคน"
-                disabled={count <= PARTY_MIN}
-                onClick={() => setCountTo(count - 1)}
+                aria-label="ลดจำนวนผู้ติดตาม"
+                disabled={companions <= 0}
+                onClick={() => setCompanionCount(companions - 1)}
               >
                 <Minus />
               </Button>
               <p className="w-10 text-center font-display text-4xl leading-none" aria-live="polite">
-                {count}
+                {companions}
               </p>
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 className="size-11 rounded-full bg-background"
-                aria-label="เพิ่มจำนวนคน"
-                disabled={count >= PARTY_MAX}
-                onClick={() => setCountTo(count + 1)}
+                aria-label="เพิ่มจำนวนผู้ติดตาม"
+                disabled={companions >= COMPANION_MAX}
+                onClick={() => setCompanionCount(companions + 1)}
               >
                 <Plus />
               </Button>
             </div>
           </div>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-4">
-          {visible.map((person, index) => (
-            <article
-              key={person.id}
-              id={`guest-${person.id}`}
-              className="rounded-[1.6rem] border border-border bg-card p-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.55)]"
-            >
-              <div className="mb-3 flex items-baseline justify-between gap-3">
-                <h2 className="font-serif text-xl">คนที่ {index + 1}</h2>
-                <p className="text-xs text-muted-foreground">จาก {count} คน</p>
-              </div>
-              <Label htmlFor={`name-${person.id}`}>ชื่อ</Label>
-              <Input
-                id={`name-${person.id}`}
-                value={person.name}
-                maxLength={40}
-                placeholder="ชื่อเล่นหรือชื่อจริง"
-                autoComplete="name"
-                aria-invalid={errors[person.id] ? true : undefined}
-                aria-describedby={errors[person.id] ? `error-${person.id}` : undefined}
-                className="mt-2 h-12 rounded-2xl bg-background px-4 text-base md:text-base"
-                onChange={(event) => update(person.id, { name: event.target.value })}
-              />
-              {errors[person.id] ? (
-                <p id={`error-${person.id}`} className="mt-2 text-sm text-destructive">
-                  {errors[person.id]}
-                </p>
-              ) : null}
-              <div className="mt-4 flex flex-col gap-4">
-                <Choice
-                  legend="เพศ"
-                  name={`gender-${person.id}`}
-                  value={person.gender}
-                  onChange={(gender) => update(person.id, { gender })}
-                  options={[
-                    { value: "male", label: "ชาย" },
-                    { value: "female", label: "หญิง" },
-                    { value: "other", label: "อื่น ๆ" },
-                  ]}
-                />
-                <Choice
-                  legend="วัย"
-                  name={`age-${person.id}`}
-                  value={person.ageGroup}
-                  onChange={(ageGroup) => update(person.id, { ageGroup })}
-                  options={[
-                    { value: "adult", label: "ผู้ใหญ่" },
-                    { value: "child", label: "เด็ก" },
-                  ]}
-                />
-                <Choice
-                  legend="การร่วมงาน"
-                  name={`attendance-${person.id}`}
-                  value={person.attendance}
-                  onChange={(attendance) => update(person.id, { attendance })}
-                  options={[
-                    { value: "attending", label: "มาร่วมงาน", hint: "นั่งเพว์ในโบสถ์" },
-                    { value: "not_attending", label: "ไม่ได้มา", hint: "ยืนส่งความยินดีด้านนอก" },
-                  ]}
-                />
-              </div>
-            </article>
-          ))}
         </div>
 
         <div className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-border bg-background/92 px-4 py-3 backdrop-blur-md sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0">
@@ -225,7 +287,9 @@ export function RsvpForm({
             </p>
           ) : (
             <p className="mb-2 text-sm text-muted-foreground" aria-live="polite">
-              มาร่วมงาน {coming} คน · ส่งความยินดี {visible.length - coming} คน
+              ทั้งคณะ {partySize} คน
+              {companions > 0 ? ` · ผู้ติดตาม ${companions} คน` : ""}
+              {person.attendance === "attending" ? " · ยืนยันเข้าร่วมงาน" : " · ยังไม่แน่ใจ"}
             </p>
           )}
           <Button type="submit" className="h-12 w-full rounded-full text-base">
@@ -235,14 +299,4 @@ export function RsvpForm({
       </form>
     </ScreenShell>
   )
-}
-
-function fromGuest(guest: Guest): Draft {
-  return {
-    id: guest.id,
-    name: guest.name,
-    gender: guest.gender,
-    ageGroup: guest.ageGroup,
-    attendance: guest.attendance,
-  }
 }

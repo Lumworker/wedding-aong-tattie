@@ -1,6 +1,5 @@
 import { spriteForGuest } from "@/lib/appearance"
 import { COUPLE } from "@/lib/event"
-import { GUEST_ATLAS } from "@/lib/guest-atlas"
 import type { Guest } from "@/lib/types"
 
 export type FigureRole = "guest" | "groom" | "bride"
@@ -93,12 +92,13 @@ function AtlasGuest({
   facing: 1 | -1
 }) {
   const sprite = spriteForGuest(guest)
+  const { atlas } = sprite
   const sitting = mood === "sit"
   const walking = mood === "walk"
-  const col = (walking ? GUEST_ATLAS.sideCol : GUEST_ATLAS.idleCol) + sprite.type
-  const sx = col * GUEST_ATLAS.cell
-  const sy = sprite.row * GUEST_ATLAS.cell
-  const size = sitting ? 22 : 26
+  const sx = sprite.col * atlas.cell
+  const sy = sprite.row * atlas.cell
+  const size = guest.isCompanion ? (sitting ? 18 : 20) : sitting ? 28 : 32
+  const drawFacing = (facing * atlas.artFacing) as 1 | -1
   const moodClass = walking ? "is-walking" : mood === "cheer" ? "is-cheering" : sitting ? "is-sitting" : "is-idle"
   const label = guest.name
 
@@ -106,35 +106,29 @@ function AtlasGuest({
     <g>
       {label ? <title>{label}</title> : null}
       {showName && label ? <Nameplate label={label} y={sitting ? -size - 6 : -size - 8} highlight={highlight} /> : null}
-      <g transform={`scale(${facing} 1)`}>
-        <ellipse cx="1" cy="3" rx={highlight ? 10 : 8} ry="2.6" fill="#05040A" opacity="0.45" />
+      <g transform={`scale(${drawFacing} 1)`}>
+        <ellipse cx="1" cy="3" rx={highlight ? 10 : guest.isCompanion ? 6 : 8} ry="2.6" fill="#05040A" opacity="0.45" />
         {highlight ? (
           <ellipse cx="0" cy={-size / 2} rx="16" ry="18" fill="none" stroke="#E8C878" strokeWidth="1.2" className="wd-ring" />
         ) : null}
         <g className={moodClass}>
           <g className="wd-bob">
-            <g
-              style={{
-                filter: `hue-rotate(${sprite.hue}deg) saturate(${sprite.saturate}) brightness(${sprite.brightness})`,
-              }}
+            <svg
+              x={-size / 2}
+              y={-size}
+              width={size}
+              height={size}
+              viewBox={`${sx} ${sy} ${atlas.cell} ${atlas.cell}`}
+              overflow="hidden"
             >
-              <svg
-                x={-size / 2}
-                y={-size}
-                width={size}
-                height={size}
-                viewBox={`${sx} ${sy} ${GUEST_ATLAS.cell} ${GUEST_ATLAS.cell}`}
-                overflow="hidden"
-              >
-                <image
-                  href="/sprites/guests.png"
-                  width={GUEST_ATLAS.width}
-                  height={GUEST_ATLAS.height}
-                  style={{ imageRendering: "pixelated" }}
-                />
-              </svg>
-            </g>
-            {mood === "cheer" ? (
+              <image
+                href={atlas.href}
+                width={atlas.width}
+                height={atlas.height}
+                style={{ imageRendering: "pixelated" }}
+              />
+            </svg>
+            {mood === "cheer" && !guest.isCompanion ? (
               <g className="wd-heart" transform={`translate(${size / 2 - 2} ${-size - 6})`}>
                 <image href="/assets/tiddybub/ui/heart.svg" width="12" height="12" />
               </g>

@@ -29,6 +29,9 @@ const AISLE = [
   { y: 690, x0: 240, x1: 400 },
 ]
 
+/** Companion cats — smaller than the registrant, still readable. */
+const COMPANION_SCALE = 0.55
+
 function pewSeats(): Spot[] {
   const seats: Spot[] = []
   for (let row = 0; row < PEW.rows; row++) {
@@ -99,14 +102,58 @@ function wrapSpot(spots: Spot[], index: number, jitter: (wrap: number, spot: Spo
   return jitter(wrap, spot)
 }
 
+function offsetPath(path: Stop[], dx: number, dy: number): Stop[] {
+  return path.map((stop) => ({ ...stop, x: stop.x + dx, y: stop.y + dy }))
+}
+
+function followLeader(leader: PlacedGuest, companion: Guest, index: number): PlacedGuest {
+  const trail = index + 1
+  const side = trail % 2 === 0 ? 1 : -1
+  return {
+    guest: companion,
+    path: offsetPath(leader.path, side * (6 + trail * 4), 4 + trail * 5),
+    speed: leader.speed,
+    scale: leader.scale * COMPANION_SCALE,
+    delay: leader.delay + trail * 0.28,
+    mood: leader.mood,
+    facing: leader.facing,
+  }
+}
+
+function clusterNear(leader: PlacedGuest, companion: Guest, index: number): PlacedGuest {
+  const trail = index + 1
+  const side = trail % 2 === 0 ? 1 : -1
+  const anchor = leader.path[0]
+  return {
+    guest: companion,
+    path: [{ x: anchor.x + side * (8 + trail * 5), y: anchor.y + 3 + trail * 2, wait: 8 }],
+    speed: leader.speed,
+    scale: leader.scale * COMPANION_SCALE,
+    delay: 0,
+    mood: leader.mood === "walk" ? "cheer" : leader.mood,
+    facing: leader.facing,
+  }
+}
+
 export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[] {
   const rank = (guest: Guest) => (guest.partyPhone === phone ? 0 : 1)
   const byId = (a: Guest, b: Guest) => rank(a) - rank(b) || a.id.localeCompare(b.id)
-  const attending = guests.filter((guest) => guest.attendance === "attending").sort(byId)
-  const absent = guests.filter((guest) => guest.attendance === "not_attending").sort(byId)
 
-  const walkerCount = Math.min(AISLE.length, attending.length)
-  const walkers = attending.slice(0, walkerCount).map((guest, index) => {
+  const mains = guests.filter((guest) => !guest.isCompanion)
+  const companionsByPhone = new Map<string, Guest[]>()
+  for (const guest of guests) {
+    if (!guest.isCompanion) continue
+    const list = companionsByPhone.get(guest.partyPhone) ?? []
+    list.push(guest)
+    companionsByPhone.set(guest.partyPhone, list)
+  }
+  for (const list of companionsByPhone.values()) list.sort(byId)
+
+  const attendingMains = mains.filter((guest) => guest.attendance === "attending").sort(byId)
+  const absentMains = mains.filter((guest) => guest.attendance !== "attending").sort(byId)
+
+  const walkerCount = Math.min(AISLE.length, attendingMains.length)
+  const walkers = attendingMains.slice(0, walkerCount).map((guest, index) => {
     const lane = AISLE[index % AISLE.length]
     const even = index % 2 === 0
     return {
@@ -128,7 +175,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
     }
   })
 
-  const rest = attending.slice(walkerCount)
+  const rest = attendingMains.slice(walkerCount)
   const sitters = rest.slice(0, PEW_SEATS.length).map((guest, index) => still(guest, PEW_SEATS[index], "sit", 0.58, 0.68))
   const standing = rest.slice(PEW_SEATS.length).map((guest, index) =>
     still(
@@ -143,7 +190,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       0.7
     )
   )
-  const outside = absent.map((guest, index) =>
+  const outside = absentMains.map((guest, index) =>
     still(
       guest,
       wrapSpot(OUTSIDE, index, (wrap, spot) => ({ ...spot, x: spot.x + wrap * 6 })),
@@ -153,7 +200,18 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
     )
   )
 
-  return [...walkers, ...sitters, ...standing, ...outside]
+  const leaders = [...walkers, ...sitters, ...standing, ...outside]
+  const followers: PlacedGuest[] = []
+  for (const leader of leaders) {
+    const party = companionsByPhone.get(leader.guest.partyPhone) ?? []
+    party.forEach((companion, index) => {
+      followers.push(
+        leader.mood === "walk" ? followLeader(leader, companion, index) : clusterNear(leader, companion, index)
+      )
+    })
+  }
+
+  return [...leaders, ...followers]
 }
 
 export function footY(placed: PlacedGuest) {
