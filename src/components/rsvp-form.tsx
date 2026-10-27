@@ -185,7 +185,7 @@ export function RsvpForm({
           onClick={onChangePhone}
           className="mt-2 cursor-pointer text-sm font-medium text-rose underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
         >
-          ใช้รหัสอื่น
+          ใช้เบอร์อื่น
         </button>
       </header>
 

@@ -34,12 +34,19 @@ export function formatThaiMobile(phone: string): string {
   return `${phone.slice(0, 3)}-${phone.slice(3, 6)}-${phone.slice(6)}`
 }
 
-/** Digits only while typing a code — never a phone-shaped mask that looks pre-filled. */
-export function maskInviteInput(raw: string): string {
+/** Format as the guest types, and collapse a full `+66` paste into local form. */
+export function maskPhoneInput(raw: string): string {
   const digits = digitsOnly(raw)
-  if (digits.startsWith("66") && digits.length >= 11) {
-    const local = normalizeThaiMobile(raw)
-    return local ?? digits.slice(0, 12)
+  const normalized = normalizeThaiMobile(raw)
+  if (normalized && digits.length >= 10) return formatThaiMobile(normalized)
+
+  if (digits.startsWith("66")) {
+    const international = digits.slice(0, 12)
+    return international ? `+${international}` : ""
   }
-  return digits.slice(0, 10)
+
+  const local = digits.slice(0, 10)
+  if (local.length <= 3) return local
+  if (local.length <= 6) return `${local.slice(0, 3)}-${local.slice(3)}`
+  return `${local.slice(0, 3)}-${local.slice(3, 6)}-${local.slice(6)}`
 }

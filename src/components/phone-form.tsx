@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Character } from "@/components/venue/character"
 import { EventTitle, Ornament } from "@/components/event-title"
 import { PetalField } from "@/components/petal-field"
-import { maskInviteInput, normalizeThaiMobile } from "@/lib/phone"
+import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
 
 export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void }) {
   const [value, setValue] = useState("")
@@ -15,13 +15,13 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const code = normalizeThaiMobile(value)
-    if (!code) {
-      setError(value.trim() ? "รหัสนี้เข้างานไม่ได้" : "กรุณากรอกรหัสเข้างาน")
+    const phone = normalizeThaiMobile(value)
+    if (!phone) {
+      setError("กรุณากรอกเบอร์มือถือไทย 10 หลัก ขึ้นต้นด้วย 06, 08 หรือ 09")
       return
     }
     setError(null)
-    onContinue(code)
+    onContinue(phone)
   }
 
   return (
@@ -48,36 +48,32 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
         <form
           onSubmit={handleSubmit}
           className="mt-8 rounded-[1.7rem] border border-border bg-card/90 p-5 shadow-[0_24px_60px_-36px_rgba(42,38,35,0.55)] backdrop-blur-sm"
-          autoComplete="off"
           noValidate
         >
-          <Label htmlFor="invite-code" className="text-base text-ink">
-            รหัสเข้างาน
+          <Label htmlFor="phone" className="text-base text-ink">
+            เบอร์มือถือ
           </Label>
-          <p id="invite-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
+          <p id="phone-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
             ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ
           </p>
           <Input
-            id="invite-code"
-            name="invite-code"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            placeholder="รหัสเข้างาน"
+            id="phone"
+            name="tel"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="เบอร์มือถือ"
             value={value}
             aria-invalid={error ? true : undefined}
-            aria-describedby={error ? "invite-error invite-hint" : "invite-hint"}
-            className="mt-3 h-12 rounded-2xl bg-background px-4 text-base tracking-[0.18em] md:text-base"
+            aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
+            className="mt-3 h-12 rounded-2xl bg-background px-4 text-base md:text-base"
             onChange={(event) => {
-              setValue(maskInviteInput(event.target.value))
+              setValue(maskPhoneInput(event.target.value))
               if (error) setError(null)
             }}
           />
           {error ? (
-            <p id="invite-error" role="alert" className="mt-2 text-sm text-destructive">
+            <p id="phone-error" role="alert" className="mt-2 text-sm text-destructive">
               {error}
             </p>
           ) : null}
