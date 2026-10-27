@@ -163,10 +163,10 @@ export function Character({
   facing?: 1 | -1
 }) {
   if (role === "groom") {
-    return <PixelCouple href="/sprites/groom.png?v=3" label={name ?? "อ๋อง"} showName={showName} w={47} h={82} />
+    return <PixelCouple href="/sprites/groom.png?v=4" label={name ?? "อ๋อง"} showName={showName} w={48} h={68} />
   }
   if (role === "bride") {
-    return <PixelCouple href="/sprites/bride.png?v=3" label={name ?? "แทต"} showName={showName} w={28} h={39} />
+    return <PixelCouple href="/sprites/bride.png?v=4" label={name ?? "แทต"} showName={showName} w={48} h={68} />
   }
   return (
     <AtlasGuest
