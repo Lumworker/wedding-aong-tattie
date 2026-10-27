@@ -43,22 +43,23 @@ function Nameplate({
   )
 }
 
-const COUPLE_SPRITE = { w: 50, h: 85 }
-
 function PixelCouple({
   href,
   label,
   showName,
+  w,
+  h,
 }: {
   href: string
   label: string
   showName: boolean
+  w: number
+  h: number
 }) {
-  const { w, h } = COUPLE_SPRITE
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      <ellipse cx="2" cy="5" rx="16" ry="4" fill="#05040A" opacity="0.55" />
+      <ellipse cx="2" cy="4" rx={w * 0.28} ry="3.2" fill="#05040A" opacity="0.5" />
       <g className="is-idle">
         <g className="wd-bob">
           <image
@@ -68,15 +69,6 @@ function PixelCouple({
             width={w}
             height={h}
             style={{ imageRendering: "pixelated" }}
-          />
-          <rect
-            x={-w / 2}
-            y={-h}
-            width={w}
-            height={h}
-            fill="#FFD080"
-            opacity="0.16"
-            style={{ mixBlendMode: "overlay" }}
           />
         </g>
       </g>
@@ -177,15 +169,6 @@ function CatGuest({
                 <rect x="8" y={sitting ? -12 : -20} width="4" height="4" fill={look.outfit} />
               )}
             </g>
-            <rect
-              x="-18"
-              y="-56"
-              width="36"
-              height="64"
-              fill="#FFD080"
-              opacity="0.12"
-              style={{ mixBlendMode: "overlay" }}
-            />
             {mood === "cheer" ? (
               <g className="wd-heart" transform="translate(16 -54)">
                 <path d="M0 3.2 C-4.2 -2.2 -0.8 -6.2 0 -3.2 C0.8 -6.2 4.2 -2.2 0 3.2 Z" fill="#E8C878" />
@@ -216,10 +199,10 @@ export function Character({
   facing?: 1 | -1
 }) {
   if (role === "groom") {
-    return <PixelCouple href="/sprites/groom.png?v=2" label={name ?? "อ๋อง"} showName={showName} />
+    return <PixelCouple href="/sprites/groom.png?v=3" label={name ?? "อ๋อง"} showName={showName} w={47} h={82} />
   }
   if (role === "bride") {
-    return <PixelCouple href="/sprites/bride.png?v=2" label={name ?? "แทต"} showName={showName} />
+    return <PixelCouple href="/sprites/bride.png?v=3" label={name ?? "แทต"} showName={showName} w={28} h={39} />
   }
   return (
     <CatGuest
