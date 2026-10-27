@@ -26,9 +26,9 @@ const display = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  title: "Chonprakun & Prachayaphorn · 25 ธันวาคม 2570",
+  title: "Chonprakun & Prachayaphorn · 5 ธันวาคม 2570",
   description:
-    "ตอบรับคำเชิญงานมงคลสมรสของ Chonprakun Panusetgul (อ๋อง) และ Prachayaphorn Muangphrae (แทตตี้) วันที่ 25 ธันวาคม 2570",
+    "ตอบรับคำเชิญงานมงคลสมรสของ Chonprakun Panusetgul (อ๋อง) และ Prachayaphorn Muangphrae (แทตตี้) วันที่ 5 ธันวาคม 2570",
 }
 
 export const viewport: Viewport = {

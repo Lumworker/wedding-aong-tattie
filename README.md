@@ -1,6 +1,6 @@
 # wedding-aong-tattie
 
-Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทตตี้) on **25 ธันวาคม 2570**.
+Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทตตี้) on **5 ธันวาคม 2570**.
 
 Place it on disk at `~/wedding-aong-tattie`.
 
