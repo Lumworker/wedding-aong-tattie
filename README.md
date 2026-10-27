@@ -2,25 +2,16 @@
 
 Thai-first wedding site for **Chonprakun Panusetgul** and **Prachayaphorn Muangphrae** (แทต) on **25 ธันวาคม 2570**.
 
-Local path: `~/aong/wedding-aong-tattie`
-
-GitHub (current): [Lumworker/wedding-aong-tattie](https://github.com/Lumworker/wedding-aong-tattie)
-
-```bash
-mkdir -p ~/aong
-git clone https://github.com/Lumworker/wedding-aong-tattie.git ~/aong/wedding-aong-tattie
-cd ~/aong/wedding-aong-tattie
-npm install
-npm run dev
-```
-
-Clone ได้โฟลเดอร์ว่างจนกว่าโค้ดจะถูก push ขึ้น GitHub จากเครื่องที่ล็อกอิน GitHub แล้ว
+Place it on disk at `~/aong/wedding-aong-tattie`.
 
 Guests enter with a mobile number, register their party, then land in an animated scene: the couple stands together, guests who are coming walk inside, and guests who cannot come cheer from outside.
 
 ## Run
 
 ```bash
+mkdir -p ~/aong
+git clone https://github.com/Lumworker/wedding-aong-tattie.git ~/aong/wedding-aong-tattie
+cd ~/aong/wedding-aong-tattie
 npm install
 npm run dev
 ```

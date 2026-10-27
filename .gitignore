@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+wedding-aong-tattie-source.tar.gz
+/public/*.tar.gz
 
 # debug
 npm-debug.log*
@@ -39,3 +41,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+wedding-aong-tattie-source.tar.gz
