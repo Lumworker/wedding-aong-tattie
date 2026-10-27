@@ -19,10 +19,9 @@ npm run dev
 
 Open [http://127.0.0.1:43123](http://127.0.0.1:43123).
 
-```bash
-npm run build
-npm start
-```
+`npm start` builds a production bundle, then serves it. If you already ran `npm run build`, use `npm run start:prod` to skip the rebuild.
+
+Do this from `~/wedding-aong-tattie` (the folder that contains this README and `package.json`). If Next warns about a `package-lock.json` in `/Users/aong`, you are either one directory too high, or a leftover lockfile sits in the home folder — this repo pins tracing to the project root so that warning should stay gone after you pull.
 
 `npm run lint` runs ESLint.
 
