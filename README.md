@@ -27,7 +27,7 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 ## Guest flow
 
-1. **รหัสเข้างาน** — a 10-digit invite code (the same value we store as the party id). The field is labeled and placeholder-texted as รหัสเข้างาน so it does not look like a filled-in phone number. There is no password.
+1. **รหัสเข้างาน** — labeled รหัสเข้างาน. Hint: ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ. The field stays empty (no sample number). Same device with a saved party skips this step and opens the scene.
 2. **ตอบรับ** — choose how many people are in the party (1–10). For each person: name, gender, adult or child, and whether they are coming. One party stays small; the church holds every attending party together.
 3. **ฉากงาน** — the animated main page. Use **แก้ไขการตอบรับ** to change the party, or **ใช้รหัสอื่น** to switch accounts.
 

@@ -55,7 +55,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
             รหัสเข้างาน
           </Label>
           <p id="invite-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
-            แขกที่เคยตอบรับแล้วจะกลับมาที่ฉากงานได้ทันที
+            ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ
           </p>
           <Input
             id="invite-code"
@@ -86,7 +86,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
           </Button>
           <Ornament className="mt-5" />
           <p className="text-center text-xs leading-5 text-muted-foreground">
-            ใช้รหัสชุดเดิมเมื่อกลับมา ระบบพาเข้าฉากให้เลย
+            เคยตอบรับบนเครื่องนี้แล้ว จะกลับเข้าฉากงานทันที
           </p>
         </form>
       </div>
