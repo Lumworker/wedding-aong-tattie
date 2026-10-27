@@ -56,19 +56,19 @@ export function lookForGuest(guest: Guest): Look {
 }
 
 export const GROOM_LOOK: Look = {
-  skin: "#F0C4A4",
-  hair: "#241C18",
+  skin: "#E8B896",
+  hair: "#1A1410",
   outfit: "#2C3338",
   outfitDark: "#1C2126",
-  accent: "#E7B4B8",
+  accent: "#E07070",
   shoe: "#1A1614",
 }
 
 export const BRIDE_LOOK: Look = {
-  skin: "#F6D3BD",
-  hair: "#3B2A22",
+  skin: "#F3C4A8",
+  hair: "#6B4428",
   outfit: "#FFFCF8",
   outfitDark: "#F3E4E2",
-  accent: "#E7B4B8",
+  accent: "#E07070",
   shoe: "#F7F1EA",
 }

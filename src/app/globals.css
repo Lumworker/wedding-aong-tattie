@@ -217,6 +217,12 @@
   50% { transform: rotate(-8deg); }
 }
 
+@keyframes wd-peek {
+  0%,
+  100% { transform: translateY(4px); }
+  50% { transform: translateY(-6px); }
+}
+
 @keyframes wd-drift {
   0%,
   100% { transform: translateX(0); }
@@ -258,6 +264,11 @@
 .is-idle .wd-bob,
 .is-cheering .wd-bob {
   animation: wd-idle 3.1s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.is-peeking .wd-bob {
+  animation: wd-peek 2.4s ease-in-out infinite;
   transform-origin: center bottom;
 }
 
@@ -360,6 +371,7 @@
   .is-walking .wd-bob,
   .is-idle .wd-bob,
   .is-cheering .wd-bob,
+  .is-peeking .wd-bob,
   .is-cheering .wd-arm-r {
     animation: none !important;
   }

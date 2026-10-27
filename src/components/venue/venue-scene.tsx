@@ -101,7 +101,7 @@ export function VenueScene({
       <section
         id="venue"
         aria-labelledby="venue-title"
-        className="relative min-h-[74dvh] bg-[linear-gradient(180deg,#f8d5cc_0%,#f7e6da_42%,#d5e6d2_100%)] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
+        className="relative min-h-[74dvh] bg-[linear-gradient(180deg,#4eb8f0_0%,#8ad8f8_46%,#c8f0a8_100%)] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-full lg:min-h-0"
       >
         <h2 id="venue-title" className="sr-only">
           ฉากงานมงคลสมรสของ {COUPLE.groomShort} และ {COUPLE.brideShort}
@@ -136,7 +136,7 @@ export function VenueScene({
       <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
         <p className="text-sm leading-6 text-muted-foreground lg:hidden">บัญชีแขก {formatThaiMobile(phone)}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          ผู้ที่มาร่วมงานเดินในฉาก ผู้ที่มาไม่ได้ยืนส่งใจให้นอกงาน
+          ผู้ที่มาร่วมงานเดินเล่นในลานท่อคอนกรีต ผู้ที่มาไม่ได้อยู่ในต้นไม้แล้วยื่นหัวออกมาทักทาย
         </p>
         <RosterGroup title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
         {others.length > 0 ? <RosterGroup title="แขกบนเครื่องนี้" guests={others} /> : null}

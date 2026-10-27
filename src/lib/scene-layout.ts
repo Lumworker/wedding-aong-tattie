@@ -3,30 +3,30 @@ import type { Guest } from "@/lib/types"
 export const SCENE = {
   width: 640,
   height: 900,
-  groom: { x: 268, y: 534 },
-  bride: { x: 374, y: 534 },
+  groom: { x: 278, y: 618 },
+  bride: { x: 372, y: 618 },
 } as const
 
 const INSIDE_ROUTES: Array<{ x: number[]; y: number[] }> = [
-  { x: [228, 402, 416, 244, 228], y: [592, 568, 608, 598, 592] },
-  { x: [408, 252, 236, 388, 408], y: [606, 578, 562, 594, 606] },
-  { x: [322, 334, 286, 360, 322], y: [604, 552, 574, 566, 604] },
-  { x: [236, 318, 396, 268, 236], y: [564, 606, 582, 552, 564] },
-  { x: [378, 424, 304, 220, 378], y: [572, 608, 590, 560, 572] },
-  { x: [268, 362, 404, 248, 268], y: [608, 560, 586, 574, 608] },
+  { x: [250, 390, 430, 220, 250], y: [590, 560, 640, 660, 590] },
+  { x: [400, 240, 210, 360, 400], y: [700, 680, 600, 640, 700] },
+  { x: [300, 340, 260, 380, 300], y: [740, 640, 700, 620, 740] },
+  { x: [200, 320, 420, 250, 200], y: [560, 720, 680, 540, 560] },
+  { x: [360, 450, 310, 190, 360], y: [580, 650, 710, 590, 580] },
+  { x: [270, 350, 410, 230, 270], y: [760, 580, 630, 700, 760] },
 ]
 
-const OUTSIDE_SPOTS = [
-  { x: 92, y: 728 },
-  { x: 140, y: 804 },
-  { x: 74, y: 868 },
-  { x: 548, y: 722 },
-  { x: 498, y: 798 },
-  { x: 574, y: 862 },
-  { x: 198, y: 870 },
-  { x: 446, y: 874 },
-  { x: 154, y: 758 },
-  { x: 488, y: 746 },
+const TREE_PEEK_SPOTS = [
+  { x: 72, y: 406 },
+  { x: 128, y: 356 },
+  { x: 48, y: 498 },
+  { x: 520, y: 348 },
+  { x: 580, y: 398 },
+  { x: 598, y: 494 },
+  { x: 200, y: 332 },
+  { x: 440, y: 324 },
+  { x: 36, y: 778 },
+  { x: 604, y: 774 },
 ]
 
 export type PlacedGuest = {
@@ -36,7 +36,7 @@ export type PlacedGuest = {
   scale: number
   duration: number
   delay: number
-  mood: "walk" | "cheer"
+  mood: "walk" | "cheer" | "peek"
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -44,11 +44,11 @@ function clamp(n: number, min: number, max: number) {
 }
 
 function shiftRoute(route: { x: number[]; y: number[] }, slot: number) {
-  const dx = (slot % 2 === 0 ? 1 : -1) * (slot + 1) * 10
-  const dy = ((slot % 3) - 1) * 8
+  const dx = (slot % 2 === 0 ? 1 : -1) * (slot + 1) * 12
+  const dy = ((slot % 3) - 1) * 10
   return {
-    x: route.x.map((value) => clamp(value + dx, 214, 428)),
-    y: route.y.map((value) => clamp(value + dy, 548, 610)),
+    x: route.x.map((value) => clamp(value + dx, 170, 470)),
+    y: route.y.map((value) => clamp(value + dy, 540, 760)),
   }
 }
 
@@ -71,27 +71,26 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       x: shifted.x,
       y: shifted.y,
       scale: child ? 0.76 : 0.98,
-      duration: 12 + (index % 5) * 2.2,
+      duration: 14 + (index % 5) * 2.4,
       delay: index * 0.28,
       mood: "walk" as const,
     }
   })
 
   const outside = absent.map((guest, index) => {
-    const spot = OUTSIDE_SPOTS[index % OUTSIDE_SPOTS.length]
-    const slot = Math.floor(index / OUTSIDE_SPOTS.length)
-    const x = spot.x + (slot % 2 === 0 ? slot * 12 : -slot * 12)
-    const y = spot.y - slot * 8
+    const spot = TREE_PEEK_SPOTS[index % TREE_PEEK_SPOTS.length]
+    const slot = Math.floor(index / TREE_PEEK_SPOTS.length)
+    const x = spot.x + (slot % 2 === 0 ? slot * 10 : -slot * 10)
+    const y = spot.y - slot * 6
     const child = guest.ageGroup === "child"
-    const near = y > 820 ? 1.05 : 1
     return {
       guest,
       x,
-      y: [y, y - 6, y],
-      scale: (child ? 0.76 : 0.98) * near,
-      duration: 2.15 + (index % 4) * 0.38,
+      y: [y, y - 5, y],
+      scale: child ? 0.82 : 1,
+      duration: 2.4 + (index % 4) * 0.4,
       delay: index * 0.17,
-      mood: "cheer" as const,
+      mood: "peek" as const,
     }
   })
 
@@ -99,5 +98,6 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
 }
 
 export function footY(placed: PlacedGuest): number {
+  if (placed.mood === "peek") return Array.isArray(placed.y) ? Math.max(...placed.y) + 40 : placed.y + 40
   return Array.isArray(placed.y) ? Math.max(...placed.y) : placed.y
 }
