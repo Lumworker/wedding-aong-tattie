@@ -12,6 +12,8 @@ import { SEED_PARTY_PHONE } from "@/lib/seed-guests"
 import type { Guest } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
+const ROSTER_PREVIEW = 12
+
 function RosterGroup({
   title,
   hint,
@@ -23,6 +25,8 @@ function RosterGroup({
   guests: Guest[]
   empty?: string
 }) {
+  const overflow = guests.length > ROSTER_PREVIEW
+  const shown = overflow ? guests.slice(0, ROSTER_PREVIEW) : guests
   return (
     <section className="mt-6">
       <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -33,25 +37,53 @@ function RosterGroup({
       {guests.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">{empty}</p>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {guests.map((guest) => (
-            <li key={guest.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5">
-              <span
-                className={cn(
-                  "size-2.5 shrink-0 rounded-full",
-                  guest.attendance === "attending" ? "bg-sage-deep" : "bg-blush-deep"
-                )}
-                aria-hidden="true"
-              />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{guest.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {ageLabel(guest.ageGroup)} · {attendanceLabel(guest.attendance)}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="flex flex-col gap-2">
+            {shown.map((guest) => (
+              <li key={guest.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5">
+                <span
+                  className={cn(
+                    "size-2.5 shrink-0 rounded-full",
+                    guest.attendance === "attending" ? "bg-sage-deep" : "bg-blush-deep"
+                  )}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{guest.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {ageLabel(guest.ageGroup)} · {attendanceLabel(guest.attendance)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {overflow ? (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-sm text-muted-foreground">
+                และอีก {guests.length - ROSTER_PREVIEW} คน
+              </summary>
+              <ul className="mt-2 flex flex-col gap-2">
+                {guests.slice(ROSTER_PREVIEW).map((guest) => (
+                  <li key={guest.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5">
+                    <span
+                      className={cn(
+                        "size-2.5 shrink-0 rounded-full",
+                        guest.attendance === "attending" ? "bg-sage-deep" : "bg-blush-deep"
+                      )}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{guest.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {ageLabel(guest.ageGroup)} · {attendanceLabel(guest.attendance)}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+        </>
       )}
     </section>
   )
@@ -136,13 +168,13 @@ export function VenueScene({
       <section className="px-4 pt-2 pb-10 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:px-8 lg:pt-0 lg:pb-8">
         <p className="text-sm leading-6 text-muted-foreground lg:hidden">บัญชีแขก {formatThaiMobile(phone)}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          แมวนั่งในเพว์ บางตัวเดินทางเดินกลาง ขึ้นแท่นบ่าวสาวไม่ได้
+          เพว์เก้าแถวรองรับแขกมาร่วมงานได้กว่า 100 คน แมวนั่งในที่ บางตัวเดินทางเดินกลาง ขึ้นแท่นบ่าวสาวไม่ได้
         </p>
         <RosterGroup title="คณะของคุณ" guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
         {others.length > 0 ? <RosterGroup title="แขกบนเครื่องนี้" guests={others} /> : null}
         <RosterGroup
           title="แขกตัวอย่าง"
-          hint="ชื่อชุดนี้ติดมากับเดโม เพื่อให้ฉากงานไม่ว่างเปล่า ก่อนมีแขกจริง"
+          hint="ชื่อชุดนี้ติดมากับเดโม ประมาณหนึ่งร้อยตัว เพื่อให้เห็นโบสถ์เต็มก่อนมีแขกจริง"
           guests={samples}
           empty="ยังไม่มีแขกตัวอย่าง"
         />

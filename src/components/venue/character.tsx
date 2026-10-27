@@ -104,7 +104,8 @@ function CatGuest({
   const light = shade(fur, 28)
   const female = guest.gender === "female"
   const sitting = mood === "sit"
-  const moodClass = mood === "walk" ? "is-walking" : mood === "cheer" ? "is-cheering" : "is-idle"
+  const moodClass =
+    mood === "walk" ? "is-walking" : mood === "cheer" ? "is-cheering" : mood === "sit" ? "is-sitting" : "is-idle"
   const step = `${0.36 + (guest.id.length % 4) * 0.04}s`
   const label = guest.name
 
@@ -170,8 +171,8 @@ function CatGuest({
               )}
             </g>
             {mood === "cheer" ? (
-              <g className="wd-heart" transform="translate(16 -54)">
-                <path d="M0 3.2 C-4.2 -2.2 -0.8 -6.2 0 -3.2 C0.8 -6.2 4.2 -2.2 0 3.2 Z" fill="#E8C878" />
+              <g className="wd-heart" transform="translate(10 -58)">
+                <image href="/assets/tiddybub/ui/heart.svg" width="14" height="14" />
               </g>
             ) : null}
           </g>

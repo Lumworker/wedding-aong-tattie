@@ -179,6 +179,7 @@ export function RsvpForm({
         <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           บอกเราว่าใครอยู่ในคณะของ {formatThaiMobile(phone)} จะได้พาทุกคนเข้าฉากงาน
+          โบสถ์รองรับแขกทั้งงานได้กว่า 100 คน — แบบนี้เก็บเฉพาะคณะของคุณ ครั้งละไม่เกิน {PARTY_MAX} คน
         </p>
         <button
           type="button"
@@ -282,7 +283,7 @@ export function RsvpForm({
                   value={person.attendance}
                   onChange={(attendance) => update(person.id, { attendance })}
                   options={[
-                    { value: "attending", label: "มาร่วมงาน", hint: "เดินในงาน" },
+                    { value: "attending", label: "มาร่วมงาน", hint: "นั่งเพว์ในโบสถ์" },
                     { value: "not_attending", label: "ไม่ได้มา", hint: "ยืนส่งความยินดีด้านนอก" },
                   ]}
                 />

@@ -1,3 +1,5 @@
+import { PEW } from "@/lib/scene-layout"
+
 function Candle({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
@@ -28,7 +30,25 @@ function StainedGlass({ x, y, w, h }: { x: number; y: number; w: number; h: numb
       />
       <rect x={x + 8} y={y + r + 16} width={(w - 16) / 2 - 2} height={h - r - 24} fill="#2E9A6A" opacity="0.8" />
       <rect x={x + w / 2 + 2} y={y + r + 16} width={(w - 16) / 2 - 2} height={h - r - 24} fill="#E8A040" opacity="0.75" />
-      <ellipse cx={x + w / 2} cy={y + r} rx={w * 0.42} ry={h * 0.28} fill="#F8E2B8" opacity="0.18" className="wd-glow" />
+      <image
+        href="/assets/tiddybub/light/window-glow.png"
+        x={x - 18}
+        y={y - 10}
+        width={w + 36}
+        height={h + 40}
+        opacity="0.55"
+        style={{ mixBlendMode: "screen" }}
+      />
+    </g>
+  )
+}
+
+function AltarFlowers({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`} style={{ imageRendering: "pixelated" }}>
+      <image href="/assets/tiddybub/flowers/flower_01.png" x="-18" y="-22" width="22" height="22" />
+      <image href="/assets/tiddybub/flowers/flower_03.png" x="-4" y="-26" width="20" height="20" />
+      <image href="/assets/tiddybub/flowers/flower_02.png" x="8" y="-20" width="18" height="18" />
     </g>
   )
 }
@@ -107,8 +127,35 @@ export function SceneBackdrop() {
       <StainedGlass x={332} y={176} w={78} h={128} />
       <StainedGlass x={454} y={176} w={78} h={128} />
 
-      <polygon points="120,300 186,300 250,790 70,790" fill="url(#wd-shaft)" className="wd-shaft" />
-      <polygon points="454,300 520,300 570,790 390,790" fill="url(#wd-shaft)" className="wd-shaft" />
+      <image
+        href="/assets/tiddybub/light/cone.png"
+        x="70"
+        y="250"
+        width="220"
+        height="520"
+        opacity="0.28"
+        style={{ mixBlendMode: "screen" }}
+        className="wd-shaft"
+      />
+      <image
+        href="/assets/tiddybub/light/cone.png"
+        x="350"
+        y="250"
+        width="220"
+        height="520"
+        opacity="0.28"
+        style={{ mixBlendMode: "screen" }}
+        className="wd-shaft"
+      />
+      <image
+        href="/assets/tiddybub/light/streaks.png"
+        x="90"
+        y="280"
+        width="460"
+        height="360"
+        opacity="0.22"
+        style={{ mixBlendMode: "screen" }}
+      />
 
       {Array.from({ length: 14 }).map((_, index) => (
         <circle
@@ -146,14 +193,37 @@ export function SceneBackdrop() {
         </g>
       ))}
 
-      {[0, 1, 2, 3, 4].map((index) => (
-        <g key={index}>
-          <rect x="96" y={538 + index * 42} width="176" height="16" fill="#2A1C14" />
-          <rect x="96" y={534 + index * 42} width="176" height="10" fill="#5A3A28" />
-          <rect x="368" y={538 + index * 42} width="176" height="16" fill="#2A1C14" />
-          <rect x="368" y={534 + index * 42} width="176" height="10" fill="#5A3A28" />
-        </g>
-      ))}
+      {Array.from({ length: PEW.rows }).map((_, index) => {
+        const y = PEW.startY + index * PEW.rowGap
+        return (
+          <g key={index}>
+            <rect x={PEW.leftX} y={y + 8} width={PEW.width} height="14" fill="#2A1C14" />
+            <rect x={PEW.leftX} y={y + 4} width={PEW.width} height="9" fill="#5A3A28" />
+            <rect x={PEW.rightX} y={y + 8} width={PEW.width} height="14" fill="#2A1C14" />
+            <rect x={PEW.rightX} y={y + 4} width={PEW.width} height="9" fill="#5A3A28" />
+            {index % 2 === 0 ? (
+              <>
+                <image
+                  href="/assets/tiddybub/flowers/flower_04.png"
+                  x={PEW.leftX - 4}
+                  y={y - 6}
+                  width="14"
+                  height="14"
+                  style={{ imageRendering: "pixelated" }}
+                />
+                <image
+                  href="/assets/tiddybub/flowers/flower_04.png"
+                  x={PEW.rightX + PEW.width - 10}
+                  y={y - 6}
+                  width="14"
+                  height="14"
+                  style={{ imageRendering: "pixelated" }}
+                />
+              </>
+            ) : null}
+          </g>
+        )
+      })}
 
       <ellipse cx="320" cy="456" rx="170" ry="90" fill="url(#wd-spot)" />
       <rect x="150" y="486" width="340" height="26" fill="#5A3A22" />
@@ -169,31 +239,12 @@ export function SceneBackdrop() {
         <rect x="-5" y="-70" width="10" height="36" fill="#E8C878" />
         <rect x="-16" y="-60" width="32" height="7" fill="#E8C878" />
       </g>
+      <AltarFlowers x={196} y={488} />
+      <AltarFlowers x={444} y={488} />
       <Candle x={232} y={428} />
       <Candle x={408} y={428} />
       <Candle x={248} y={436} />
       <Candle x={392} y={436} />
-
-      {[
-        [210, 360],
-        [250, 420],
-        [390, 350],
-        [430, 430],
-        [300, 500],
-        [340, 560],
-        [180, 480],
-        [460, 500],
-      ].map(([cx, cy], index) => (
-        <circle
-          key={index}
-          cx={cx}
-          cy={cy}
-          r="1.6"
-          fill="#FFF6D0"
-          className="wd-mote"
-          style={{ animationDelay: `${index * 0.7}s` }}
-        />
-      ))}
 
       <rect x="88" y="784" width="464" height="20" fill="#3A2A20" />
       <rect x="56" y="802" width="528" height="16" fill="#2A1E18" />

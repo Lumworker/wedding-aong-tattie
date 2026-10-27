@@ -317,12 +317,12 @@
 }
 
 .hd2d-hud {
-  border: 2px solid #e8c878;
-  background: #121018eb;
+  border: 8px solid transparent;
+  border-image: url("/assets/tiddybub/ui/panel.png") 8 fill;
   color: #f8e2b8;
-  box-shadow: 0 0 0 1px #3a2a18, 4px 4px 0 #05040a;
   font-size: 11px;
   letter-spacing: 0.04em;
+  image-rendering: pixelated;
 }
 
 .wd-bob,

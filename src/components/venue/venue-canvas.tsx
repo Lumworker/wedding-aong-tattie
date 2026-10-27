@@ -30,7 +30,7 @@ function CoupleActor({
   )
 }
 
-function GuestActor({
+function WalkingGuest({
   placed,
   showName,
   mine,
@@ -46,12 +46,12 @@ function GuestActor({
     x: start.x,
     y: start.y,
     facing: placed.facing,
-    walking: placed.mood === "walk",
+    walking: true,
     hop: 0,
   })
 
   useAnimationFrame((time) => {
-    if (reduced || placed.mood !== "walk") return
+    if (reduced) return
     const seconds = time / 1000 - placed.delay
     if (seconds < 0) return
     const next = poseOnPath(placed.path, placed.speed, seconds)
@@ -66,42 +66,90 @@ function GuestActor({
     )
   })
 
-  const mood = placed.mood === "walk" ? (pose.walking ? "walk" : "idle") : placed.mood
-  const facing = placed.mood === "walk" ? pose.facing : placed.facing
-
   return (
     <g transform={`translate(${pose.x} ${pose.y - pose.hop})`}>
       <g transform={`scale(${placed.scale})`}>
         <Character
           guest={placed.guest}
-          mood={mood}
+          mood={pose.walking && !reduced ? "walk" : "idle"}
           showName={showName}
           highlight={mine}
-          facing={facing}
+          facing={pose.facing}
         />
       </g>
     </g>
   )
 }
 
+function StillGuest({
+  placed,
+  showName,
+  mine,
+}: {
+  placed: PlacedGuest
+  showName: boolean
+  mine: boolean
+}) {
+  const start = placed.path[0]
+  return (
+    <g transform={`translate(${start.x} ${start.y})`}>
+      <g transform={`scale(${placed.scale})`}>
+        <Character
+          guest={placed.guest}
+          mood={placed.mood}
+          showName={showName}
+          highlight={mine}
+          facing={placed.facing}
+        />
+      </g>
+    </g>
+  )
+}
+
+function GuestActor({
+  placed,
+  showName,
+  mine,
+  reduced,
+}: {
+  placed: PlacedGuest
+  showName: boolean
+  mine: boolean
+  reduced: boolean
+}) {
+  if (placed.mood === "walk") {
+    return <WalkingGuest placed={placed} showName={showName} mine={mine} reduced={reduced} />
+  }
+  return <StillGuest placed={placed} showName={showName} mine={mine} />
+}
+
 function DustMotes({ reduced }: { reduced: boolean }) {
   if (reduced) return null
   const motes = [
-    { left: "28%", delay: 0, dur: 9 },
-    { left: "36%", delay: 1.4, dur: 11 },
-    { left: "48%", delay: 0.6, dur: 8 },
-    { left: "58%", delay: 2.2, dur: 12 },
-    { left: "64%", delay: 0.9, dur: 10 },
-    { left: "42%", delay: 3, dur: 13 },
+    { left: "28%", delay: 0, dur: 9, src: "/assets/tiddybub/particles/spark.png" },
+    { left: "36%", delay: 1.4, dur: 11, src: "/assets/tiddybub/particles/star.png" },
+    { left: "48%", delay: 0.6, dur: 8, src: "/assets/tiddybub/particles/light.png" },
+    { left: "58%", delay: 2.2, dur: 12, src: "/assets/tiddybub/particles/spark.png" },
+    { left: "64%", delay: 0.9, dur: 10, src: "/assets/tiddybub/particles/window.png" },
+    { left: "42%", delay: 3, dur: 13, src: "/assets/tiddybub/particles/star.png" },
   ]
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       {motes.map((mote, index) => (
-        <motion.span
+        <motion.img
           key={index}
-          className="absolute block rounded-full bg-[#fff6d0]"
-          style={{ left: mote.left, width: 3, height: 3, top: "18%" }}
-          animate={{ y: [0, 220], opacity: [0, 0.8, 0], x: [0, index % 2 === 0 ? 18 : -14] }}
+          src={mote.src}
+          alt=""
+          className="absolute block"
+          style={{
+            left: mote.left,
+            width: 10,
+            height: 10,
+            top: "18%",
+            imageRendering: "pixelated",
+            mixBlendMode: "screen",
+          }}
+          animate={{ y: [0, 220], opacity: [0, 0.85, 0], x: [0, index % 2 === 0 ? 18 : -14] }}
           transition={{ duration: mote.dur, delay: mote.delay, repeat: Infinity, ease: "linear" }}
         />
       ))}
@@ -138,15 +186,19 @@ export function VenueCanvas({
           <SceneBackdrop />
           <CoupleActor role="groom" reduced={reduced} />
           <CoupleActor role="bride" reduced={reduced} />
-          {ordered.map((guest) => (
-            <GuestActor
-              key={guest.guest.id}
-              placed={guest}
-              showName={showNames}
-              mine={Boolean(phone) && guest.guest.partyPhone === phone}
-              reduced={reduced}
-            />
-          ))}
+          {ordered.map((guest) => {
+            const mine = Boolean(phone) && guest.guest.partyPhone === phone
+            const labeled = mine || (showNames && guest.mood !== "sit")
+            return (
+              <GuestActor
+                key={guest.guest.id}
+                placed={guest}
+                showName={labeled}
+                mine={mine}
+                reduced={reduced}
+              />
+            )
+          })}
           <SceneForeground />
         </svg>
       </div>
