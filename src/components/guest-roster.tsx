@@ -9,7 +9,7 @@ function GuestPortrait({ guest }: { guest: Guest }) {
   const { atlas } = sprite
   const sx = sprite.col * atlas.frames * atlas.frameW
   const sy = sprite.row * atlas.frameH
-  const height = guest.isCompanion ? 49 : 58
+  const height = guest.isCompanion ? 41 : 58
   const width = Math.round((atlas.frameW / atlas.frameH) * height)
 
   return (

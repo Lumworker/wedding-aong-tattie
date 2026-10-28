@@ -6,7 +6,7 @@ Pixel guests, trees, and flowers share one chunky pixel size so they sit with th
 
 - `groom.png` / `bride.png` — pixel portraits of อ๋อง and แทตตี้.
 - `church.png` — chapel cropped from the user-supplied town building sheet.
-- `cats.png` — 4 companion cat variants for followers.
+- `cats.png` — 4 companion cat variants for followers. Each cat sits in its own frame with a transparent gutter so the next cat does not show through when the sprite is scaled.
 
 ## Guests
 
