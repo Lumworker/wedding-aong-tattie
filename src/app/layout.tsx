@@ -1,7 +1,17 @@
 import type { Metadata, Viewport } from "next"
 import type { ReactNode } from "react"
 import { Cormorant_Garamond, Noto_Sans_Thai, Noto_Serif_Thai } from "next/font/google"
+import { COUPLE, VENUE_MAP } from "@/lib/event"
 import "./globals.css"
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://127.0.0.1:43123")
+
+const shareTitle = `อ๋อง & แทตตี้ · งานมงคลสมรส ${COUPLE.dateThai}`
+const shareDescription = `ขอเชิญร่วมงานมงคลสมรสของอ๋อง (${COUPLE.groomShort}) และแทตตี้ (${COUPLE.brideShort}) วันที่ ${COUPLE.dateThai} ณ ${VENUE_MAP.name} ดินแดง`
 
 const thaiSans = Noto_Sans_Thai({
   subsets: ["thai", "latin"],
@@ -26,9 +36,23 @@ const display = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  title: "Chonprakun & Prachayaphorn · 5 ธันวาคม 2570",
-  description:
-    "ตอบรับคำเชิญงานมงคลสมรสของ Chonprakun Panusetgul (อ๋อง) และ Prachayaphorn Muangphrae (แทตตี้) วันที่ 5 ธันวาคม 2570",
+  metadataBase: new URL(siteUrl),
+  title: shareTitle,
+  description: shareDescription,
+  openGraph: {
+    title: shareTitle,
+    description: shareDescription,
+    locale: "th_TH",
+    type: "website",
+    siteName: "อ๋อง & แทตตี้",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: shareTitle }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: shareTitle,
+    description: shareDescription,
+    images: ["/og.png"],
+  },
 }
 
 export const viewport: Viewport = {

@@ -32,7 +32,14 @@ function styleHeader(sheet: ExcelJS.Worksheet) {
   row.commit()
 }
 
+function assertLocalWorkbook() {
+  if (process.env.VERCEL) {
+    throw new Error("เซิร์ฟเวอร์นี้ไม่เขียนไฟล์ Excel ใช้ Google Sheets ผ่าน GOOGLE_SERVICE_ACCOUNT_JSON")
+  }
+}
+
 async function ensureWorkbook() {
+  assertLocalWorkbook()
   await mkdir(DATA_DIR, { recursive: true })
   try {
     await access(WORKBOOK_PATH)
@@ -199,6 +206,7 @@ export function workbookPath() {
 }
 
 export async function loadExcelDoc(): Promise<WeddingDoc> {
+  assertLocalWorkbook()
   await ensureWorkbook()
   const book = new ExcelJS.Workbook()
   await book.xlsx.readFile(WORKBOOK_PATH)
@@ -211,6 +219,7 @@ export async function loadExcelDoc(): Promise<WeddingDoc> {
 }
 
 export async function saveExcelDoc(doc: WeddingDoc): Promise<void> {
+  assertLocalWorkbook()
   await ensureWorkbook()
   const book = new ExcelJS.Workbook()
   book.creator = "wedding-aong-tattie"

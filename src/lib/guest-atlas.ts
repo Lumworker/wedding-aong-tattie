@@ -17,7 +17,7 @@ export type SpriteAtlas = {
 
 /** Male guests — 6×4 characters, 2 frames each, from Pixel People. */
 export const MALE_ATLAS: SpriteAtlas = {
-  href: "/sprites/guests-male.png?v=6",
+  href: "/sprites/guests-male.png?v=7",
   frameW: 23,
   frameH: 40,
   frames: 2,
@@ -32,7 +32,7 @@ export const MALE_ATLAS: SpriteAtlas = {
 
 /** Female guests — same cell size as the male sheet. */
 export const FEMALE_ATLAS: SpriteAtlas = {
-  href: "/sprites/guests-female.png?v=6",
+  href: "/sprites/guests-female.png?v=7",
   frameW: 23,
   frameH: 40,
   frames: 2,

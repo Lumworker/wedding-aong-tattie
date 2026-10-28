@@ -176,12 +176,22 @@ export function VenueScene({
 
         <section>
           <h2 className="font-serif text-xl">📍 สถานที่</h2>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">{VENUE_MAP.note}</p>
+          <p className="mt-1 font-medium text-ink">{VENUE_MAP.name}</p>
+          <p className="text-xs text-muted-foreground">{VENUE_MAP.nameEn}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{VENUE_MAP.address}</p>
+          <a
+            href={VENUE_MAP.link}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-flex text-sm text-rose underline-offset-4 hover:underline"
+          >
+            เปิดใน Google Maps
+          </a>
           <div className="mt-3 overflow-hidden rounded-[1.4rem] border border-border bg-card">
             <iframe
-              title="แผนที่สถานที่จัดงาน"
-              src={`https://maps.google.com/maps?q=${VENUE_MAP.lat},${VENUE_MAP.lng}&z=16&output=embed`}
-              className="h-44 w-full border-0 grayscale-[20%]"
+              title={`แผนที่${VENUE_MAP.name}`}
+              src={VENUE_MAP.embed}
+              className="h-44 w-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />

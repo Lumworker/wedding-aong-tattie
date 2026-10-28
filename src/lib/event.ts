@@ -1,3 +1,8 @@
+/**
+ * Ceremony date is 5 ธันวาคม 2570.
+ * Kept on purpose after the explicit date fix (not 25 December).
+ * Every user-facing date string should read `COUPLE.dateThai`.
+ */
 export const COUPLE = {
   groom: "Chonprakun Panusetgul",
   groomShort: "Chonprakun",
@@ -18,12 +23,15 @@ export const COUPLE_STORY = {
     "ทั้งคู่เลือกวันที่ 5 ธันวาคม 2570 เพราะอยากให้คนที่รักมานั่งด้วยกันในวันที่มีแสงนวล ถ้าอยากรู้จักมากกว่าชื่อบนการ์ด ให้กลับไปแตะตัวบนแท่นได้เสมอ",
 } as const
 
-/** Placeholder pin until the real ceremony address is confirmed. */
+/** วัดแม่พระฟาติมา ดินแดง — Our Lady of Fatima Church, Bangkok. */
 export const VENUE_MAP = {
-  lat: 13.7466,
-  lng: 100.5392,
-  query: "Bangkok Art and Culture Centre",
-  note: "แผนที่ตัวอย่าง — จะอัปเดตจุดจริงก่อนวันงาน",
+  name: "โบสถ์แม่พระฟาติมา",
+  nameEn: "Our Lady of Fatima Church",
+  address: "4080 ซอยโบสถ์แม่พระฟาติมา แขวงดินแดง เขตดินแดง กรุงเทพมหานคร 10400",
+  lat: 13.759657,
+  lng: 100.555901,
+  link: "https://www.google.com/maps/search/?api=1&query=13.759657,100.555901",
+  embed: "https://maps.google.com/maps?q=13.759657,100.555901&z=17&hl=th&output=embed",
 } as const
 
 export const PARTY_MIN = 1

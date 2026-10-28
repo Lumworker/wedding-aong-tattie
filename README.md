@@ -2,9 +2,11 @@
 
 Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทตตี้) on **5 ธันวาคม 2570**.
 
+The ceremony date is **5 ธันวาคม 2570** (`COUPLE.dateThai` in `src/lib/event.ts`). That date was set on purpose across the invite, story, and share text. Do not mix in 25 December.
+
 Place it on disk at `~/wedding-aong-tattie`.
 
-Guests enter with a mobile number, register their party, then land in an HD-2D ceremony in front of the pixel church. Hover or tap the couple to enlarge them and open `/story`. Blessings can float over the nave. Guest names stay hidden until someone turns them on. There is no demo crowd.
+Guests enter with a mobile number, register their party, then land in an HD-2D ceremony in front of the pixel church. Hover or tap the couple to enlarge them and open `/story`. Blessings can float over the nave. Guest names stay hidden until someone turns them on. A practice crowd is only there when you open `?mock=1`.
 
 ## Run
 
@@ -27,18 +29,40 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. The couple illustration is a link to their story.
 2. **ตอบรับ** — name, gender, adult or child, and whether they are coming (1–10 people).
-3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map is a placeholder pin until the real address is set.
+3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **โบสถ์แม่พระฟาติมา** (Our Lady of Fatima Church), Din Daeng.
 
 ## What is stored
 
+The browser only keeps the session:
+
 - `localStorage` key `webding-web:session` — the current phone.
-- `localStorage` key `webding-web:party:<phone>` — that party’s guests.
-- `localStorage` key `webding-web:wishes` — guest blessings.
-- Cookie `webding_phone` — a backup of the phone so a cleared session key can still be recognized. The party itself stays in `localStorage`.
+- Cookie `webding_phone` — a backup of that phone.
+
+Parties and wishes go through `/api/parties` and `/api/wishes`.
+
+- **Local dev** writes `data/wedding.xlsx` (gitignored).
+- **Vercel** never writes that file. It reads and writes a Google Sheet when a service account is configured. Without those env vars, saves fail with a clear error instead of touching the filesystem.
+
+## Vercel env
+
+Set these in the Vercel project (Production and Preview):
+
+| Variable | Required on Vercel | Purpose |
+|---|---|---|
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | yes | Full service-account JSON. `private_key` newlines may be escaped as `\n`. |
+| `GOOGLE_SHEETS_SPREADSHEET_ID` | no | Defaults to the project sheet `1EUooI-1h01gSsCjjBObjIIgMHcwLbzlt2yM4y97aC2c`. |
+| `HOST_DASHBOARD_SECRET` | yes, for `/host` | Shared password for the host RSVP list. Leave unset to keep `/host` closed. |
+| `NEXT_PUBLIC_SITE_URL` | recommended | Absolute site URL for LINE/Facebook previews, e.g. `https://your-domain.vercel.app`. |
+
+Alternative to the JSON blob: `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`.
+
+Share the spreadsheet with the service account email as **Editor**. The app creates tabs `ผู้ลงทะเบียน` and `ความคิดเห็น` if they are missing.
+
+Host list: open `/host`, enter `HOST_DASHBOARD_SECRET`, then download CSV. The cookie lasts 12 hours.
 
 ## Swapping in a backend
 
-The screen reads and writes through `guestStore` in `src/lib/guest-store.ts`. That store keeps the in-memory guest list and delegates persistence to `WeddingRepository` in `src/lib/repository.ts`. Replace `createLocalWeddingRepository()` with an HTTP implementation of the same methods when a server exists. UI components do not talk to `localStorage` directly.
+The screen reads and writes through `guestStore` in `src/lib/guest-store.ts`. That store keeps the session and calls `WeddingRepository` in `src/lib/repository.ts`, which talks to the API routes above. UI components do not talk to `localStorage` for the guest list.
 
 ## Motion
 
