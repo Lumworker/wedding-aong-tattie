@@ -172,24 +172,29 @@ export function RsvpForm({
   return (
     <ScreenShell width="max-w-xl" className="px-4 sm:px-6">
       <header>
-        <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
-        <h1 className="mt-2 font-display text-4xl leading-none text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
+        <h1 className="mt-2 font-display text-4xl leading-snug text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
+        <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
           กรอกข้อมูลของคุณ แล้วเพิ่มจำนวนผู้ติดตามได้ถ้ามี ผู้ติดตามไม่ต้องกรอกรายละเอียด — คณะละไม่เกิน {PARTY_MAX} คน (รวมคุณ)
         </p>
         {party?.guests.length ? (
           <p className="mt-2 text-sm leading-6 text-sage-deep">เคยบันทึกแล้ว ตรวจข้อมูลแล้วกดเข้างานได้</p>
         ) : null}
-        <button
-          type="button"
-          onClick={onChangePhone}
-          className="mt-2 cursor-pointer text-sm font-medium text-rose underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          📱 ใช้เบอร์อื่น
-        </button>
+        <Button type="button" variant="secondary" className="mt-3 h-auto min-h-11 rounded-full px-4 py-2.5 text-[15px]" onClick={onChangePhone}>
+          ใช้เบอร์อื่น
+        </Button>
       </header>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col" noValidate>
+      <form
+        onSubmit={handleSubmit}
+        className="mt-6 flex flex-1 flex-col"
+        noValidate
+        onFocusCapture={(event) => {
+          const target = event.target
+          if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return
+          window.setTimeout(() => target.scrollIntoView({ block: "center", behavior: "smooth" }), 300)
+        }}
+      >
         <article
           id="guest-main"
           className="rounded-[1.6rem] border border-border bg-card p-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.55)]"
@@ -204,7 +209,7 @@ export function RsvpForm({
             autoComplete="name"
             aria-invalid={errors.name ? true : undefined}
             aria-describedby={errors.name ? "error-name" : undefined}
-            className="mt-2 h-12 rounded-2xl bg-background px-4 text-base md:text-base"
+            className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-background px-4 text-base leading-normal md:text-base"
             onChange={(event) => patch({ name: event.target.value })}
           />
           {errors.name ? (
@@ -246,7 +251,7 @@ export function RsvpForm({
               onChange={(attendance) => patch({ attendance })}
               options={[
                 { value: "attending", label: "เข้าร่วมงาน", hint: "นั่งเพว์ในโบสถ์" },
-                { value: "unsure", label: "ยังไม่แน่ใจ", hint: "ยืนส่งความยินดีด้านนอก" },
+                { value: "unsure", label: "ยังไม่แน่ใจ", hint: "แจ้งภายหลังได้" },
               ]}
             />
           </div>
@@ -256,7 +261,7 @@ export function RsvpForm({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium">จำนวนผู้ติดตาม</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[13px] leading-6 text-muted-foreground">
                 ไม่ต้องกรอกข้อมูลผู้ติดตาม · ได้สูงสุด {COMPANION_MAX} คน (รวมคุณแล้วไม่เกิน {PARTY_MAX})
               </p>
             </div>
@@ -265,21 +270,21 @@ export function RsvpForm({
                 type="button"
                 variant="outline"
                 size="icon"
-                className="size-11 rounded-full bg-background"
+                className="size-11 min-h-11 min-w-11 rounded-full bg-background"
                 aria-label="ลดจำนวนผู้ติดตาม"
                 disabled={companions <= 0}
                 onClick={() => setCompanionCount(companions - 1)}
               >
                 <Minus />
               </Button>
-              <p className="w-10 text-center font-display text-4xl leading-none" aria-live="polite">
+              <p className="w-10 text-center font-sans text-xl leading-normal font-bold tabular-nums text-ink" aria-live="polite">
                 {companions}
               </p>
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                className="size-11 rounded-full bg-background"
+                className="size-11 min-h-11 min-w-11 rounded-full bg-background"
                 aria-label="เพิ่มจำนวนผู้ติดตาม"
                 disabled={companions >= COMPANION_MAX}
                 onClick={() => setCompanionCount(companions + 1)}
@@ -290,7 +295,7 @@ export function RsvpForm({
           </div>
         </div>
 
-        <div className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-border bg-background/92 px-4 py-3 backdrop-blur-md sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0">
+        <div className="sticky bottom-0 z-10 -mx-4 mt-4 scroll-mb-8 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0">
           {summary ? (
             <p role="alert" className="mb-2 text-sm text-destructive">
               {summary}
@@ -302,7 +307,7 @@ export function RsvpForm({
               {person.attendance === "attending" ? " · ยืนยันเข้าร่วมงาน" : " · ยังไม่แน่ใจ"}
             </p>
           )}
-          <Button type="submit" disabled={saving} className="h-12 w-full rounded-full text-base">
+          <Button type="submit" disabled={saving} className="h-auto min-h-12 w-full rounded-full py-3 text-base leading-normal">
             {saving ? "กำลังบันทึก…" : "บันทึกและเข้างาน"}
           </Button>
         </div>

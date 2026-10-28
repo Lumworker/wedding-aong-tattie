@@ -45,8 +45,9 @@ export function CoupleHero({
         </svg>
       </motion.div>
       {hint ? (
-        <p className="mt-1 text-center text-xs text-muted-foreground group-hover:text-rose">
-          แตะหรือวางเมาส์ที่ตัว — อ่านประวัติอ๋องและแทตตี้
+        <p className="mt-1 text-center text-[13px] leading-normal text-muted-foreground group-hover:text-rose">
+          <span className="sm:hidden">แตะที่ตัว — อ่านประวัติอ๋องและแทตตี้</span>
+          <span className="hidden sm:inline">แตะหรือวางเมาส์ที่ตัว — อ่านประวัติอ๋องและแทตตี้</span>
         </p>
       ) : null}
     </Link>

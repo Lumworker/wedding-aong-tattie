@@ -100,8 +100,14 @@ function AtlasGuest({
   const frameIndex = walking ? frame % atlas.frames : 0
   const sx = (sprite.col * atlas.frames + frameIndex) * atlas.frameW
   const sy = sprite.row * atlas.frameH
-  const width = atlas.frameW * atlas.pixel
-  const height = atlas.frameH * atlas.pixel
+  const personHeight = 80
+  let width = atlas.frameW * atlas.pixel
+  let height = atlas.frameH * atlas.pixel
+  if (guest.isCompanion && height > 0) {
+    const factor = (personHeight * 0.85) / height
+    width *= factor
+    height *= factor
+  }
   const drawFacing = (facing * atlas.artFacing) as 1 | -1
   const moodClass = walking ? "is-walking" : mood === "cheer" ? "is-cheering" : sitting ? "is-sitting" : "is-idle"
   const label = guest.name

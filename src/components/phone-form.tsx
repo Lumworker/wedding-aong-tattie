@@ -70,7 +70,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
           {pending ? "กำลังเปิด…" : "ต่อไป"}
         </Button>
         <Ornament className="mt-5" />
-        <p className="text-center text-xs leading-5 text-muted-foreground">
+        <p className="text-center text-[13px] leading-6 text-muted-foreground">
           ถ้าเบอร์นี้ตอบรับไว้แล้ว จะพาเข้าฉากงานเลย
         </p>
       </form>

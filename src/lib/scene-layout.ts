@@ -29,8 +29,14 @@ const AISLE = [
   { y: 690, x0: 240, x1: 400 },
 ]
 
-/** Companion cats — smaller than the registrant, still readable. */
-const COMPANION_SCALE = 0.55
+/**
+ * Couple sprites stay the ceremony focus (drawn at 1.15×, about 78px tall).
+ * The signed-in guest is larger than the old default. Everyone else shrinks.
+ * Cats share the leader's scale and are drawn at about 85% of that person's
+ * sprite size, so a companion stays a little shorter than the guest beside them.
+ */
+const SELF_SCALE = 1.28
+const CROWD_SCALE = 0.72
 
 function pewSeats(): Spot[] {
   const seats: Spot[] = []
@@ -80,16 +86,28 @@ export type PlacedGuest = {
   facing: 1 | -1
 }
 
-function scaleOf(guest: Guest, child: number, adult: number) {
-  return guest.ageGroup === "child" ? child : adult
+function isViewer(guest: Guest, phone: string | null) {
+  return Boolean(phone) && guest.partyPhone === phone && !guest.isCompanion
 }
 
-function still(guest: Guest, spot: Spot, mood: PlacedGuest["mood"], child: number, adult: number): PlacedGuest {
+function mainScale(guest: Guest, child: number, adult: number, phone: string | null) {
+  const base = guest.ageGroup === "child" ? child : adult
+  return base * (isViewer(guest, phone) ? SELF_SCALE : CROWD_SCALE)
+}
+
+function still(
+  guest: Guest,
+  spot: Spot,
+  mood: PlacedGuest["mood"],
+  child: number,
+  adult: number,
+  phone: string | null
+): PlacedGuest {
   return {
     guest,
     path: [{ x: spot.x, y: spot.y, wait: 8 }],
     speed: 20,
-    scale: scaleOf(guest, child, adult),
+    scale: mainScale(guest, child, adult, phone),
     delay: 0,
     mood,
     facing: spot.facing,
@@ -113,7 +131,7 @@ function followLeader(leader: PlacedGuest, companion: Guest, index: number): Pla
     guest: companion,
     path: offsetPath(leader.path, side * (6 + trail * 4), 4 + trail * 5),
     speed: leader.speed,
-    scale: leader.scale * COMPANION_SCALE,
+    scale: leader.scale,
     delay: leader.delay + trail * 0.28,
     mood: leader.mood,
     facing: leader.facing,
@@ -128,7 +146,7 @@ function clusterNear(leader: PlacedGuest, companion: Guest, index: number): Plac
     guest: companion,
     path: [{ x: anchor.x + side * (8 + trail * 5), y: anchor.y + 3 + trail * 2, wait: 8 }],
     speed: leader.speed,
-    scale: leader.scale * COMPANION_SCALE,
+    scale: leader.scale,
     delay: 0,
     mood: leader.mood === "walk" ? "cheer" : leader.mood,
     facing: leader.facing,
@@ -168,7 +186,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
             { x: lane.x0, y: lane.y, wait: 1.2 },
           ],
       speed: 38 + (index % 3) * 6,
-      scale: scaleOf(guest, 0.42, 0.52),
+      scale: mainScale(guest, 0.42, 0.52, phone),
       delay: index * 0.7,
       mood: "walk" as const,
       facing: 1 as const,
@@ -176,7 +194,9 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
   })
 
   const rest = attendingMains.slice(walkerCount)
-  const sitters = rest.slice(0, PEW_SEATS.length).map((guest, index) => still(guest, PEW_SEATS[index], "sit", 0.34, 0.4))
+  const sitters = rest.slice(0, PEW_SEATS.length).map((guest, index) =>
+    still(guest, PEW_SEATS[index], "sit", 0.34, 0.4, phone)
+  )
   const standing = rest.slice(PEW_SEATS.length).map((guest, index) =>
     still(
       guest,
@@ -187,7 +207,8 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       })),
       "cheer",
       0.36,
-      0.44
+      0.44,
+      phone
     )
   )
   const outside = absentMains.map((guest, index) =>
@@ -196,7 +217,8 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       wrapSpot(OUTSIDE, index, (wrap, spot) => ({ ...spot, x: spot.x + wrap * 6 })),
       "cheer",
       0.34,
-      0.4
+      0.4,
+      phone
     )
   )
 

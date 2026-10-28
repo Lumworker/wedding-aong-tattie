@@ -1,11 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion, useAnimationFrame, useReducedMotion } from "framer-motion"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
 import { Character } from "@/components/venue/character"
-import { ChatBubble, bubbleOffsetY, useWishSlots, type WishSlot } from "@/components/venue/wish-field"
+import { ChatBubble, WishSceneScaleProvider, bubbleOffsetY, useWishSlots, type WishSlot } from "@/components/venue/wish-field"
 import { COUPLE } from "@/lib/event"
 import { footY, placeGuests, SCENE, type PlacedGuest } from "@/lib/scene-layout"
 import { poseOnPath, type WalkPose } from "@/lib/walk"
@@ -185,6 +185,37 @@ function DustMotes({ reduced }: { reduced: boolean }) {
   )
 }
 
+function useSceneScale(svgRef: RefObject<SVGSVGElement | null>) {
+  const [scale, setScale] = useState(1)
+
+  useLayoutEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+
+    const read = () => {
+      const layoutW = svg.clientWidth
+      const layoutH = svg.clientHeight
+      if (layoutW < 2 || layoutH < 2) return
+      const slice = Math.max(layoutW / SCENE.width, layoutH / SCENE.height)
+      const rect = svg.getBoundingClientRect()
+      const painted = rect.width / layoutW
+      const next = slice * (Number.isFinite(painted) && painted > 0.05 ? painted : 1)
+      setScale((current) => (Math.abs(current - next) < 0.03 ? current : next))
+    }
+
+    read()
+    const observer = new ResizeObserver(read)
+    observer.observe(svg)
+    window.addEventListener("resize", read)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", read)
+    }
+  }, [svgRef])
+
+  return scale
+}
+
 export function VenueCanvas({
   guests,
   phone,
@@ -197,6 +228,8 @@ export function VenueCanvas({
   showWishes?: boolean
 }) {
   const reduced = useReducedMotion() === true
+  const svgRef = useRef<SVGSVGElement>(null)
+  const sceneScale = useSceneScale(svgRef)
   const placed = useMemo(() => placeGuests(guests, phone), [guests, phone])
   const ordered = useMemo(() => [...placed].sort((a, b) => footY(a) - footY(b)), [placed])
   const slots = useWishSlots(wishes, placed, showWishes)
@@ -207,9 +240,11 @@ export function VenueCanvas({
   }, [slots])
 
   return (
+    <WishSceneScaleProvider scale={sceneScale}>
     <div className="hd2d-stage absolute inset-0 overflow-hidden bg-[#121018]">
       <div className="hd2d-world">
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${SCENE.width} ${SCENE.height}`}
           className="h-full w-full font-sans"
           preserveAspectRatio="xMidYMid slice"
@@ -240,5 +275,6 @@ export function VenueCanvas({
       <div className="hd2d-grain" />
       <DustMotes reduced={reduced} />
     </div>
+    </WishSceneScaleProvider>
   )
 }

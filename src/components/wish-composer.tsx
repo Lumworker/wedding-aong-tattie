@@ -6,8 +6,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Guest, Wish } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { WISH_TEXT_MAX, clipWishText, wishGlyphCount } from "@/lib/wish"
 
-const MAX = 72
+function scrollFieldIntoView(target: EventTarget | null) {
+  if (!(target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement)) return
+  window.setTimeout(() => {
+    target.scrollIntoView({ block: "center", behavior: "smooth" })
+  }, 300)
+}
 
 export function WishComposer({
   party,
@@ -37,8 +43,9 @@ export function WishComposer({
   const [status, setStatus] = useState<"idle" | "sent" | "saved" | "error">("idle")
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
-  const remaining = MAX - text.length
-  const ready = from.trim().length > 0 && text.trim().length > 0
+  const count = wishGlyphCount(text)
+  const remaining = WISH_TEXT_MAX - count
+  const ready = from.trim().length > 0 && text.trim().length > 0 && count <= WISH_TEXT_MAX
   const editing = editingId !== null
 
   useEffect(() => {
@@ -54,7 +61,7 @@ export function WishComposer({
   function startEdit(wish: Wish) {
     setEditingId(wish.id)
     setFrom(names.includes(wish.from) || names.length === 0 ? wish.from : names[0])
-    setText(wish.text)
+    setText(clipWishText(wish.text))
     setStatus("idle")
     window.requestAnimationFrame(() => document.getElementById("wish-text")?.focus())
   }
@@ -64,7 +71,8 @@ export function WishComposer({
     if (!ready || sending) return
 
     const nextFrom = from.trim()
-    const nextText = text.trim()
+    const nextText = clipWishText(text.trim())
+    if (!nextFrom || !nextText || wishGlyphCount(nextText) > WISH_TEXT_MAX) return
     setSending(true)
     setError(null)
     setStatus("idle")
@@ -97,20 +105,23 @@ export function WishComposer({
     <div className="rounded-[1.4rem] border border-border bg-card p-4">
       <form onSubmit={handleSubmit}>
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="font-serif text-xl">{editing ? "✏️ แก้ไขคำอวยพร" : "💌 คำอวยพร"}</h2>
+          <h2 className="font-serif text-xl">{editing ? "แก้ไขคำอวยพร" : "คำอวยพร"}</h2>
           {names.length === 1 && !editing ? (
-            <p className="truncate text-xs text-muted-foreground">จาก {from || names[0]}</p>
+            <p className="min-w-0 text-[13px] leading-normal text-muted-foreground">จาก {from || names[0]}</p>
           ) : null}
         </div>
 
         {names.length > 1 ? (
           <div className="mt-3">
-            <Label htmlFor="wish-from">ลงชื่อ</Label>
+            <Label htmlFor="wish-from" className="text-[15px]">
+              ลงชื่อ
+            </Label>
             <select
               id="wish-from"
               value={names.includes(from) ? from : names[0]}
               onChange={(event) => setFrom(event.target.value)}
-              className="mt-1 h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+              onFocus={(event) => scrollFieldIntoView(event.target)}
+              className="mt-1 h-11 w-full rounded-2xl border border-input bg-background px-3 text-base"
             >
               {names.map((name) => (
                 <option key={name} value={name}>
@@ -121,41 +132,55 @@ export function WishComposer({
           </div>
         ) : names.length === 0 ? (
           <div className="mt-3">
-            <Label htmlFor="wish-from">ลงชื่อ</Label>
+            <Label htmlFor="wish-from" className="text-[15px]">
+              ลงชื่อ
+            </Label>
             <Input
               id="wish-from"
               value={from}
               maxLength={24}
               placeholder="ชื่อที่จะโชว์บนคำอวยพร"
-              className="mt-1 h-11 rounded-2xl px-3"
+              className="mt-1 h-11 rounded-2xl px-3 text-base"
               onChange={(event) => setFrom(event.target.value)}
+              onFocus={(event) => scrollFieldIntoView(event.target)}
             />
           </div>
         ) : null}
 
-        <Label htmlFor="wish-text" className="mt-3 block">
+        <Label htmlFor="wish-text" className="mt-3 block text-[15px]">
           ข้อความ
         </Label>
         <textarea
           id="wish-text"
           value={text}
-          maxLength={MAX}
-          rows={3}
+          maxLength={WISH_TEXT_MAX}
+          rows={4}
           placeholder="สุขสมหวังด้วยกันนะ"
-          className="mt-1 w-full resize-none rounded-2xl border border-input bg-background px-3 py-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          aria-describedby="wish-count"
+          className="mt-1 w-full scroll-mb-40 resize-none rounded-2xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          onFocus={(event) => scrollFieldIntoView(event.target)}
           onChange={(event) => {
-            setText(event.target.value)
+            setText(clipWishText(event.target.value))
             if (status !== "idle") setStatus("idle")
           }}
         />
         <div className="mt-2 flex items-center justify-between gap-3">
-          <p className={cn("text-xs text-muted-foreground", remaining < 12 && "text-rose")}>{remaining}</p>
+          <p
+            id="wish-count"
+            className={cn(
+              "text-[13px] tabular-nums text-muted-foreground",
+              remaining <= 20 && "font-medium text-rose"
+            )}
+          >
+            <span className="sr-only">ความยาวข้อความ </span>
+            {count}/{WISH_TEXT_MAX}
+          </p>
           <div className="flex gap-2">
             {editing ? (
               <Button
                 type="button"
                 variant="ghost"
-                className="h-10 rounded-full px-4"
+                className="h-11 min-h-11 rounded-full px-4 text-[15px]"
                 onClick={() => {
                   resetComposer()
                   setStatus("idle")
@@ -164,23 +189,23 @@ export function WishComposer({
                 ยกเลิก
               </Button>
             ) : null}
-            <Button type="submit" disabled={!ready || sending} className="h-10 rounded-full px-5">
+            <Button type="submit" disabled={!ready || sending} className="h-11 min-h-11 rounded-full px-5 text-[15px]">
               {sending ? "กำลังบันทึก…" : editing ? "บันทึก" : "ส่ง"}
             </Button>
           </div>
         </div>
         {status === "sent" ? (
-          <p className="mt-2 text-sm text-sage-deep" role="status">
+          <p className="mt-2 text-[15px] text-sage-deep" role="status">
             ส่งแล้ว — ดูข้อความลอยบนฉากได้เลย
           </p>
         ) : null}
         {status === "saved" ? (
-          <p className="mt-2 text-sm text-sage-deep" role="status">
+          <p className="mt-2 text-[15px] text-sage-deep" role="status">
             บันทึกการแก้ไขแล้ว
           </p>
         ) : null}
         {status === "error" && error ? (
-          <p className="mt-2 text-sm text-destructive" role="alert">
+          <p className="mt-2 text-[15px] text-destructive" role="alert">
             {error}
           </p>
         ) : null}
@@ -188,8 +213,8 @@ export function WishComposer({
 
       {mine.length > 0 ? (
         <section className="mt-4 border-t border-border pt-3">
-          <h3 className="text-sm font-medium">ประวัติการอวยพร</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">แตะรายการเพื่อแก้ไข</p>
+          <h3 className="text-[15px] font-medium">ประวัติการอวยพร</h3>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">แตะรายการเพื่อแก้ไข</p>
           <ul className="mt-2 flex flex-col gap-2">
             {mine.map((wish) => {
               const active = wish.id === editingId
@@ -199,15 +224,15 @@ export function WishComposer({
                     type="button"
                     onClick={() => startEdit(wish)}
                     className={cn(
-                      "w-full rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                      "min-h-11 w-full rounded-2xl border px-3 py-2.5 text-left transition-colors",
                       "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card",
                       active
                         ? "border-primary bg-primary/8"
                         : "border-border bg-background hover:bg-muted"
                     )}
                   >
-                    <p className="truncate text-sm font-medium text-ink">{wish.from}</p>
-                    <p className="mt-0.5 line-clamp-2 text-sm leading-5 text-muted-foreground">{wish.text}</p>
+                    <p className="text-[15px] leading-normal font-medium text-ink">{wish.from}</p>
+                    <p className="mt-1 text-[15px] leading-relaxed whitespace-pre-wrap text-muted-foreground">{wish.text}</p>
                   </button>
                 </li>
               )

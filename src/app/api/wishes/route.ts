@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { errorMessage } from "@/lib/api-error"
 import { readWishes, updateWish, writeWish } from "@/lib/excel-db"
-import type { Wish } from "@/lib/types"
+import { parseWishPayload } from "@/lib/wish"
 
 export async function GET() {
   try {
@@ -18,19 +18,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Wish
-    if (!body?.id || !body.text || !body.from || !body.partyPhone) {
-      return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 })
+    const body = await request.json().catch(() => null)
+    const parsed = parseWishPayload(body)
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
-    const wish: Wish = {
-      id: body.id,
-      text: body.text,
-      from: body.from,
-      partyPhone: body.partyPhone,
-      createdAt: body.createdAt || new Date().toISOString(),
-    }
-    await writeWish(wish)
-    return NextResponse.json({ wish })
+    await writeWish(parsed.wish)
+    return NextResponse.json({ wish: parsed.wish })
   } catch (error) {
     console.error(error)
     return NextResponse.json(
@@ -42,12 +36,13 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const body = (await request.json()) as Wish
-    if (!body?.id || !body.text || !body.from || !body.partyPhone) {
-      return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 })
+    const body = await request.json().catch(() => null)
+    const parsed = parseWishPayload(body)
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
-    await updateWish(body)
-    return NextResponse.json({ wish: body })
+    await updateWish(parsed.wish)
+    return NextResponse.json({ wish: parsed.wish })
   } catch (error) {
     console.error(error)
     return NextResponse.json(
