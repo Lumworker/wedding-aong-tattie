@@ -97,7 +97,7 @@ function AtlasGuest({
   const walking = mood === "walk"
   const sx = sprite.col * atlas.cell
   const sy = sprite.row * atlas.cell
-  const size = guest.isCompanion ? (sitting ? 18 : 20) : sitting ? 28 : 32
+  const size = guest.isCompanion ? (sitting ? 24 : 27) : sitting ? 28 : 32
   const drawFacing = (facing * atlas.artFacing) as 1 | -1
   const moodClass = walking ? "is-walking" : mood === "cheer" ? "is-cheering" : sitting ? "is-sitting" : "is-idle"
   const label = guest.name

@@ -19,7 +19,7 @@ export function EventTitle({
   if (variant === "compact") {
     return (
       <div>
-        <h1 className="font-display text-[1.65rem] leading-none text-ink">
+        <h1 className="font-display text-[1.65rem] leading-snug text-ink">
           {COUPLE.groomNickname}
           <span className="px-1.5 text-rose">&</span>
           {COUPLE.brideNickname}
@@ -31,11 +31,11 @@ export function EventTitle({
 
   return (
     <div className={variant === "hero" ? "text-center" : "text-left"}>
-      <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
+      <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
       <h1
         className={cn(
-          "font-display leading-[0.92] text-ink",
-          variant === "hero" ? "mt-3 text-5xl sm:text-6xl" : "mt-3 text-[2.7rem]"
+          "font-display leading-tight text-ink",
+          variant === "hero" ? "mt-3 text-4xl sm:text-5xl lg:text-6xl" : "mt-3 text-[2.7rem]"
         )}
       >
         <span className="block">{COUPLE.groomShort}</span>

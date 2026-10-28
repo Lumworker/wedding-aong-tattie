@@ -63,7 +63,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
           ต่อไป
         </Button>
         <Ornament className="mt-5" />
-        <p className="text-center text-xs leading-5 text-muted-foreground">
+        <p className="text-center text-[13px] leading-6 text-muted-foreground">
           เคยตอบรับบนเครื่องนี้แล้ว จะเปิดฟอร์มคณะเดิม แล้วเข้าฉากได้
         </p>
       </form>

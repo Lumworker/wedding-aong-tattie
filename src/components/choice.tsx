@@ -15,7 +15,7 @@ export function Choice<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium">{legend}</legend>
+      <legend className="mb-2 text-[15px] leading-normal font-medium">{legend}</legend>
       <div className={cn("grid gap-2", options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
         {options.map((option) => {
           const selected = value === option.value
@@ -23,7 +23,7 @@ export function Choice<T extends string>({
             <label
               key={option.value}
               className={cn(
-                "cursor-pointer rounded-2xl border px-2 py-3 text-center transition-colors",
+                "flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-2xl border px-2 py-2.5 text-center transition-colors",
                 "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
                 selected
                   ? "border-primary bg-primary text-primary-foreground"
@@ -38,9 +38,9 @@ export function Choice<T extends string>({
                 checked={selected}
                 onChange={() => onChange(option.value)}
               />
-              <span className="block text-sm font-medium">{option.label}</span>
+              <span className="block text-[15px] leading-normal font-medium">{option.label}</span>
               {option.hint ? (
-                <span className={cn("mt-0.5 block text-[11px] leading-4", selected ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                <span className={cn("mt-0.5 block text-[13px] leading-normal", selected ? "text-primary-foreground/90" : "text-muted-foreground")}>
                   {option.hint}
                 </span>
               ) : null}

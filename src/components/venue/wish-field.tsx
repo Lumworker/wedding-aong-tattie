@@ -1,9 +1,16 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import type { Wish } from "@/lib/types"
 import type { PlacedGuest } from "@/lib/scene-layout"
+
+/** SVG user-unit scale (screen px per scene unit). Bubbles divide by this so type stays readable. */
+const WishSceneScaleContext = createContext(1)
+
+export function WishSceneScaleProvider({ scale, children }: { scale: number; children: ReactNode }) {
+  return <WishSceneScaleContext.Provider value={scale}>{children}</WishSceneScaleContext.Provider>
+}
 
 export type WishSlot = {
   key: string
@@ -35,13 +42,33 @@ function guestIdForWish(wish: Wish, placed: PlacedGuest[], busy: Set<string>): s
   return pick(open)?.guest.id ?? null
 }
 
-function clipWish(text: string, max = 64) {
-  const glyphs = Array.from(text)
-  if (glyphs.length <= max) return text
-  return `${glyphs.slice(0, max - 1).join("")}…`
+function bubbleLayout(from: string, text: string, scale: number) {
+  const count = Array.from(text).length
+  const narrow = scale < 1.15
+  const bodyPx = count <= 40 ? (narrow ? 14 : 16) : count <= 90 ? (narrow ? 13 : 14) : count <= 140 ? 12 : 11
+  const namePx = 13
+  const line = 1.55
+  const screenW = count <= 40 ? 210 : count <= 90 ? 236 : 264
+  const padX = 14
+  const padY = 12
+  const contentW = screenW - padX * 2
+  const bodyPerLine = Math.max(6, Math.floor(contentW / (bodyPx * 0.95)))
+  const namePerLine = Math.max(4, Math.floor(contentW / (namePx * 0.95)))
+  const lines = Math.max(1, Math.ceil(Math.max(count, 1) / bodyPerLine))
+  const nameLines = Math.max(1, Math.ceil(Math.max(Array.from(from).length, 1) / namePerLine))
+  const cardH = padY * 2 + nameLines * namePx * line + 6 + lines * bodyPx * line + 8
+  return { bodyPx, namePx, line, screenW, padX, padY, cardH, wide: count > 40 }
 }
 
 export function ChatBubble({ from, text }: { from: string; text: string }) {
+  const sceneScale = useContext(WishSceneScaleContext)
+  const scale = sceneScale > 0.05 ? sceneScale : 1
+  const layout = bubbleLayout(from, text, scale)
+  const { bodyPx, namePx, line, screenW, padX, padY, cardH, wide } = layout
+  const u = (px: number) => px / scale
+  const foW = u(screenW + 8)
+  const foH = u(cardH + 22)
+
   return (
     <motion.g
       initial={{ opacity: 0, y: 10, scale: 0.88 }}
@@ -53,20 +80,85 @@ export function ChatBubble({ from, text }: { from: string; text: string }) {
         animate={{ y: [0, -5, 0] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <foreignObject x={-90} y={-86} width={180} height={84} style={{ overflow: "visible" }}>
-          <div className="pointer-events-none flex justify-center">
-            <div className="relative max-w-[10.5rem] rounded-[18px] border-2 border-[#e0b85a] bg-[#fffaf0] px-3 py-2 shadow-[0_10px_24px_rgba(10,8,16,0.42)]">
-              <p className="m-0 mb-1 text-[11px] font-semibold leading-none tracking-wide text-[#b04558]">
+        <foreignObject
+          x={-foW / 2}
+          y={-foH}
+          width={foW}
+          height={foH}
+          style={{ overflow: "visible", pointerEvents: "none" }}
+        >
+          <div style={{ position: "relative", width: "100%", height: "100%", pointerEvents: "none" }}>
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                bottom: 0,
+                transform: "translateX(-50%)",
+                boxSizing: "border-box",
+                width: wide ? "100%" : "max-content",
+                maxWidth: "100%",
+                minWidth: u(96),
+                padding: `${u(padY)}px ${u(padX)}px ${u(padY)}px`,
+                borderRadius: u(16),
+                border: `${Math.max(1.5, u(2))}px solid #c4922a`,
+                background: "#fffaf0",
+                boxShadow: `0 ${u(8)}px ${u(18)}px rgba(10, 8, 16, 0.45)`,
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  marginBottom: u(4),
+                  fontSize: u(namePx),
+                  fontWeight: 700,
+                  lineHeight: line,
+                  letterSpacing: "0.01em",
+                  color: "#7a2438",
+                  overflow: "visible",
+                  whiteSpace: "normal",
+                  overflowWrap: "anywhere",
+                }}
+              >
                 {from}
               </p>
-              <p className="m-0 font-serif text-[13px] leading-snug text-[#241f1c]">{clipWish(text)}</p>
+              <p
+                className="font-serif"
+                style={{
+                  margin: 0,
+                  fontSize: u(bodyPx),
+                  lineHeight: line,
+                  color: "#1c1612",
+                  overflow: "visible",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {text}
+              </p>
               <span
                 aria-hidden
-                className="absolute top-full left-1/2 -ml-[7px] border-x-[7px] border-t-[9px] border-x-transparent border-t-[#e0b85a]"
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: "50%",
+                  marginLeft: u(-7),
+                  borderLeft: `${u(7)}px solid transparent`,
+                  borderRight: `${u(7)}px solid transparent`,
+                  borderTop: `${u(9)}px solid #c4922a`,
+                }}
               />
               <span
                 aria-hidden
-                className="absolute top-full left-1/2 -ml-[5px] mt-px border-x-[5px] border-t-[7px] border-x-transparent border-t-[#fffaf0]"
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: "50%",
+                  marginLeft: u(-5),
+                  marginTop: u(1.5),
+                  borderLeft: `${u(5)}px solid transparent`,
+                  borderRight: `${u(5)}px solid transparent`,
+                  borderTop: `${u(7)}px solid #fffaf0`,
+                }}
               />
             </div>
           </div>
@@ -152,6 +244,6 @@ export function useWishSlots(
 /** Head offset in scene units (outside character scale) for chat bubble anchor. */
 export function bubbleOffsetY(placed: PlacedGuest): number {
   const sitting = placed.mood === "sit"
-  const base = placed.guest.isCompanion ? (sitting ? 18 : 20) : sitting ? 28 : 32
+  const base = placed.guest.isCompanion ? (sitting ? 24 : 27) : sitting ? 28 : 32
   return -(base * placed.scale + 14)
 }
