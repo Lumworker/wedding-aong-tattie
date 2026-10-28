@@ -158,19 +158,19 @@ export function VenueScene({
           party={mine}
           phone={phone}
           wishes={wishes}
-          onSend={(from, text) => {
-            void guestStore
-              .addWish({
-                id: newId("wish"),
-                text,
-                from,
-                partyPhone: phone,
-                createdAt: new Date().toISOString(),
-              })
-              .then(() => setShowWishes(true))
+          onSend={async (from, text) => {
+            await guestStore.addWish({
+              id: newId("wish"),
+              text,
+              from,
+              partyPhone: phone,
+              createdAt: new Date().toISOString(),
+            })
+            setShowWishes(true)
           }}
-          onUpdate={(wish) => {
-            void guestStore.updateWish(wish).then(() => setShowWishes(true))
+          onUpdate={async (wish) => {
+            await guestStore.updateWish(wish)
+            setShowWishes(true)
           }}
         />
 

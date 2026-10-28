@@ -96,7 +96,7 @@ export function RsvpForm({
 }: {
   phone: string
   party: Party | null
-  onSubmit: (party: Party) => void
+  onSubmit: (party: Party) => void | Promise<void>
   onChangePhone: () => void
 }) {
   const initial = fromParty(party)
@@ -104,6 +104,7 @@ export function RsvpForm({
   const [companions, setCompanions] = useState(initial.companions)
   const [errors, setErrors] = useState<Errors>({})
   const [summary, setSummary] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
   const partySize = 1 + companions
 
   function patch(next: Partial<Draft>) {
@@ -123,8 +124,9 @@ export function RsvpForm({
     setSummary(null)
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    if (saving) return
     const nextErrors: Errors = {}
     if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อ"
     if (!person.gender) nextErrors.gender = "กรุณาเลือกเพศ"
@@ -149,14 +151,22 @@ export function RsvpForm({
       partyPhone: phone,
     }
 
-    onSubmit({
-      phone,
-      updatedAt: new Date().toISOString(),
-      guests: [
-        main,
-        ...buildCompanions(companions, phone, main, party?.guests ?? []),
-      ],
-    })
+    setSaving(true)
+    setSummary(null)
+    try {
+      await onSubmit({
+        phone,
+        updatedAt: new Date().toISOString(),
+        guests: [
+          main,
+          ...buildCompanions(companions, phone, main, party?.guests ?? []),
+        ],
+      })
+    } catch (error) {
+      setSummary(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -292,8 +302,8 @@ export function RsvpForm({
               {person.attendance === "attending" ? " · ยืนยันเข้าร่วมงาน" : " · ยังไม่แน่ใจ"}
             </p>
           )}
-          <Button type="submit" className="h-12 w-full rounded-full text-base">
-            บันทึกและเข้างาน
+          <Button type="submit" disabled={saving} className="h-12 w-full rounded-full text-base">
+            {saving ? "กำลังบันทึก…" : "บันทึกและเข้างาน"}
           </Button>
         </div>
       </form>

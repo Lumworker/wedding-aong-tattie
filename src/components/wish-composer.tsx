@@ -19,8 +19,8 @@ export function WishComposer({
   party: Guest[]
   phone: string
   wishes: Wish[]
-  onSend: (from: string, text: string) => void
-  onUpdate: (wish: Wish) => void
+  onSend: (from: string, text: string) => void | Promise<void>
+  onUpdate: (wish: Wish) => void | Promise<void>
 }) {
   const names = useMemo(
     () => party.filter((guest) => !guest.isCompanion).map((guest) => guest.name).filter(Boolean),
@@ -34,7 +34,9 @@ export function WishComposer({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [from, setFrom] = useState(names[0] ?? "")
   const [text, setText] = useState("")
-  const [status, setStatus] = useState<"idle" | "sent" | "saved">("idle")
+  const [status, setStatus] = useState<"idle" | "sent" | "saved" | "error">("idle")
+  const [error, setError] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
   const remaining = MAX - text.length
   const ready = from.trim().length > 0 && text.trim().length > 0
   const editing = editingId !== null
@@ -57,26 +59,38 @@ export function WishComposer({
     window.requestAnimationFrame(() => document.getElementById("wish-text")?.focus())
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!ready) return
+    if (!ready || sending) return
 
-    if (editingId) {
-      const original = wishes.find((wish) => wish.id === editingId)
-      if (!original) return
-      onUpdate({
-        ...original,
-        from: from.trim(),
-        text: text.trim(),
-      })
-      resetComposer()
-      setStatus("saved")
-      return
+    const nextFrom = from.trim()
+    const nextText = text.trim()
+    setSending(true)
+    setError(null)
+    setStatus("idle")
+    try {
+      if (editingId) {
+        const original = wishes.find((wish) => wish.id === editingId)
+        if (!original) return
+        await onUpdate({
+          ...original,
+          from: nextFrom,
+          text: nextText,
+        })
+        resetComposer()
+        setStatus("saved")
+        return
+      }
+
+      await onSend(nextFrom, nextText)
+      resetComposer(nextFrom)
+      setStatus("sent")
+    } catch (caught) {
+      setStatus("error")
+      setError(caught instanceof Error ? caught.message : "บันทึกไม่สำเร็จ")
+    } finally {
+      setSending(false)
     }
-
-    onSend(from.trim(), text.trim())
-    resetComposer(from.trim())
-    setStatus("sent")
   }
 
   return (
@@ -150,8 +164,8 @@ export function WishComposer({
                 ยกเลิก
               </Button>
             ) : null}
-            <Button type="submit" disabled={!ready} className="h-10 rounded-full px-5">
-              {editing ? "บันทึก" : "ส่ง"}
+            <Button type="submit" disabled={!ready || sending} className="h-10 rounded-full px-5">
+              {sending ? "กำลังบันทึก…" : editing ? "บันทึก" : "ส่ง"}
             </Button>
           </div>
         </div>
@@ -163,6 +177,11 @@ export function WishComposer({
         {status === "saved" ? (
           <p className="mt-2 text-sm text-sage-deep" role="status">
             บันทึกการแก้ไขแล้ว
+          </p>
+        ) : null}
+        {status === "error" && error ? (
+          <p className="mt-2 text-sm text-destructive" role="alert">
+            {error}
           </p>
         ) : null}
       </form>

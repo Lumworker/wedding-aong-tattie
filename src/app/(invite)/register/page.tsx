@@ -24,10 +24,9 @@ export default function RegisterPage() {
       key={phone}
       phone={phone}
       party={party}
-      onSubmit={(next: Party) => {
-        void guestStore.saveParty(next).then(() => {
-          router.push(withQuery(ROUTES.dashboard, search))
-        })
+      onSubmit={async (next: Party) => {
+        await guestStore.saveParty(next)
+        router.push(withQuery(ROUTES.dashboard, search))
       }}
       onChangePhone={() => {
         guestStore.clearPhone()

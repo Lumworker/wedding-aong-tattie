@@ -13,7 +13,15 @@ import {
 
 export { SHEETS, workbookPath }
 
+const SERVERLESS_STORAGE_ERROR =
+  "บันทึกไม่ได้บนเซิร์ฟเวอร์นี้ เพราะยังไม่ได้ตั้งค่า Google Sheets ให้แชร์สเปรดชีตกับ service account แล้วใส่ GOOGLE_SERVICE_ACCOUNT_JSON บน Vercel"
+
 let queue: Promise<unknown> = Promise.resolve()
+
+function requirePersistentStorage() {
+  if (isSheetsStorageEnabled()) return
+  if (process.env.VERCEL) throw new Error(SERVERLESS_STORAGE_ERROR)
+}
 
 function withLock<T>(fn: () => Promise<T>): Promise<T> {
   const run = queue.then(fn, fn)
@@ -25,11 +33,13 @@ function withLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 async function loadDoc(): Promise<WeddingDoc> {
+  requirePersistentStorage()
   if (isSheetsStorageEnabled()) return loadSheetsDoc()
   return loadExcelDoc()
 }
 
 async function saveDoc(doc: WeddingDoc): Promise<void> {
+  requirePersistentStorage()
   if (isSheetsStorageEnabled()) {
     await saveSheetsDoc(doc)
     return
