@@ -11,7 +11,7 @@ const siteUrl =
     : "http://127.0.0.1:43123")
 
 const shareTitle = `อ๋อง & แทตตี้ · งานมงคลสมรส ${COUPLE.dateThai}`
-const shareDescription = `ขอเชิญร่วมงานมงคลสมรสของอ๋อง (${COUPLE.groomShort}) และแทตตี้ (${COUPLE.brideShort}) วันที่ ${COUPLE.dateThai} ณ ${VENUE_MAP.name} ดินแดง`
+const shareDescription = `ขอเชิญร่วมงานมงคลสมรสของอ๋อง (${COUPLE.groomShort}) และแทตตี้ (${COUPLE.brideShort}) วันที่ ${COUPLE.dateThai} ณ ${VENUE_MAP.name} ${VENUE_MAP.area}`
 
 const thaiSans = Noto_Sans_Thai({
   subsets: ["thai", "latin"],

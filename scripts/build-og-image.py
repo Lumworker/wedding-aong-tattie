@@ -56,7 +56,7 @@ def main() -> None:
         [("5 ", date_num), ("ธันวาคม ", date_thai), ("2570", date_num)],
         (42, 38, 35),
     )
-    draw.text((600, 468), "โบสถ์แม่พระฟาติมา  ดินแดง", font=place, fill=(90, 78, 70), anchor="mm")
+    draw.text((600, 468), "อาสนวิหารอัสสัมชัญ  บางรัก", font=place, fill=(90, 78, 70), anchor="mm")
 
     image.save(OUT, optimize=True)
     print("wrote", OUT, image.size)

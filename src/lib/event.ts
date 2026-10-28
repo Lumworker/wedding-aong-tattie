@@ -23,15 +23,16 @@ export const COUPLE_STORY = {
     "ทั้งคู่เลือกวันที่ 5 ธันวาคม 2570 เพราะอยากให้คนที่รักมานั่งด้วยกันในวันที่มีแสงนวล ถ้าอยากรู้จักมากกว่าชื่อบนการ์ด ให้กลับไปแตะตัวบนแท่นได้เสมอ",
 } as const
 
-/** วัดแม่พระฟาติมา ดินแดง — Our Lady of Fatima Church, Bangkok. */
+/** อาสนวิหารอัสสัมชัญ บางรัก — Assumption Cathedral, Bangkok. */
 export const VENUE_MAP = {
-  name: "โบสถ์แม่พระฟาติมา",
-  nameEn: "Our Lady of Fatima Church",
-  address: "4080 ซอยโบสถ์แม่พระฟาติมา แขวงดินแดง เขตดินแดง กรุงเทพมหานคร 10400",
-  lat: 13.759657,
-  lng: 100.555901,
-  link: "https://www.google.com/maps/search/?api=1&query=13.759657,100.555901",
-  embed: "https://maps.google.com/maps?q=13.759657,100.555901&z=17&hl=th&output=embed",
+  name: "อาสนวิหารอัสสัมชัญ",
+  nameEn: "Assumption Cathedral",
+  area: "บางรัก",
+  address: "23 ซอยเจริญกรุง 40 แขวงบางรัก เขตบางรัก กรุงเทพมหานคร 10500",
+  lat: 13.723049,
+  lng: 100.514891,
+  link: "https://www.google.com/maps/search/?api=1&query=13.723049,100.514891",
+  embed: "https://maps.google.com/maps?q=13.723049,100.514891&z=17&hl=th&output=embed",
 } as const
 
 export const PARTY_MIN = 1

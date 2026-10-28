@@ -29,7 +29,7 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. The couple illustration is a link to their story.
 2. **ตอบรับ** — name, gender, adult or child, and whether they are coming (1–10 people).
-3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **โบสถ์แม่พระฟาติมา** (Our Lady of Fatima Church), Din Daeng.
+3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **อาสนวิหารอัสสัมชัญ** (Assumption Cathedral), Bang Rak.
 
 ## What is stored
 
