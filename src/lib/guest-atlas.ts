@@ -45,17 +45,21 @@ export const FEMALE_ATLAS: SpriteAtlas = {
   artFacing: 1,
 }
 
-/** Companion cats — 4 variants in a row. */
+/**
+ * Companion cats — 4 variants in a row.
+ * Each frame has a transparent gutter so scaling does not sample the next cat.
+ * `pixel` 1.4 draws the opaque cat at about 60% of a guest's height (guests are 2px per texel).
+ */
 export const CAT_ATLAS: SpriteAtlas = {
-  href: "/sprites/cats.png",
-  frameW: 40,
-  frameH: 40,
+  href: "/sprites/cats.png?v=8",
+  frameW: 44,
+  frameH: 42,
   frames: 1,
   cols: 4,
   rows: 1,
   count: 4,
-  width: 160,
-  height: 40,
-  pixel: 0.5,
+  width: 176,
+  height: 42,
+  pixel: 1.4,
   artFacing: -1,
 }
