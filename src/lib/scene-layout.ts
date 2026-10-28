@@ -168,7 +168,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
             { x: lane.x0, y: lane.y, wait: 1.2 },
           ],
       speed: 38 + (index % 3) * 6,
-      scale: scaleOf(guest, 0.58, 0.72),
+      scale: scaleOf(guest, 0.42, 0.52),
       delay: index * 0.7,
       mood: "walk" as const,
       facing: 1 as const,
@@ -176,7 +176,7 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
   })
 
   const rest = attendingMains.slice(walkerCount)
-  const sitters = rest.slice(0, PEW_SEATS.length).map((guest, index) => still(guest, PEW_SEATS[index], "sit", 0.48, 0.56))
+  const sitters = rest.slice(0, PEW_SEATS.length).map((guest, index) => still(guest, PEW_SEATS[index], "sit", 0.34, 0.4))
   const standing = rest.slice(PEW_SEATS.length).map((guest, index) =>
     still(
       guest,
@@ -186,8 +186,8 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
         y: spot.y + wrap * 6,
       })),
       "cheer",
-      0.5,
-      0.62
+      0.36,
+      0.44
     )
   )
   const outside = absentMains.map((guest, index) =>
@@ -195,8 +195,8 @@ export function placeGuests(guests: Guest[], phone: string | null): PlacedGuest[
       guest,
       wrapSpot(OUTSIDE, index, (wrap, spot) => ({ ...spot, x: spot.x + wrap * 6 })),
       "cheer",
-      0.48,
-      0.56
+      0.34,
+      0.4
     )
   )
 
