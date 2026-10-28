@@ -17,7 +17,9 @@ export function summarizeParties(parties: Party[]) {
 
 export function partiesToCsv(parties: Party[]) {
   const sorted = [...parties].sort((a, b) => a.phone.localeCompare(b.phone))
-  const lines = partyMatrix(sorted).map((row) => row.map(csvCell).join(","))
+  const [header, ...rows] = partyMatrix(sorted)
+  const labeled = (header ?? []).map((key) => (key === "name" ? "ชื่อที่บ่าวสาวรู้จัก" : key))
+  const lines = [labeled, ...rows].map((row) => row.map(csvCell).join(","))
   return `\uFEFF${lines.join("\n")}\n`
 }
 

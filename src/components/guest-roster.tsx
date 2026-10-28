@@ -81,6 +81,9 @@ export function PartySummary({
             <li key={guest.id} className="flex items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0">
               <GuestPortrait guest={guest} />
               <div className="min-w-0 flex-1">
+                {guest.isCompanion ? null : (
+                  <p className="text-[11px] text-muted-foreground">ชื่อที่บ่าวสาวรู้จัก</p>
+                )}
                 <p className={cn("truncate text-ink", guest.isCompanion ? "text-sm font-medium" : "font-serif text-lg leading-tight")}>
                   {guest.name}
                 </p>

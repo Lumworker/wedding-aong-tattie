@@ -134,6 +134,7 @@ function PartyLine({ party }: { party: Party }) {
   if (!main) return null
   return (
     <p className="mt-2 flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+      <span className="text-[11px]">ชื่อที่บ่าวสาวรู้จัก</span>
       <span className="text-ink">{main.name}</span>
       <span>{main.attendance === "attending" ? "มา" : "ยังไม่แน่ใจ"}</span>
       {main.side ? <span>{sideLabel(main.side)}</span> : null}

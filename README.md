@@ -28,7 +28,7 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 ## Guest flow
 
 1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. The couple illustration is a link to their story.
-2. **ตอบรับ** — name, gender, adult or child, and whether they are coming (1–10 people).
+2. **ตอบรับ** — ชื่อที่บ่าวสาวรู้จัก, gender, and whether they are coming (1–10 people).
 3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **อาสนวิหารอัสสัมชัญ** (Assumption Cathedral), Bang Rak.
 
 ## What is stored
@@ -43,7 +43,7 @@ Parties and wishes go through `/api/parties` and `/api/wishes`.
 - **Local dev** writes `data/wedding.xlsx` (gitignored).
 - **Vercel** never writes that file. It reads and writes a Google Sheet when a service account is configured. Without those env vars, saves fail with a clear error instead of touching the filesystem.
 
-Each phone is one row: name, side (`อ๋อง` or `แทต`), gender, attendance, `มีผู้ติดตาม` / `ไม่มีผู้ติดตาม`, and the companion count. Saving that phone again replaces the previous row, including older sheets that stored one row per guest.
+Each phone is one row. The name column key stays `name`; guests see it as **ชื่อที่บ่าวสาวรู้จัก**. Beside it: side (`อ๋อง` or `แทต`), gender, attendance, `มีผู้ติดตาม` / `ไม่มีผู้ติดตาม`, and the companion count. Saving that phone again replaces the previous row, including older sheets that stored one row per guest.
 
 ## Vercel env
 
