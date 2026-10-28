@@ -1,11 +1,19 @@
 "use client"
 
-import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react"
+import { useContext, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion, useAnimationFrame, useReducedMotion } from "framer-motion"
 import { SceneBackdrop, SceneForeground } from "@/components/venue/backdrop"
 import { Character } from "@/components/venue/character"
-import { ChatBubble, WishSceneScaleProvider, bubbleOffsetY, useWishSlots, type WishSlot } from "@/components/venue/wish-field"
+import {
+  ChatBubble,
+  WishSceneScaleContext,
+  WishSceneScaleProvider,
+  bubbleOffsetY,
+  useWishSlots,
+  wishBubbleHitsCouple,
+  type WishSlot,
+} from "@/components/venue/wish-field"
 import { COUPLE } from "@/lib/event"
 import { footY, placeGuests, SCENE, type PlacedGuest } from "@/lib/scene-layout"
 import { poseOnPath, type WalkPose } from "@/lib/walk"
@@ -37,10 +45,22 @@ function CoupleActor({
   )
 }
 
-function GuestBubble({ slot }: { slot?: WishSlot }) {
+function GuestBubble({
+  slot,
+  x,
+  y,
+  placed,
+}: {
+  slot?: WishSlot
+  x: number
+  y: number
+  placed: PlacedGuest
+}) {
+  const sceneScale = useContext(WishSceneScaleContext)
+  if (!slot || wishBubbleHitsCouple(x, y, placed, slot.wish.from, slot.wish.text, sceneScale)) return null
   return (
     <AnimatePresence>
-      {slot ? <ChatBubble key={slot.key} from={slot.wish.from} text={slot.wish.text} /> : null}
+      <ChatBubble key={slot.key} from={slot.wish.from} text={slot.wish.text} />
     </AnimatePresence>
   )
 }
@@ -96,7 +116,7 @@ function WalkingGuest({
         />
       </g>
       <g transform={`translate(0 ${bubbleOffsetY(placed)})`}>
-        <GuestBubble slot={slot} />
+        <GuestBubble slot={slot} x={pose.x} y={pose.y - pose.hop} placed={placed} />
       </g>
     </g>
   )
@@ -126,7 +146,7 @@ function StillGuest({
         />
       </g>
       <g transform={`translate(0 ${bubbleOffsetY(placed)})`}>
-        <GuestBubble slot={slot} />
+        <GuestBubble slot={slot} x={start.x} y={start.y} placed={placed} />
       </g>
     </g>
   )
@@ -232,7 +252,7 @@ export function VenueCanvas({
   const sceneScale = useSceneScale(svgRef)
   const placed = useMemo(() => placeGuests(guests, phone), [guests, phone])
   const ordered = useMemo(() => [...placed].sort((a, b) => footY(a) - footY(b)), [placed])
-  const slots = useWishSlots(wishes, placed, showWishes)
+  const slots = useWishSlots(wishes, placed, showWishes, sceneScale)
   const slotByGuest = useMemo(() => {
     const map = new Map<string, WishSlot>()
     for (const slot of slots) map.set(slot.guestId, slot)
