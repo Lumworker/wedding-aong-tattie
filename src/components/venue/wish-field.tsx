@@ -3,10 +3,10 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import type { Wish } from "@/lib/types"
-import type { PlacedGuest } from "@/lib/scene-layout"
+import { COUPLE_CLEAR, type PlacedGuest } from "@/lib/scene-layout"
 
 /** SVG user-unit scale (screen px per scene unit). Bubbles divide by this so type stays readable. */
-const WishSceneScaleContext = createContext(1)
+export const WishSceneScaleContext = createContext(1)
 
 export function WishSceneScaleProvider({ scale, children }: { scale: number; children: ReactNode }) {
   return <WishSceneScaleContext.Provider value={scale}>{children}</WishSceneScaleContext.Provider>
@@ -19,6 +19,8 @@ export type WishSlot = {
 }
 
 const MAX_VISIBLE = 2
+const MOBILE_MAX_VISIBLE = 1
+const MOBILE_WISH_POOL = 3
 const SPAWN_MS = 4200
 const LIFE_MS = 9200
 
@@ -30,16 +32,63 @@ function pick<T>(items: T[], exclude?: T): T | null {
   return list[Math.floor(Math.random() * list.length)] ?? null
 }
 
-function guestIdForWish(wish: Wish, placed: PlacedGuest[], busy: Set<string>): string | null {
+function guestIdForWish(
+  wish: Wish,
+  placed: PlacedGuest[],
+  busy: Set<string>,
+  sceneScale: number
+): string | null {
+  const safe = (item: PlacedGuest) =>
+    !busy.has(item.guest.id) && guestClearsCouple(item, wish.from, wish.text, sceneScale)
   const party = placed.filter(
-    (item) => !item.guest.isCompanion && item.guest.partyPhone === wish.partyPhone && !busy.has(item.guest.id)
+    (item) => !item.guest.isCompanion && item.guest.partyPhone === wish.partyPhone && safe(item)
   )
   const named = party.find((item) => item.guest.name === wish.from)
   if (named) return named.guest.id
   if (party[0]) return party[0].guest.id
 
-  const open = placed.filter((item) => !item.guest.isCompanion && !busy.has(item.guest.id))
+  const open = placed.filter((item) => !item.guest.isCompanion && safe(item))
   return pick(open)?.guest.id ?? null
+}
+
+function bubbleBox(x: number, y: number, placed: PlacedGuest, from: string, text: string, sceneScale: number) {
+  const scale = sceneScale > 0.05 ? sceneScale : 1
+  const layout = bubbleLayout(from, text, scale)
+  const width = (layout.screenW + 8) / scale
+  const height = (layout.cardH + 22) / scale
+  const anchorY = y + bubbleOffsetY(placed)
+  return { x: x - width / 2, y: anchorY - height, width, height }
+}
+
+function hitsCoupleZone(box: { x: number; y: number; width: number; height: number }) {
+  return (
+    box.x < COUPLE_CLEAR.x1 &&
+    box.x + box.width > COUPLE_CLEAR.x0 &&
+    box.y < COUPLE_CLEAR.y1 &&
+    box.y + box.height > COUPLE_CLEAR.y0
+  )
+}
+
+/** True when this wish card would cover the couple if anchored on the guest. */
+export function wishBubbleHitsCouple(
+  x: number,
+  y: number,
+  placed: PlacedGuest,
+  from: string,
+  text: string,
+  sceneScale: number
+) {
+  return hitsCoupleZone(bubbleBox(x, y, placed, from, text, sceneScale))
+}
+
+function guestClearsCouple(placed: PlacedGuest, from: string, text: string, sceneScale: number) {
+  const points = placed.mood === "walk" ? placed.path : placed.path.slice(0, 1)
+  return points.every((point) => !wishBubbleHitsCouple(point.x, point.y, placed, from, text, sceneScale))
+}
+
+function recentWishes(wishes: Wish[], narrow: boolean) {
+  if (!narrow) return wishes
+  return [...wishes].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, MOBILE_WISH_POOL)
 }
 
 function bubbleLayout(from: string, text: string, scale: number) {
@@ -168,20 +217,40 @@ export function ChatBubble({ from, text }: { from: string; text: string }) {
   )
 }
 
+function useNarrowScene() {
+  const [narrow, setNarrow] = useState(false)
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1023px)")
+    const update = () => setNarrow(query.matches)
+    update()
+    query.addEventListener("change", update)
+    return () => query.removeEventListener("change", update)
+  }, [])
+
+  return narrow
+}
+
 export function useWishSlots(
   wishes: Wish[],
   placed: PlacedGuest[],
-  enabled: boolean
+  enabled: boolean,
+  sceneScale: number
 ): WishSlot[] {
   const reduced = useReducedMotion() === true
+  const narrow = useNarrowScene()
   const live = enabled && wishes.length > 0 && placed.length > 0
   const [slots, setSlots] = useState<WishSlot[]>([])
   const [quietIndex, setQuietIndex] = useState(0)
   const wishRef = useRef<string | null>(null)
   const placedRef = useRef(placed)
+  const scaleRef = useRef(sceneScale)
   placedRef.current = placed
+  scaleRef.current = sceneScale
 
+  const sceneWishes = useMemo(() => recentWishes(wishes, narrow), [wishes, narrow])
   const guestIds = useMemo(() => placed.map((item) => item.guest.id).join("|"), [placed])
+  const maxVisible = narrow ? MOBILE_MAX_VISIBLE : MAX_VISIBLE
 
   useEffect(() => {
     if (!live) {
@@ -200,12 +269,12 @@ export function useWishSlots(
     function spawn() {
       if (cancelled) return
       setSlots((current) => {
-        if (current.length >= MAX_VISIBLE) return current
+        if (current.length >= maxVisible) return current
         const busy = new Set(current.map((slot) => slot.guestId))
-        const wishPool = wishes.filter((wish) => wish.id !== wishRef.current)
-        const wish = pick(wishPool.length ? wishPool : wishes)
+        const wishPool = sceneWishes.filter((wish) => wish.id !== wishRef.current)
+        const wish = pick(wishPool.length ? wishPool : sceneWishes)
         if (!wish) return current
-        const guestId = guestIdForWish(wish, placedRef.current, busy)
+        const guestId = guestIdForWish(wish, placedRef.current, busy, scaleRef.current)
         if (!guestId) return current
         wishRef.current = wish.id
         const key = `${wish.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
@@ -227,13 +296,14 @@ export function useWishSlots(
       window.clearInterval(interval)
       timers.forEach((id) => window.clearTimeout(id))
     }
-  }, [live, reduced, wishes, guestIds])
+  }, [live, reduced, sceneWishes, guestIds, maxVisible])
 
   if (!live) return []
 
   if (reduced) {
-    const wish = wishes[quietIndex % wishes.length]
-    const guestId = guestIdForWish(wish, placed, new Set())
+    if (!sceneWishes.length) return []
+    const wish = sceneWishes[quietIndex % sceneWishes.length]
+    const guestId = guestIdForWish(wish, placed, new Set(), sceneScale)
     if (!guestId) return []
     return [{ key: `quiet-${wish.id}-${guestId}`, wish, guestId }]
   }

@@ -8,6 +8,14 @@ export const SCENE = {
   bride: { x: 372, y: 458 },
 } as const
 
+/** Altar area the couple occupies. Wish bubbles must stay outside this rect. */
+export const COUPLE_CLEAR = {
+  x0: 200,
+  x1: 440,
+  y0: 290,
+  y1: 520,
+} as const
+
 export const PEW = {
   rows: 7,
   startY: 524,
