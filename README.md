@@ -43,6 +43,8 @@ Parties and wishes go through `/api/parties` and `/api/wishes`.
 - **Local dev** writes `data/wedding.xlsx` (gitignored).
 - **Vercel** never writes that file. It reads and writes a Google Sheet when a service account is configured. Without those env vars, saves fail with a clear error instead of touching the filesystem.
 
+Each phone is one row: name, side (`อ๋อง` or `แทต`), gender, attendance, `มีผู้ติดตาม` / `ไม่มีผู้ติดตาม`, and the companion count. Saving that phone again replaces the previous row, including older sheets that stored one row per guest.
+
 ## Vercel env
 
 Set these in the Vercel project (Production and Preview):

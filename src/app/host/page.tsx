@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { sideLabel } from "@/lib/labels"
 import { formatThaiMobile } from "@/lib/phone"
 import type { Party } from "@/lib/types"
 
@@ -11,8 +12,8 @@ type Summary = {
   guests: number
   attending: number
   unsure: number
-  adults: number
-  children: number
+  withCompanions: number
+  companions: number
 }
 
 export default function HostPage() {
@@ -103,8 +104,8 @@ export default function HostPage() {
             <Stat label="คณะ" value={summary.parties} />
             <Stat label="มา" value={summary.attending} />
             <Stat label="ยังไม่แน่ใจ" value={summary.unsure} />
-            <Stat label="ผู้ใหญ่ที่มา" value={summary.adults} />
-            <Stat label="เด็กที่มา" value={summary.children} />
+            <Stat label="คณะที่มีผู้ติดตาม" value={summary.withCompanions} />
+            <Stat label="ผู้ติดตาม" value={summary.companions} />
             <Stat label="ทั้งหมด" value={summary.guests} />
           </div>
           <a
@@ -117,22 +118,27 @@ export default function HostPage() {
             {parties.map((party) => (
               <li key={party.phone} className="rounded-2xl border border-border bg-card px-4 py-3">
                 <p className="font-medium">{formatThaiMobile(party.phone)}</p>
-                <ul className="mt-2 space-y-1 text-sm">
-                  {party.guests.map((guest) => (
-                    <li key={guest.id} className="flex flex-wrap gap-x-2 text-muted-foreground">
-                      <span className="text-ink">{guest.name}</span>
-                      <span>{guest.attendance === "attending" ? "มา" : "ยังไม่แน่ใจ"}</span>
-                      <span>{guest.ageGroup === "child" ? "เด็ก" : "ผู้ใหญ่"}</span>
-                      {guest.isCompanion ? <span>ผู้ติดตาม</span> : null}
-                    </li>
-                  ))}
-                </ul>
+                <PartyLine party={party} />
               </li>
             ))}
           </ul>
         </section>
       ) : null}
     </main>
+  )
+}
+
+function PartyLine({ party }: { party: Party }) {
+  const main = party.guests.find((guest) => !guest.isCompanion) ?? party.guests[0]
+  const companions = party.guests.filter((guest) => guest.isCompanion).length
+  if (!main) return null
+  return (
+    <p className="mt-2 flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+      <span className="text-ink">{main.name}</span>
+      <span>{main.attendance === "attending" ? "มา" : "ยังไม่แน่ใจ"}</span>
+      {main.side ? <span>{sideLabel(main.side)}</span> : null}
+      <span>{companions > 0 ? `มีผู้ติดตาม ${companions}` : "ไม่มีผู้ติดตาม"}</span>
+    </p>
   )
 }
 
