@@ -93,10 +93,6 @@ export function VenueScene({
           </h1>
           <p className="mt-2 font-serif text-base text-ink">{COUPLE.dateThai}</p>
         </div>
-        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-          <span aria-hidden="true">📱</span>
-          {formatThaiMobile(phone)}
-        </p>
       </header>
 
       <section
@@ -143,15 +139,23 @@ export function VenueScene({
             <h2 className="font-serif text-xl">คณะของคุณ</h2>
             <p className="text-xs text-muted-foreground">{mine.length} คน</p>
           </div>
-          <PartySummary guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" variant="outline" className="h-10 rounded-full bg-card px-4" onClick={onEdit}>
-              ✏️ แก้ไขการตอบรับ
-            </Button>
-            <Button type="button" variant="ghost" className="h-10 rounded-full px-4" onClick={onChangePhone}>
-              📱 ใช้เบอร์อื่น
-            </Button>
-          </div>
+          <PartySummary
+            guests={mine}
+            empty="ยังไม่มีรายชื่อในคณะนี้"
+            footer={
+              <div className="border-t border-border px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-ink">{formatThaiMobile(phone)}</p>
+                  <Button type="button" variant="ghost" className="h-9 rounded-full px-3" onClick={onChangePhone}>
+                    📱 ใช้เบอร์อื่น
+                  </Button>
+                </div>
+                <Button type="button" className="mt-2 h-10 w-full rounded-full" onClick={onEdit}>
+                  ✏️ แก้ไขการตอบรับ
+                </Button>
+              </div>
+            }
+          />
         </section>
 
         <WishComposer

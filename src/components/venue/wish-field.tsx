@@ -35,7 +35,7 @@ function guestIdForWish(wish: Wish, placed: PlacedGuest[], busy: Set<string>): s
   return pick(open)?.guest.id ?? null
 }
 
-function clipWish(text: string, max = 36) {
+function clipWish(text: string, max = 18) {
   const glyphs = Array.from(text)
   if (glyphs.length <= max) return text
   return `${glyphs.slice(0, max - 1).join("")}…`
@@ -53,20 +53,18 @@ export function ChatBubble({ from, text }: { from: string; text: string }) {
         animate={{ y: [0, -5, 0] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <foreignObject x={-58} y={-46} width={116} height={44} style={{ overflow: "visible" }}>
+        <foreignObject x={-32} y={-34} width={64} height={32} style={{ overflow: "visible" }}>
           <div className="pointer-events-none flex justify-center">
-            <div className="relative max-w-[6.75rem] rounded-xl border border-[#e0b85a] bg-[#fffaf0] px-2 py-1 shadow-[0_6px_14px_rgba(10,8,16,0.35)]">
-              <p className="m-0 mb-0.5 text-[8px] font-semibold leading-none tracking-wide text-[#b04558]">
-                {from}
-              </p>
-              <p className="m-0 font-serif text-[10px] leading-snug text-[#241f1c]">{clipWish(text)}</p>
+            <div className="relative max-w-[3.6rem] rounded-md border border-[#e0b85a] bg-[#fffaf0] px-1 py-0.5 shadow-[0_2px_6px_rgba(10,8,16,0.28)]">
+              <p className="m-0 text-[7px] font-semibold leading-none text-[#b04558]">{from}</p>
+              <p className="m-0 line-clamp-2 font-serif text-[8px] leading-tight text-[#241f1c]">{clipWish(text)}</p>
               <span
                 aria-hidden
-                className="absolute top-full left-1/2 -ml-[5px] border-x-[5px] border-t-[6px] border-x-transparent border-t-[#e0b85a]"
+                className="absolute top-full left-1/2 -ml-1 border-x-4 border-t-[5px] border-x-transparent border-t-[#e0b85a]"
               />
               <span
                 aria-hidden
-                className="absolute top-full left-1/2 -ml-[4px] border-x-[4px] border-t-[5px] border-x-transparent border-t-[#fffaf0]"
+                className="absolute top-full left-1/2 -ml-[3px] border-x-[3px] border-t-[4px] border-x-transparent border-t-[#fffaf0]"
               />
             </div>
           </div>
