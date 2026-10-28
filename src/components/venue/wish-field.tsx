@@ -35,7 +35,7 @@ function guestIdForWish(wish: Wish, placed: PlacedGuest[], busy: Set<string>): s
   return pick(open)?.guest.id ?? null
 }
 
-function clipWish(text: string, max = 64) {
+function clipWish(text: string, max = 18) {
   const glyphs = Array.from(text)
   if (glyphs.length <= max) return text
   return `${glyphs.slice(0, max - 1).join("")}…`
@@ -53,20 +53,18 @@ export function ChatBubble({ from, text }: { from: string; text: string }) {
         animate={{ y: [0, -5, 0] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <foreignObject x={-90} y={-86} width={180} height={84} style={{ overflow: "visible" }}>
+        <foreignObject x={-32} y={-34} width={64} height={32} style={{ overflow: "visible" }}>
           <div className="pointer-events-none flex justify-center">
-            <div className="relative max-w-[10.5rem] rounded-[18px] border-2 border-[#e0b85a] bg-[#fffaf0] px-3 py-2 shadow-[0_10px_24px_rgba(10,8,16,0.42)]">
-              <p className="m-0 mb-1 text-[11px] font-semibold leading-none tracking-wide text-[#b04558]">
-                {from}
-              </p>
-              <p className="m-0 font-serif text-[13px] leading-snug text-[#241f1c]">{clipWish(text)}</p>
+            <div className="relative max-w-[3.6rem] rounded-md border border-[#e0b85a] bg-[#fffaf0] px-1 py-0.5 shadow-[0_2px_6px_rgba(10,8,16,0.28)]">
+              <p className="m-0 truncate text-[5px] font-semibold leading-none text-[#b04558]">{from}</p>
+              <p className="m-0 line-clamp-2 font-serif text-[6px] leading-none text-[#241f1c]">{clipWish(text)}</p>
               <span
                 aria-hidden
-                className="absolute top-full left-1/2 -ml-[7px] border-x-[7px] border-t-[9px] border-x-transparent border-t-[#e0b85a]"
+                className="absolute top-full left-1/2 -ml-1 border-x-4 border-t-[5px] border-x-transparent border-t-[#e0b85a]"
               />
               <span
                 aria-hidden
-                className="absolute top-full left-1/2 -ml-[5px] mt-px border-x-[5px] border-t-[7px] border-x-transparent border-t-[#fffaf0]"
+                className="absolute top-full left-1/2 -ml-[3px] border-x-[3px] border-t-[4px] border-x-transparent border-t-[#fffaf0]"
               />
             </div>
           </div>
@@ -151,7 +149,6 @@ export function useWishSlots(
 
 /** Head offset in scene units (outside character scale) for chat bubble anchor. */
 export function bubbleOffsetY(placed: PlacedGuest): number {
-  const sitting = placed.mood === "sit"
-  const base = placed.guest.isCompanion ? (sitting ? 18 : 20) : sitting ? 28 : 32
-  return -(base * placed.scale + 14)
+  const body = placed.guest.isCompanion ? 20 : 80
+  return -(body * placed.scale + 4)
 }

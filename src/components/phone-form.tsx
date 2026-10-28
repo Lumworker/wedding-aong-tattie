@@ -9,18 +9,25 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
 
-export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void }) {
+export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void | Promise<void> }) {
   const [value, setValue] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    if (pending) return
     const phone = normalizeThaiMobile(value)
     if (!phone) {
       setError("กรุณากรอกเบอร์มือถือไทย 10 หลัก ขึ้นต้นด้วย 06, 08 หรือ 09")
       return
     }
-    onContinue(phone)
+    setPending(true)
+    try {
+      await onContinue(phone)
+    } finally {
+      setPending(false)
+    }
   }
 
   return (
@@ -59,12 +66,12 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
             {error}
           </p>
         ) : null}
-        <Button type="submit" className="mt-4 h-12 w-full rounded-full text-base">
-          ต่อไป
+        <Button type="submit" disabled={pending} className="mt-4 h-12 w-full rounded-full text-base">
+          {pending ? "กำลังเปิด…" : "ต่อไป"}
         </Button>
         <Ornament className="mt-5" />
         <p className="text-center text-xs leading-5 text-muted-foreground">
-          เคยตอบรับบนเครื่องนี้แล้ว จะเปิดฟอร์มคณะเดิม แล้วเข้าฉากได้
+          ถ้าเบอร์นี้ตอบรับไว้แล้ว จะพาเข้าฉากงานเลย
         </p>
       </form>
     </ScreenShell>

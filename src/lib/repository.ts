@@ -73,7 +73,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-/** Session stays in the browser; parties + wishes live in Excel via API. */
+/** Session stays in the browser. Parties and wishes go through the API (Sheets on Vercel, Excel on disk in local dev). */
 export function createExcelWeddingRepository(): WeddingRepository {
   return {
     readSessionPhone() {

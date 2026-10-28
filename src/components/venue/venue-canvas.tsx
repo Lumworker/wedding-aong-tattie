@@ -92,6 +92,7 @@ function WalkingGuest({
           showName={showName}
           highlight={mine}
           facing={pose.facing}
+          frame={pose.hop > 1.6 ? 1 : 0}
         />
       </g>
       <g transform={`translate(0 ${bubbleOffsetY(placed)})`}>

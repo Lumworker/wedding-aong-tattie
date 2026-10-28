@@ -128,7 +128,7 @@ export function RsvpForm({
     event.preventDefault()
     if (saving) return
     const nextErrors: Errors = {}
-    if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อ"
+    if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อที่บ่าวสาวรู้จัก"
     if (!person.gender) nextErrors.gender = "กรุณาเลือกเพศ"
     if (!person.side) nextErrors.side = "กรุณาเลือกฝั่งญาติ"
     setErrors(nextErrors)
@@ -195,12 +195,12 @@ export function RsvpForm({
           className="rounded-[1.6rem] border border-border bg-card p-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.55)]"
         >
           <h2 className="mb-3 font-serif text-xl">ข้อมูลของคุณ</h2>
-          <Label htmlFor="name-main">ชื่อ</Label>
+          <Label htmlFor="name-main">ชื่อที่บ่าวสาวรู้จัก</Label>
           <Input
             id="name-main"
             value={person.name}
             maxLength={40}
-            placeholder="ชื่อเล่นหรือชื่อจริง"
+            placeholder="ชื่อที่บ่าวสาวรู้จัก"
             autoComplete="name"
             aria-invalid={errors.name ? true : undefined}
             aria-describedby={errors.name ? "error-name" : undefined}

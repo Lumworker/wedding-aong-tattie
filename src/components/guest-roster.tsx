@@ -1,6 +1,36 @@
+import type { ReactNode } from "react"
+import { spriteForGuest } from "@/lib/appearance"
 import { attendanceLabel, sideLabel } from "@/lib/labels"
 import type { Guest } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+function GuestPortrait({ guest }: { guest: Guest }) {
+  const sprite = spriteForGuest(guest)
+  const { atlas } = sprite
+  const sx = sprite.col * atlas.frames * atlas.frameW
+  const sy = sprite.row * atlas.frameH
+  const height = guest.isCompanion ? 36 : 58
+  const width = Math.round((atlas.frameW / atlas.frameH) * height)
+
+  return (
+    <span className="flex h-[4.25rem] w-14 shrink-0 items-end justify-center rounded-2xl bg-muted px-1 pb-1">
+      <svg
+        width={width}
+        height={height}
+        viewBox={`${sx} ${sy} ${atlas.frameW} ${atlas.frameH}`}
+        aria-hidden="true"
+        className="block overflow-hidden"
+      >
+        <image
+          href={atlas.href}
+          width={atlas.width}
+          height={atlas.height}
+          style={{ imageRendering: "pixelated" }}
+        />
+      </svg>
+    </span>
+  )
+}
 
 function StatusDot({ attending }: { attending: boolean }) {
   return (
@@ -26,47 +56,51 @@ function Badge({ children, tone = "muted" }: { children: string; tone?: "muted" 
   )
 }
 
-/** Compact party summary: registrant + follower count, not one card per companion. */
+/** Party card: each guest with the same pixel sprite used in the venue. */
 export function PartySummary({
   guests,
   empty,
+  footer,
 }: {
   guests: Guest[]
   empty?: string
+  footer?: ReactNode
 }) {
   const main = guests.find((guest) => !guest.isCompanion) ?? guests[0]
-  const companions = guests.filter((guest) => guest.isCompanion || (main && guest.id !== main.id))
-
-  if (!main) {
-    return (
-      <p className="rounded-2xl border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-        {empty ?? "ยังไม่มีรายชื่อในคณะนี้"}
-      </p>
-    )
-  }
+  const ordered = main
+    ? [main, ...guests.filter((guest) => guest.id !== main.id)]
+    : []
 
   return (
-    <div className="rounded-[1.4rem] border border-border bg-card p-4">
-      <div className="flex items-start gap-3">
-        <StatusDot attending={main.attendance === "attending"} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-serif text-xl leading-tight text-ink">{main.name}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {main.side ? <Badge>{sideLabel(main.side)}</Badge> : null}
-            <Badge tone={main.attendance === "attending" ? "sage" : "blush"}>
-              {attendanceLabel(main.attendance)}
-            </Badge>
-          </div>
-          {companions.length > 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              ผู้ติดตาม <span className="font-medium text-ink">{companions.length}</span> คน
-              <span className="text-muted-foreground/80"> · รวมทั้งคณะ {guests.length} คน</span>
-            </p>
-          ) : (
-            <p className="mt-3 text-sm text-muted-foreground">มาคนเดียว</p>
-          )}
-        </div>
-      </div>
+    <div className="overflow-hidden rounded-[1.4rem] border border-border bg-card">
+      {ordered.length === 0 ? (
+        <p className="px-4 py-4 text-sm text-muted-foreground">{empty ?? "ยังไม่มีรายชื่อในคณะนี้"}</p>
+      ) : (
+        <ul>
+          {ordered.map((guest) => (
+            <li key={guest.id} className="flex items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0">
+              <GuestPortrait guest={guest} />
+              <div className="min-w-0 flex-1">
+                {guest.isCompanion ? null : (
+                  <p className="text-[11px] text-muted-foreground">ชื่อที่บ่าวสาวรู้จัก</p>
+                )}
+                <p className={cn("truncate text-ink", guest.isCompanion ? "text-sm font-medium" : "font-serif text-lg leading-tight")}>
+                  {guest.name}
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  <StatusDot attending={guest.attendance === "attending"} />
+                  {guest.side ? <Badge>{sideLabel(guest.side)}</Badge> : null}
+                  <Badge tone={guest.attendance === "attending" ? "sage" : "blush"}>
+                    {attendanceLabel(guest.attendance)}
+                  </Badge>
+                  {guest.isCompanion ? <Badge>ผู้ติดตาม</Badge> : null}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {footer}
     </div>
   )
 }

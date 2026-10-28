@@ -1,3 +1,8 @@
+/**
+ * Ceremony date is 5 ธันวาคม 2570.
+ * Kept on purpose after the explicit date fix (not 25 December).
+ * Every user-facing date string should read `COUPLE.dateThai`.
+ */
 export const COUPLE = {
   groom: "Chonprakun Panusetgul",
   groomShort: "Chonprakun",
@@ -18,12 +23,16 @@ export const COUPLE_STORY = {
     "ทั้งคู่เลือกวันที่ 5 ธันวาคม 2570 เพราะอยากให้คนที่รักมานั่งด้วยกันในวันที่มีแสงนวล ถ้าอยากรู้จักมากกว่าชื่อบนการ์ด ให้กลับไปแตะตัวบนแท่นได้เสมอ",
 } as const
 
-/** Placeholder pin until the real ceremony address is confirmed. */
+/** อาสนวิหารอัสสัมชัญ บางรัก — Assumption Cathedral, Bangkok. */
 export const VENUE_MAP = {
-  lat: 13.7466,
-  lng: 100.5392,
-  query: "Bangkok Art and Culture Centre",
-  note: "แผนที่ตัวอย่าง — จะอัปเดตจุดจริงก่อนวันงาน",
+  name: "อาสนวิหารอัสสัมชัญ",
+  nameEn: "Assumption Cathedral",
+  area: "บางรัก",
+  address: "23 ซอยเจริญกรุง 40 แขวงบางรัก เขตบางรัก กรุงเทพมหานคร 10500",
+  lat: 13.723049,
+  lng: 100.514891,
+  link: "https://www.google.com/maps/search/?api=1&query=13.723049,100.514891",
+  embed: "https://maps.google.com/maps?q=13.723049,100.514891&z=17&hl=th&output=embed",
 } as const
 
 export const PARTY_MIN = 1

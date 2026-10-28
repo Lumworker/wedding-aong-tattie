@@ -93,10 +93,6 @@ export function VenueScene({
           </h1>
           <p className="mt-2 font-serif text-base text-ink">{COUPLE.dateThai}</p>
         </div>
-        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-          <span aria-hidden="true">📱</span>
-          {formatThaiMobile(phone)}
-        </p>
       </header>
 
       <section
@@ -143,15 +139,23 @@ export function VenueScene({
             <h2 className="font-serif text-xl">คณะของคุณ</h2>
             <p className="text-xs text-muted-foreground">{mine.length} คน</p>
           </div>
-          <PartySummary guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" variant="outline" className="h-10 rounded-full bg-card px-4" onClick={onEdit}>
-              ✏️ แก้ไขการตอบรับ
-            </Button>
-            <Button type="button" variant="ghost" className="h-10 rounded-full px-4" onClick={onChangePhone}>
-              📱 ใช้เบอร์อื่น
-            </Button>
-          </div>
+          <PartySummary
+            guests={mine}
+            empty="ยังไม่มีรายชื่อในคณะนี้"
+            footer={
+              <div className="border-t border-border px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-ink">{formatThaiMobile(phone)}</p>
+                  <Button type="button" variant="ghost" className="h-9 rounded-full px-3" onClick={onChangePhone}>
+                    📱 ใช้เบอร์อื่น
+                  </Button>
+                </div>
+                <Button type="button" className="mt-2 h-10 w-full rounded-full" onClick={onEdit}>
+                  ✏️ แก้ไขการตอบรับ
+                </Button>
+              </div>
+            }
+          />
         </section>
 
         <WishComposer
@@ -176,12 +180,22 @@ export function VenueScene({
 
         <section>
           <h2 className="font-serif text-xl">📍 สถานที่</h2>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">{VENUE_MAP.note}</p>
+          <p className="mt-1 font-medium text-ink">{VENUE_MAP.name}</p>
+          <p className="text-xs text-muted-foreground">{VENUE_MAP.nameEn}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{VENUE_MAP.address}</p>
+          <a
+            href={VENUE_MAP.link}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-flex text-sm text-rose underline-offset-4 hover:underline"
+          >
+            เปิดใน Google Maps
+          </a>
           <div className="mt-3 overflow-hidden rounded-[1.4rem] border border-border bg-card">
             <iframe
-              title="แผนที่สถานที่จัดงาน"
-              src={`https://maps.google.com/maps?q=${VENUE_MAP.lat},${VENUE_MAP.lng}&z=16&output=embed`}
-              className="h-44 w-full border-0 grayscale-[20%]"
+              title={`แผนที่${VENUE_MAP.name}`}
+              src={VENUE_MAP.embed}
+              className="h-44 w-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
