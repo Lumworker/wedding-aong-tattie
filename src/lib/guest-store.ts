@@ -79,9 +79,11 @@ export function createGuestStore(repo: WeddingRepository = createExcelWeddingRep
     getServerSnapshot() {
       return EMPTY
     },
-    setPhone(phone: string) {
+    async setPhone(phone: string) {
       repo.writeSessionPhone(phone)
-      void refresh()
+      const next = await load()
+      emit(next)
+      return next
     },
     clearPhone() {
       repo.clearSessionPhone()

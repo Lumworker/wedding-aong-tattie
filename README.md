@@ -28,8 +28,8 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 ## Guest flow
 
 1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. The couple illustration is a link to their story.
-2. **ตอบรับ** — ชื่อที่บ่าวสาวรู้จัก, gender, and whether they are coming (1–10 people).
-3. **ฉากงาน** — after **บันทึกและเข้างาน**. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **อาสนวิหารอัสสัมชัญ** (Assumption Cathedral), Bang Rak.
+2. **ตอบรับ** — only when that phone has no saved party. ชื่อที่บ่าวสาวรู้จัก, gender, and whether they are coming (1–10 people).
+3. **ฉากงาน** — a phone that already has a party skips the form and opens the venue. **แก้ไขการตอบรับ** still opens the form. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **อาสนวิหารอัสสัมชัญ** (Assumption Cathedral), Bang Rak.
 
 ## What is stored
 
