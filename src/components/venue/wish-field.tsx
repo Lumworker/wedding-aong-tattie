@@ -243,7 +243,7 @@ export function useWishSlots(
 
 /** Head offset in scene units (outside character scale) for chat bubble anchor. */
 export function bubbleOffsetY(placed: PlacedGuest): number {
-  const sitting = placed.mood === "sit"
-  const base = placed.guest.isCompanion ? (sitting ? 24 : 27) : sitting ? 28 : 32
-  return -(base * placed.scale + 14)
+  const body = placed.guest.isCompanion ? 68 : 80
+  const sit = placed.mood === "sit" ? 0.86 : 1
+  return -(body * sit * placed.scale + 6)
 }

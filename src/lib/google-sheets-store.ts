@@ -1,5 +1,6 @@
 import { google, type sheets_v4 } from "googleapis"
 import {
+  REGISTRANT_CLEAR_RANGE,
   REGISTRANT_HEADERS,
   SHEET_NAMES,
   WISH_HEADERS,
@@ -91,7 +92,7 @@ export async function loadSheetsDoc(): Promise<WeddingDoc> {
 
   const result = await sheets.spreadsheets.values.batchGet({
     spreadsheetId: id,
-    ranges: [`'${SHEET_NAMES.registrants}'!A:I`, `'${SHEET_NAMES.wishes}'!A:E`],
+    ranges: [`'${SHEET_NAMES.registrants}'!${REGISTRANT_CLEAR_RANGE}`, `'${SHEET_NAMES.wishes}'!A:E`],
   })
 
   const registrants = asMatrix(result.data.valueRanges?.[0]?.values)
@@ -108,7 +109,7 @@ export async function saveSheetsDoc(doc: WeddingDoc): Promise<void> {
   const id = spreadsheetId()
   await ensureTabs(sheets, id)
 
-  const registrantRange = `'${SHEET_NAMES.registrants}'!A:I`
+  const registrantRange = `'${SHEET_NAMES.registrants}'!${REGISTRANT_CLEAR_RANGE}`
   const wishRange = `'${SHEET_NAMES.wishes}'!A:E`
 
   await sheets.spreadsheets.values.batchClear({

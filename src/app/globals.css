@@ -272,6 +272,11 @@
   transform-origin: 50% 58%;
 }
 
+.hd2d-world image {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 .hd2d-dof-top,
 .hd2d-dof-bot {
   pointer-events: none;

@@ -11,9 +11,10 @@ export default function WelcomePage() {
 
   return (
     <PhoneForm
-      onContinue={(phone) => {
-        guestStore.setPhone(phone)
-        router.push(withQuery(ROUTES.register, `?${searchParams.toString()}`))
+      onContinue={async (phone) => {
+        const next = await guestStore.setPhone(phone)
+        const path = next.party ? ROUTES.dashboard : ROUTES.register
+        router.push(withQuery(path, `?${searchParams.toString()}`))
       }}
     />
   )

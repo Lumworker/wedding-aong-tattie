@@ -60,11 +60,13 @@ function MapSection() {
   return (
     <section id="map" className="scroll-mt-56">
       <h2 className="font-serif text-xl leading-normal">สถานที่</h2>
-      <p className="mt-1 text-[13px] leading-6 text-muted-foreground">{VENUE_MAP.note}</p>
+      <p className="mt-1 text-[15px] leading-relaxed font-medium text-ink">{VENUE_MAP.name}</p>
+      <p className="text-[13px] leading-normal text-muted-foreground">{VENUE_MAP.nameEn}</p>
+      <p className="mt-1 text-[13px] leading-6 text-muted-foreground">{VENUE_MAP.address}</p>
       <div className="mt-3 overflow-hidden rounded-[1.4rem] border border-border bg-card">
         <iframe
-          title="แผนที่สถานที่จัดงาน"
-          src={`https://maps.google.com/maps?q=${VENUE_MAP.lat},${VENUE_MAP.lng}&z=16&output=embed`}
+          title={`แผนที่${VENUE_MAP.name}`}
+          src={VENUE_MAP.embed}
           className={`pointer-events-none w-full border-0 ${expanded ? "h-80" : "h-56"}`}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -138,7 +140,7 @@ export function VenueScene({
           </h1>
           <p className="mt-2 font-serif text-base text-ink">{COUPLE.dateThai}</p>
         </div>
-        <p className="mt-2 inline-flex h-8 items-center rounded-full bg-muted px-3 text-[13px] text-muted-foreground">
+        <p className="mt-2 inline-flex h-8 items-center rounded-full bg-muted px-3 text-[13px] leading-normal text-muted-foreground">
           {formatThaiMobile(phone)}
         </p>
         <nav className="mt-2.5 grid grid-cols-3 gap-2 lg:hidden" aria-label="ส่วนของหน้า">
@@ -204,7 +206,7 @@ export function VenueScene({
         ) : null}
 
         <section id="party" className="scroll-mt-56">
-          <h2 className="mb-2 font-serif text-xl">คณะของคุณ</h2>
+          <h2 className="mb-2 font-serif text-xl leading-normal">คณะของคุณ</h2>
           <PartySummary guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" />
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <Button type="button" variant="outline" className="h-11 min-h-11 w-full rounded-full bg-card px-4 text-[15px] sm:w-auto" onClick={onEdit}>

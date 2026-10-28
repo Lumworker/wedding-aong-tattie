@@ -4,6 +4,34 @@ import { attendanceLabel, sideLabel } from "@/lib/labels"
 import type { Guest } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
+function GuestPortrait({ guest }: { guest: Guest }) {
+  const sprite = spriteForGuest(guest)
+  const { atlas } = sprite
+  const sx = sprite.col * atlas.frames * atlas.frameW
+  const sy = sprite.row * atlas.frameH
+  const height = guest.isCompanion ? 49 : 58
+  const width = Math.round((atlas.frameW / atlas.frameH) * height)
+
+  return (
+    <span className="flex h-[4.25rem] w-14 shrink-0 items-end justify-center rounded-2xl bg-muted px-1 pb-1">
+      <svg
+        width={width}
+        height={height}
+        viewBox={`${sx} ${sy} ${atlas.frameW} ${atlas.frameH}`}
+        aria-hidden="true"
+        className="block overflow-hidden"
+      >
+        <image
+          href={atlas.href}
+          width={atlas.width}
+          height={atlas.height}
+          style={{ imageRendering: "pixelated" }}
+        />
+      </svg>
+    </span>
+  )
+}
+
 function StatusDot({ attending }: { attending: boolean }) {
   return (
     <span
@@ -25,27 +53,6 @@ function Badge({ children, tone = "muted" }: { children: string; tone?: "muted" 
     >
       {children}
     </span>
-  )
-}
-
-function GuestSprite({ guest }: { guest: Guest }) {
-  const sprite = spriteForGuest(guest)
-  const { atlas, col, row } = sprite
-  const size = guest.isCompanion ? 44 : 52
-  return (
-    <span
-      aria-hidden="true"
-      className="shrink-0 rounded-2xl bg-muted"
-      style={{
-        width: size,
-        height: size,
-        backgroundImage: `url("${atlas.href}")`,
-        backgroundRepeat: "no-repeat",
-        imageRendering: "pixelated",
-        backgroundSize: `${atlas.cols * size}px ${atlas.rows * size}px`,
-        backgroundPosition: `${-col * size}px ${-row * size}px`,
-      }}
-    />
   )
 }
 
@@ -73,7 +80,7 @@ export function PartySummary({
 
   if (!main) {
     return (
-      <p className="rounded-2xl border border-dashed border-border px-3 py-4 text-[15px] text-muted-foreground">
+      <p className="rounded-2xl border border-dashed border-border px-3 py-4 text-[15px] leading-relaxed text-muted-foreground">
         {empty ?? "ยังไม่มีรายชื่อในคณะนี้"}
       </p>
     )
@@ -85,7 +92,7 @@ export function PartySummary({
       <ul className="divide-y divide-border">
         {ordered.map((guest) => (
           <li key={guest.id} className="flex items-center gap-3 px-4 py-3">
-            <GuestSprite guest={guest} />
+            <GuestPortrait guest={guest} />
             <p className="min-w-0 flex-1 text-base leading-relaxed font-medium break-words text-ink">{guest.name}</p>
             {guest.isCompanion ? <Badge>ผู้ติดตาม</Badge> : null}
           </li>

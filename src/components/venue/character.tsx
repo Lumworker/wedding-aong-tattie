@@ -84,41 +84,52 @@ function AtlasGuest({
   showName,
   highlight,
   facing,
+  frame = 0,
 }: {
   guest: Guest
   mood: FigureMood
   showName: boolean
   highlight: boolean
   facing: 1 | -1
+  frame?: number
 }) {
   const sprite = spriteForGuest(guest)
   const { atlas } = sprite
   const sitting = mood === "sit"
   const walking = mood === "walk"
-  const sx = sprite.col * atlas.cell
-  const sy = sprite.row * atlas.cell
-  const size = guest.isCompanion ? (sitting ? 24 : 27) : sitting ? 28 : 32
+  const frameIndex = walking ? frame % atlas.frames : 0
+  const sx = (sprite.col * atlas.frames + frameIndex) * atlas.frameW
+  const sy = sprite.row * atlas.frameH
+  const personHeight = 80
+  let width = atlas.frameW * atlas.pixel
+  let height = atlas.frameH * atlas.pixel
+  if (guest.isCompanion && height > 0) {
+    const factor = (personHeight * 0.85) / height
+    width *= factor
+    height *= factor
+  }
   const drawFacing = (facing * atlas.artFacing) as 1 | -1
   const moodClass = walking ? "is-walking" : mood === "cheer" ? "is-cheering" : sitting ? "is-sitting" : "is-idle"
   const label = guest.name
+  const shadow = guest.isCompanion ? 6 : 9
 
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      {showName && label ? <Nameplate label={label} y={sitting ? -size - 6 : -size - 8} highlight={highlight} /> : null}
+      {showName && label ? <Nameplate label={label} y={-height - 6} highlight={highlight} /> : null}
       <g transform={`scale(${drawFacing} 1)`}>
-        <ellipse cx="1" cy="3" rx={highlight ? 10 : guest.isCompanion ? 6 : 8} ry="2.6" fill="#05040A" opacity="0.45" />
+        <ellipse cx="1" cy="2" rx={highlight ? 11 : shadow} ry="2.4" fill="#05040A" opacity="0.45" />
         {highlight ? (
-          <ellipse cx="0" cy={-size / 2} rx="16" ry="18" fill="none" stroke="#E8C878" strokeWidth="1.2" className="wd-ring" />
+          <ellipse cx="0" cy={-height / 2} rx={width * 0.55} ry={height * 0.42} fill="none" stroke="#E8C878" strokeWidth="1.2" className="wd-ring" />
         ) : null}
-        <g className={moodClass}>
+        <g className={moodClass} transform={sitting ? "scale(1 0.86)" : undefined}>
           <g className="wd-bob">
             <svg
-              x={-size / 2}
-              y={-size}
-              width={size}
-              height={size}
-              viewBox={`${sx} ${sy} ${atlas.cell} ${atlas.cell}`}
+              x={-width / 2}
+              y={-height}
+              width={width}
+              height={height}
+              viewBox={`${sx} ${sy} ${atlas.frameW} ${atlas.frameH}`}
               overflow="hidden"
             >
               <image
@@ -129,7 +140,7 @@ function AtlasGuest({
               />
             </svg>
             {mood === "cheer" && !guest.isCompanion ? (
-              <g className="wd-heart" transform={`translate(${size / 2 - 2} ${-size - 6})`}>
+              <g className="wd-heart" transform={`translate(${width / 2 - 4} ${-height - 4})`}>
                 <image href="/assets/tiddybub/ui/heart.svg" width="12" height="12" />
               </g>
             ) : null}
@@ -148,6 +159,7 @@ export function Character({
   highlight = false,
   name,
   facing = 1,
+  frame = 0,
 }: {
   role?: FigureRole
   guest?: Guest
@@ -156,6 +168,7 @@ export function Character({
   highlight?: boolean
   name?: string
   facing?: 1 | -1
+  frame?: number
 }) {
   if (role === "groom") {
     return <PixelCouple href="/sprites/groom.png?v=4" label={name ?? COUPLE.groomNickname} showName={showName} w={48} h={68} />
@@ -170,6 +183,7 @@ export function Character({
       showName={showName}
       highlight={highlight}
       facing={facing}
+      frame={frame}
     />
   )
 }
