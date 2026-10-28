@@ -1,4 +1,5 @@
-import { ALTAR_PLANTS, PEW_PLANTS, PlantSprite } from "@/components/venue/plant"
+import { ALTAR_FLOWERS, FlowerSprite, PEW_FLOWERS, PlantSprite, TuftSprite } from "@/components/venue/plant"
+import { TREES } from "@/lib/plant-atlas"
 import { PEW } from "@/lib/scene-layout"
 
 function Candle({ x, y }: { x: number; y: number }) {
@@ -45,12 +46,18 @@ function Pixel({
   )
 }
 
+function treeByName(name: string) {
+  const tree = TREES.find((item) => item.name === name)
+  if (!tree) throw new Error(`missing tree ${name}`)
+  return tree
+}
+
 function AltarFlowers({ x, y, seed }: { x: number; y: number; seed: number }) {
   return (
-    <g transform={`translate(${x} ${y})`}>
-      <PlantSprite index={ALTAR_PLANTS[seed % ALTAR_PLANTS.length]} x={-30} y={-42} size={34} />
-      <PlantSprite index={ALTAR_PLANTS[(seed + 2) % ALTAR_PLANTS.length]} x={-10} y={-48} size={38} />
-      <PlantSprite index={ALTAR_PLANTS[(seed + 4) % ALTAR_PLANTS.length]} x={14} y={-40} size={32} />
+    <g>
+      <FlowerSprite index={ALTAR_FLOWERS[seed % ALTAR_FLOWERS.length]} x={x - 16} y={y} />
+      <FlowerSprite index={ALTAR_FLOWERS[(seed + 1) % ALTAR_FLOWERS.length]} x={x} y={y + 2} pixel={2} />
+      <FlowerSprite index={ALTAR_FLOWERS[(seed + 2) % ALTAR_FLOWERS.length]} x={x + 18} y={y} />
     </g>
   )
 }
@@ -94,6 +101,11 @@ export function SceneBackdrop() {
       <circle cx="520" cy="64" r="70" fill="#F4C878" opacity="0.35" filter="url(#wd-soft)" />
 
       <Pixel href="/sprites/church.png" x={churchX} y={churchY} width={churchW} height={churchH} />
+      <PlantSprite frame={treeByName("oak")} x={28} y={536} delay={0.1} sway />
+      <PlantSprite frame={treeByName("pine")} x={132} y={470} delay={0.4} sway />
+      <PlantSprite frame={treeByName("maple")} x={456} y={508} delay={0.6} sway />
+      <PlantSprite frame={treeByName("birch")} x={498} y={518} delay={0.8} sway />
+      <PlantSprite frame={treeByName("willow")} x={548} y={552} delay={1.2} sway />
       <Pixel href="/assets/tiddybub/light/window-glow.png" x={churchX + 40} y={churchY + 80} width={churchW - 80} height={180} opacity={0.5} blend="screen" />
       <Pixel href="/assets/tiddybub/light/cone.png" x={70} y={250} width={220} height={520} opacity={0.28} blend="screen" className="wd-shaft" />
       <Pixel href="/assets/tiddybub/light/cone.png" x={350} y={250} width={220} height={520} opacity={0.28} blend="screen" className="wd-shaft" />
@@ -121,22 +133,8 @@ export function SceneBackdrop() {
             <rect x={PEW.leftX} y={y + 4} width={PEW.width} height="9" fill="#5A3A28" />
             <rect x={PEW.rightX} y={y + 8} width={PEW.width} height="14" fill="#2A1C14" />
             <rect x={PEW.rightX} y={y + 4} width={PEW.width} height="9" fill="#5A3A28" />
-            {index % 2 === 0 ? (
-              <>
-                <PlantSprite
-                  index={PEW_PLANTS[(index / 2) % PEW_PLANTS.length]}
-                  x={PEW.leftX - 10}
-                  y={y - 18}
-                  size={22}
-                />
-                <PlantSprite
-                  index={PEW_PLANTS[(index / 2 + 3) % PEW_PLANTS.length]}
-                  x={PEW.rightX + PEW.width - 12}
-                  y={y - 18}
-                  size={22}
-                />
-              </>
-            ) : null}
+            <FlowerSprite index={PEW_FLOWERS[index % PEW_FLOWERS.length]} x={PEW.leftX - 4} y={y + 14} />
+            <FlowerSprite index={PEW_FLOWERS[(index + 3) % PEW_FLOWERS.length]} x={PEW.rightX + PEW.width - 8} y={y + 14} />
           </g>
         )
       })}
@@ -146,10 +144,15 @@ export function SceneBackdrop() {
       <rect x="134" y="506" width="372" height="12" fill="#3E2818" />
       <rect x="118" y="516" width="404" height="10" fill="#2A1C12" />
 
-      <AltarFlowers x={214} y={488} seed={0} />
-      <AltarFlowers x={426} y={488} seed={3} />
-      <PlantSprite index={1} x={96} y={458} size={36} />
-      <PlantSprite index={7} x={508} y={458} size={36} />
+      <TuftSprite index={0} x={28} y={514} />
+      <TuftSprite index={1} x={70} y={516} />
+      <TuftSprite index={2} x={548} y={504} />
+      <TuftSprite index={3} x={600} y={538} />
+
+      <AltarFlowers x={214} y={500} seed={0} />
+      <AltarFlowers x={426} y={500} seed={2} />
+      <FlowerSprite index={12} x={168} y={512} />
+      <FlowerSprite index={13} x={452} y={512} />
       <g filter="url(#wd-bloom)">
         <Candle x={248} y={468} />
         <Candle x={392} y={468} />

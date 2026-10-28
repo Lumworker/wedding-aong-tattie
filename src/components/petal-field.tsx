@@ -2,10 +2,10 @@
 
 import type { CSSProperties } from "react"
 import { motion, useReducedMotion } from "framer-motion"
-import { PLANT_ATLAS } from "@/lib/plant-atlas"
+import { FLOWERS, PLANT_SHEET } from "@/lib/plant-atlas"
 
-/** Blooming / floral plants for soft falling décor. */
-const FLOAT_INDICES = [3, 4, 13, 15, 20, 22] as const
+/** Single blooms from the flower row — the rose bush is too wide to fall. */
+const FLOAT_INDICES = [4, 6, 7, 8, 10, 12] as const
 
 const PETALS = [
   { left: "6%", delay: 0, duration: 13, size: 22, drift: 18, plant: 0 },
@@ -23,17 +23,15 @@ const PETALS = [
 ]
 
 function plantStyle(index: number, size: number): CSSProperties {
-  const i = FLOAT_INDICES[index % FLOAT_INDICES.length]
-  const col = i % PLANT_ATLAS.cols
-  const row = Math.floor(i / PLANT_ATLAS.cols)
-  const scale = size / PLANT_ATLAS.cell
+  const frame = FLOWERS[FLOAT_INDICES[index % FLOAT_INDICES.length]]
+  const scale = size / frame.w
   return {
-    width: size,
-    height: size,
-    backgroundImage: `url(${PLANT_ATLAS.href})`,
+    width: frame.w * scale,
+    height: frame.h * scale,
+    backgroundImage: `url(${PLANT_SHEET.href})`,
     backgroundRepeat: "no-repeat",
-    backgroundSize: `${PLANT_ATLAS.width * scale}px ${PLANT_ATLAS.height * scale}px`,
-    backgroundPosition: `-${col * size}px -${row * size}px`,
+    backgroundSize: `${PLANT_SHEET.width * scale}px ${PLANT_SHEET.height * scale}px`,
+    backgroundPosition: `-${frame.x * scale}px -${frame.y * scale}px`,
     imageRendering: "pixelated",
   }
 }

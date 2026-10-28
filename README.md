@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-Open [http://127.0.0.1:43123](http://127.0.0.1:43123).
+Open [http://127.0.0.1:43123](http://127.0.0.1:43123). Add `?mock=1` to seed a practice crowd and land in the venue.
 
 `npm start` builds a production bundle, then serves it. If you already ran `npm run build`, use `npm run start:prod` to skip the rebuild.
 

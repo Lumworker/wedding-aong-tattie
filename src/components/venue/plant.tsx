@@ -1,34 +1,66 @@
-import { PLANT_ATLAS } from "@/lib/plant-atlas"
+import { FLOWERS, PLANT_SHEET, TUFTS, type PlantFrame } from "@/lib/plant-atlas"
 
-/** Flower-forward indices look nicest on the altar and pew ends. */
-export const ALTAR_PLANTS = [3, 4, 13, 15, 20, 22] as const
-export const PEW_PLANTS = [0, 5, 8, 11, 16, 18, 21, 23] as const
+/** Rose bush, vines, and a few stems for the altar. */
+export const ALTAR_FLOWERS = [0, 1, 2, 3, 5] as const
+/** Single blooms for pew ends. */
+export const PEW_FLOWERS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const
 
 export function PlantSprite({
+  frame,
+  x,
+  y,
+  pixel = 2,
+  sway = false,
+  delay = 0,
+}: {
+  frame: PlantFrame
+  x: number
+  y: number
+  pixel?: number
+  sway?: boolean
+  delay?: number
+}) {
+  const width = frame.w * pixel
+  const height = frame.h * pixel
+  return (
+    <g className={sway ? "wd-sway" : undefined} style={sway ? { animationDelay: `${delay}s` } : undefined}>
+      <svg
+        x={x}
+        y={y - height}
+        width={width}
+        height={height}
+        viewBox={`${frame.x} ${frame.y} ${frame.w} ${frame.h}`}
+        overflow="hidden"
+      >
+        <image
+          href={PLANT_SHEET.href}
+          width={PLANT_SHEET.width}
+          height={PLANT_SHEET.height}
+          style={{ imageRendering: "pixelated" }}
+        />
+      </svg>
+    </g>
+  )
+}
+
+export function FlowerSprite({
   index,
   x,
   y,
-  size,
+  pixel = 2,
+  sway = true,
 }: {
   index: number
   x: number
   y: number
-  size: number
+  pixel?: number
+  sway?: boolean
 }) {
-  const i = ((index % PLANT_ATLAS.count) + PLANT_ATLAS.count) % PLANT_ATLAS.count
-  const col = i % PLANT_ATLAS.cols
-  const row = Math.floor(i / PLANT_ATLAS.cols)
-  const sx = col * PLANT_ATLAS.cell
-  const sy = row * PLANT_ATLAS.cell
+  const frame = FLOWERS[((index % FLOWERS.length) + FLOWERS.length) % FLOWERS.length]
+  return <PlantSprite frame={frame} x={x} y={y} pixel={pixel} sway={sway} delay={(index % 5) * 0.35} />
+}
 
-  return (
-    <svg x={x} y={y} width={size} height={size} viewBox={`${sx} ${sy} ${PLANT_ATLAS.cell} ${PLANT_ATLAS.cell}`} overflow="hidden">
-      <image
-        href={PLANT_ATLAS.href}
-        width={PLANT_ATLAS.width}
-        height={PLANT_ATLAS.height}
-        style={{ imageRendering: "pixelated" }}
-      />
-    </svg>
-  )
+export function TuftSprite({ index, x, y }: { index: number; x: number; y: number }) {
+  const frame = TUFTS[((index % TUFTS.length) + TUFTS.length) % TUFTS.length]
+  return <PlantSprite frame={frame} x={x} y={y} pixel={2} sway delay={index * 0.2} />
 }
