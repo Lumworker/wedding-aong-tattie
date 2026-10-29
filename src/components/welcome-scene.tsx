@@ -9,9 +9,11 @@ const PIXEL: CSSProperties = { imageRendering: "pixelated" }
 
 /**
  * Pair bounding box fills this viewBox, and the viewBox fills the couple slot
- * (24% of the desktop frame, 0.85× on mobile). Size is viewBox units, not pixels.
+ * (34% of the desktop frame, 29% on mobile). Size is viewBox units, not pixels.
+ * Sprite 148 keeps the same 240:140 box ratio as 116, so heads, feet, and the
+ * jump sheet stay inside the slot.
  */
-const COUPLE = { w: 240, h: 140, sprite: 116, foot: 132, groom: 58, bride: 182 } as const
+const COUPLE = { w: 306, h: 178.5, sprite: 148, foot: 168, groom: 74, bride: 232 } as const
 
 const GROUND_PETALS = [
   { left: "36%", bottom: "10%", size: 8, rotate: -18, color: "#F0B7C4" },
