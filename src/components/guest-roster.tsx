@@ -51,8 +51,8 @@ function Badge({ children, tone = "muted" }: { children: string; tone?: "muted" 
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-1 text-[13px] leading-normal font-medium",
-        tone === "sage" && "bg-sage/25 text-sage-deep",
-        tone === "blush" && "bg-blush/50 text-rose",
+        tone === "sage" && "bg-sage text-ink",
+        tone === "blush" && "bg-blush text-ink",
         tone === "muted" && "bg-muted text-muted-foreground"
       )}
     >

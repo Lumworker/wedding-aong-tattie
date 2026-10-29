@@ -44,9 +44,9 @@ function WishList({
       {wishes.map((wish) => {
         const mine = wish.partyPhone === phone
         return (
-          <li key={wish.id} className="rounded-2xl border border-[#e0b85a] bg-[#fffaf0] px-4 py-3">
+          <li key={wish.id} className="rounded-2xl border border-blush bg-blush-pale px-4 py-3">
             <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 text-[15px] font-semibold break-words text-[#7a2438]">{wish.from}</p>
+              <p className="min-w-0 text-[15px] font-semibold break-words text-rose">{wish.from}</p>
               {mine ? (
                 <button
                   type="button"
@@ -57,7 +57,7 @@ function WishList({
                 </button>
               ) : null}
             </div>
-            <p className="mt-1 text-base leading-relaxed break-words whitespace-pre-wrap text-[#1c1612]">{wish.text}</p>
+            <p className="mt-1 text-base leading-relaxed break-words whitespace-pre-wrap text-ink">{wish.text}</p>
           </li>
         )
       })}

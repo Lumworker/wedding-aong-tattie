@@ -41,7 +41,7 @@ export function CoupleHero({
           <g transform="translate(142 142) scale(0.92)">
             <Character role="bride" mood="idle" showName={false} />
           </g>
-          <text x="110" y="58" textAnchor="middle" fill="#C48984" fontSize="16" className="wd-heart">
+          <text x="110" y="58" textAnchor="middle" fontSize="16" className="wd-heart fill-rose">
             ♥
           </text>
         </svg>

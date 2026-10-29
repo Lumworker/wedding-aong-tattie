@@ -87,7 +87,7 @@ function MapSection() {
         href={DIRECTIONS}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-4 py-2.5 text-center text-[15px] leading-normal font-medium text-primary-foreground"
+        className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-4 py-2.5 text-center text-[15px] leading-normal font-medium text-primary-foreground hover:bg-rose hover:text-cream"
       >
         เปิดนำทาง
       </a>
@@ -128,7 +128,7 @@ export function VenueScene({
   const declined = guests.filter((guest) => guest.attendance === "declined").length
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background lg:grid lg:h-dvh lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
+    <div className="flex min-h-dvh flex-col lg:grid lg:h-dvh lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-2.5 backdrop-blur-md lg:static lg:col-start-1 lg:row-start-1 lg:border-r lg:border-b-0 lg:px-6 lg:pt-6 lg:pb-4">
         <div className="lg:hidden">
           <EventTitle variant="compact" />

@@ -157,7 +157,7 @@ export function WishComposer({
           rows={4}
           placeholder="สุขสมหวังด้วยกันนะ"
           aria-describedby="wish-count"
-          className="mt-1 w-full scroll-mb-40 resize-none rounded-2xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="mt-1 w-full scroll-mb-40 resize-none rounded-2xl border border-input bg-card px-3 py-2.5 text-base leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           onFocus={(event) => scrollFieldIntoView(event.target)}
           onChange={(event) => {
             setText(clipWishText(event.target.value))

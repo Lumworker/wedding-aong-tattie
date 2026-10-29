@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils"
 
 export function Ornament({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-3 text-gold", className)} aria-hidden="true">
-      <span className="h-px flex-1 bg-gold/60" />
+    <div className={cn("flex items-center gap-3 text-rose/70", className)} aria-hidden="true">
+      <span className="h-px flex-1 bg-rose/40" />
       <span className="text-xs">✦</span>
-      <span className="h-px flex-1 bg-gold/60" />
+      <span className="h-px flex-1 bg-rose/40" />
     </div>
   )
 }
