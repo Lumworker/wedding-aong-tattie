@@ -508,18 +508,99 @@
 }
 
 /*
-  Welcome lawn. Props are a percent of the design frame (4:5 mobile, 16:10 desktop),
-  never the PNG's native pixel size. Desktop widths are the locked ui scale.
-  Mobile widths are 0.85× those.
-  Pixel caps sit under each file's intrinsic size (silhouette 404×605, arch 585×615,
-  trees ~320×465, flowers 671×404, bell 397×622).
+  Welcome only. Chocolate #5C3A26 on cream #F1E7D3 is 8.19:1, so text and the
+  register button use that pair. Sage #A3B18A on cream is 1.86:1, so sage stays
+  in the washes behind the couple and never in small type. Tokens live on
+  .welcome-palette so the rest of the site keeps its own CI.
 */
+.welcome-palette {
+  --wp-chocolate: #5c3a26;
+  --wp-chocolate-deep: #3f2719;
+  --wp-sage: #a3b18a;
+  --wp-cream: #f1e7d3;
+  background: var(--wp-cream);
+  color: var(--wp-chocolate);
+}
+
+.welcome-palette ::selection {
+  background: var(--wp-chocolate);
+  color: var(--wp-cream);
+}
+
+.welcome-wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.welcome-wash-sage {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--wp-sage);
+  filter: blur(40px);
+}
+
+.welcome-wash-sage-a {
+  top: -14%;
+  left: -12%;
+  width: 62%;
+  height: 52%;
+}
+
+.welcome-wash-sage-b {
+  right: -14%;
+  bottom: -16%;
+  width: 54%;
+  height: 48%;
+}
+
+.welcome-palette .welcome-card {
+  background: var(--wp-cream);
+  color: var(--wp-chocolate);
+  border: 1px solid color-mix(in srgb, var(--wp-chocolate) 55%, var(--wp-sage));
+  box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--wp-chocolate) 70%, transparent);
+}
+
+.welcome-palette .welcome-kicker,
+.welcome-palette .welcome-title,
+.welcome-palette .welcome-amp,
+.welcome-palette .welcome-date,
+.welcome-palette .welcome-meta {
+  color: var(--wp-chocolate);
+}
+
+.welcome-palette .welcome-cta {
+  background-color: var(--wp-chocolate);
+  color: var(--wp-cream);
+  box-shadow: none;
+}
+
+.welcome-palette .welcome-cta:hover {
+  background-color: var(--wp-chocolate-deep);
+  color: var(--wp-cream);
+}
+
+.welcome-palette .welcome-cta:focus-visible {
+  border-color: var(--wp-cream);
+  --tw-ring-color: var(--wp-chocolate);
+  outline: 2px solid var(--wp-chocolate);
+  outline-offset: 3px;
+}
+
+.welcome-palette .welcome-cta:disabled {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--wp-chocolate) 82%, var(--wp-sage));
+  color: var(--wp-cream);
+}
+
+/* Couple slot. 5:4 on a phone so the card still fits; 16:10 beside the card. */
 .welcome-frame {
   position: relative;
-  /* 4:5 lawn, narrowed when a phone needs the RSVP card on screen. */
-  width: min(100%, max(10rem, calc((100dvh - 27.5rem) * 4 / 5)));
-  max-width: 720px;
-  aspect-ratio: 4 / 5;
+  /* Shrink on a short phone so the register card stays on screen. */
+  width: min(100%, 26rem, max(12rem, calc((100dvh - 22rem) * 5 / 4)));
+  max-width: 460px;
+  aspect-ratio: 5 / 4;
   min-width: 0;
   pointer-events: none;
 }
@@ -530,183 +611,43 @@
   overflow: hidden;
 }
 
-.welcome-prop {
-  position: absolute;
-  display: block;
-  height: auto;
-  max-width: 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  image-rendering: pixelated;
-  user-select: none;
-  pointer-events: none;
-}
-
-.welcome-silhouette {
-  z-index: 1;
-  left: 50%;
-  bottom: 16%;
-  width: 23.8%;
-  max-width: min(23.8%, 380px);
-  max-height: min(52%, 540px);
-  transform: translateX(-50%);
-  opacity: 0.55;
-}
-
-.welcome-tree {
-  z-index: 2;
-  bottom: 3%;
-  width: 11.9%;
-  max-width: min(11.9%, 280px);
-  max-height: min(28%, 400px);
-  transform-origin: bottom center;
-}
-
-.welcome-tree-left { left: 0; }
-.welcome-tree-mid { left: 14%; }
-.welcome-tree-right { right: 0; }
-
-.welcome-arch {
-  z-index: 3;
-  left: 50%;
-  bottom: 3%;
-  width: 30.6%;
-  max-width: min(30.6%, 520px);
-  max-height: min(48%, 540px);
-  transform: translateX(-50%);
-}
-
-.welcome-path,
-.welcome-grass {
+.welcome-glow {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 52%;
+  width: 92%;
+  height: 86%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 62%, var(--wp-cream) 0%, transparent 48%),
+    var(--wp-sage);
+  filter: blur(10px);
   pointer-events: none;
-}
-
-.welcome-path {
-  z-index: 4;
-  bottom: 0;
-  width: 38.25%;
-  max-width: min(38.25%, 520px);
-  height: 7%;
-  max-height: 40px;
-}
-
-.welcome-grass {
-  z-index: 5;
-  bottom: 1.5%;
-  width: 29%;
-  max-width: min(29%, 320px);
-  height: 11%;
-  max-height: 64px;
 }
 
 .welcome-couple {
   position: absolute;
-  z-index: 7;
+  z-index: 2;
   left: 50%;
-  bottom: 6.5%;
-  width: 29%;
-  max-width: min(29%, 280px);
-  max-height: min(40%, 200px);
+  top: 54%;
+  width: 88%;
+  max-width: 400px;
   aspect-ratio: 240 / 140;
-  transform: translateX(-50%);
-}
-
-.welcome-bell {
-  z-index: 8;
-  left: 50%;
-  bottom: 17%;
-  width: 6.8%;
-  max-width: min(6.8%, 180px);
-  max-height: min(18%, 260px);
-  transform: translateX(-50%);
-}
-
-.welcome-bell .wd-bell {
-  position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  image-rendering: pixelated;
-  transform-origin: top center;
-}
-
-.welcome-flowers {
-  z-index: 9;
-  bottom: -3%;
-  width: 10.2%;
-  max-width: min(10.2%, 240px);
-  max-height: min(18%, 170px);
-}
-
-.welcome-flowers-left { left: -1%; }
-.welcome-flowers-right {
-  right: -1%;
-  transform: scaleX(-1);
+  transform: translate(-50%, -50%);
 }
 
 @media (min-width: 1024px) {
   .welcome-frame {
-    /* Card is 23rem with a 2rem gap. Cap the lawn near 720px so the pair stays together. */
-    width: min(720px, calc(72dvh * 16 / 10), calc(100% - 25rem));
-    max-width: 720px;
+    /* Card is 23rem with a 2rem gap. */
+    width: min(36rem, calc(68dvh * 16 / 10), calc(100% - 25rem));
+    max-width: 620px;
     aspect-ratio: 16 / 10;
   }
 
-  .welcome-silhouette {
-    bottom: auto;
-    top: 0;
-    width: 28%;
-    max-width: min(28%, 380px);
-    max-height: min(94%, 540px);
-  }
-
-  .welcome-tree {
-    width: 14%;
-    max-width: min(14%, 280px);
-    max-height: min(50%, 400px);
-  }
-
-  .welcome-tree-mid { left: 8%; }
-
-  .welcome-arch {
-    width: 36%;
-    max-width: min(36%, 520px);
-    max-height: min(82%, 540px);
-  }
-
-  .welcome-path {
-    width: 45%;
-    max-width: min(45%, 520px);
-  }
-
-  .welcome-grass {
-    width: 34%;
-    max-width: min(34%, 320px);
-    height: 12%;
-  }
-
   .welcome-couple {
-    width: 34%;
-    max-width: min(34%, 320px);
-    max-height: min(48%, 220px);
-  }
-
-  .welcome-bell {
-    bottom: 29%;
-    width: 8%;
-    max-width: min(8%, 180px);
-    max-height: min(32%, 260px);
-  }
-
-  .welcome-flowers {
-    width: 12%;
-    max-width: min(12%, 200px);
-    max-height: min(20%, 170px);
+    width: 78%;
+    max-width: 460px;
   }
 }
 
