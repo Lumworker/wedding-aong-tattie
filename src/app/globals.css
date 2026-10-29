@@ -510,7 +510,7 @@
 /*
   Welcome lawn. Props are a percent of the design frame (4:5 mobile, 16:10 desktop),
   never the PNG's native pixel size. Desktop widths are the locked ui scale.
-  Mobile widths are 0.85× those, except corner flowers which stay ≤28vw.
+  Mobile widths are 0.85× those.
   Pixel caps sit under each file's intrinsic size (silhouette 404×605, arch 585×615,
   trees ~320×465, flowers 671×404, bell 397×622).
 */
@@ -547,18 +547,18 @@
   z-index: 1;
   left: 50%;
   bottom: 16%;
-  width: 32.3%;
-  max-width: min(32.3%, 380px);
+  width: 23.8%;
+  max-width: min(23.8%, 380px);
   max-height: min(52%, 540px);
   transform: translateX(-50%);
-  opacity: 0.78;
+  opacity: 0.55;
 }
 
 .welcome-tree {
   z-index: 2;
   bottom: 3%;
-  width: 17%;
-  max-width: min(17%, 280px);
+  width: 11.9%;
+  max-width: min(11.9%, 280px);
   max-height: min(28%, 400px);
   transform-origin: bottom center;
 }
@@ -571,8 +571,8 @@
   z-index: 3;
   left: 50%;
   bottom: 3%;
-  width: 38.25%;
-  max-width: min(38.25%, 520px);
+  width: 30.6%;
+  max-width: min(30.6%, 520px);
   max-height: min(48%, 540px);
   transform: translateX(-50%);
 }
@@ -608,9 +608,9 @@
   z-index: 7;
   left: 50%;
   bottom: 6.5%;
-  width: 20.4%;
-  max-width: min(20.4%, 210px);
-  max-height: min(28%, 150px);
+  width: 29%;
+  max-width: min(29%, 280px);
+  max-height: min(40%, 200px);
   aspect-ratio: 240 / 140;
   transform: translateX(-50%);
 }
@@ -619,8 +619,8 @@
   z-index: 8;
   left: 50%;
   bottom: 17%;
-  width: 8.5%;
-  max-width: min(8.5%, 180px);
+  width: 6.8%;
+  max-width: min(6.8%, 180px);
   max-height: min(18%, 260px);
   transform: translateX(-50%);
 }
@@ -638,8 +638,8 @@
 .welcome-flowers {
   z-index: 9;
   bottom: -3%;
-  width: min(28%, 28vw);
-  max-width: min(28%, 28vw, 240px);
+  width: 10.2%;
+  max-width: min(10.2%, 240px);
   max-height: min(18%, 170px);
 }
 
@@ -660,22 +660,22 @@
   .welcome-silhouette {
     bottom: auto;
     top: 0;
-    width: 38%;
-    max-width: min(38%, 380px);
+    width: 28%;
+    max-width: min(28%, 380px);
     max-height: min(94%, 540px);
   }
 
   .welcome-tree {
-    width: 20%;
-    max-width: min(20%, 280px);
+    width: 14%;
+    max-width: min(14%, 280px);
     max-height: min(50%, 400px);
   }
 
   .welcome-tree-mid { left: 8%; }
 
   .welcome-arch {
-    width: 45%;
-    max-width: min(45%, 520px);
+    width: 36%;
+    max-width: min(36%, 520px);
     max-height: min(82%, 540px);
   }
 
@@ -691,21 +691,21 @@
   }
 
   .welcome-couple {
-    width: 24%;
-    max-width: min(24%, 220px);
-    max-height: min(36%, 160px);
+    width: 34%;
+    max-width: min(34%, 320px);
+    max-height: min(48%, 220px);
   }
 
   .welcome-bell {
     bottom: 29%;
-    width: 10%;
-    max-width: min(10%, 180px);
+    width: 8%;
+    max-width: min(8%, 180px);
     max-height: min(32%, 260px);
   }
 
   .welcome-flowers {
-    width: 15%;
-    max-width: min(15%, 200px);
+    width: 12%;
+    max-width: min(12%, 200px);
     max-height: min(20%, 170px);
   }
 }
