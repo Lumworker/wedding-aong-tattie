@@ -7,13 +7,19 @@ import { cn } from "@/lib/utils"
 
 const PIXEL: CSSProperties = { imageRendering: "pixelated" }
 
+/**
+ * Pair bounding box fills this viewBox, and the viewBox fills the couple slot
+ * (24% of the desktop frame, 0.85× on mobile). Size is viewBox units, not pixels.
+ */
+const COUPLE = { w: 240, h: 140, sprite: 116, foot: 132, groom: 58, bride: 182 } as const
+
 const GROUND_PETALS = [
-  { left: "24%", bottom: "15%", size: 8, rotate: -18, color: "#F0B7C4" },
-  { left: "36%", bottom: "11%", size: 6, rotate: 24, color: "#E89AAD" },
-  { left: "46%", bottom: "17%", size: 7, rotate: 12, color: "#F6C9D2" },
-  { left: "56%", bottom: "10%", size: 5, rotate: -28, color: "#E7A8B6" },
-  { left: "66%", bottom: "14%", size: 8, rotate: 16, color: "#F3C0CB" },
-  { left: "42%", bottom: "8%", size: 5, rotate: 40, color: "#F7D0D8" },
+  { left: "36%", bottom: "10%", size: 8, rotate: -18, color: "#F0B7C4" },
+  { left: "42%", bottom: "7%", size: 6, rotate: 24, color: "#E89AAD" },
+  { left: "50%", bottom: "11%", size: 7, rotate: 12, color: "#F6C9D2" },
+  { left: "58%", bottom: "6%", size: 5, rotate: -28, color: "#E7A8B6" },
+  { left: "64%", bottom: "9%", size: 8, rotate: 16, color: "#F3C0CB" },
+  { left: "46%", bottom: "5%", size: 5, rotate: 40, color: "#F7D0D8" },
 ] as const
 
 function PropImage({
@@ -21,20 +27,32 @@ function PropImage({
   className,
   width,
   height,
+  prop,
+  swing = false,
 }: {
   src: string
   className?: string
   width: number
   height: number
+  prop: string
+  swing?: boolean
 }) {
+  const ratio = { aspectRatio: `${width} / ${height}` }
+  if (swing) {
+    return (
+      <div data-prop={prop} className={cn("welcome-prop", className)} style={ratio}>
+        <div
+          className="wd-bell"
+          style={{ ...PIXEL, backgroundImage: `url("${src}")` }}
+        />
+      </div>
+    )
+  }
   return (
     <div
-      className={cn("pointer-events-none absolute bg-[length:100%_100%] bg-no-repeat select-none", className)}
-      style={{
-        ...PIXEL,
-        backgroundImage: `url("${src}")`,
-        aspectRatio: `${width} / ${height}`,
-      }}
+      data-prop={prop}
+      className={cn("welcome-prop", className)}
+      style={{ ...ratio, ...PIXEL, backgroundImage: `url("${src}")` }}
     />
   )
 }
@@ -76,72 +94,62 @@ export function WelcomeScene({
 }) {
   if (compact) return <CompactWelcome jumpFrame={jumpFrame} />
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute -top-[18%] -left-[10%] h-[72%] w-[68%] bg-[radial-gradient(ellipse_at_center,rgba(255,252,248,0.92),transparent_68%)]" />
-      <div className="absolute inset-x-0 top-[34%] h-[26%] bg-[radial-gradient(ellipse_at_center,rgba(198,220,204,0.42),transparent_70%)]" />
-      <div className="absolute inset-x-0 bottom-0 hidden h-[40%] bg-[linear-gradient(180deg,transparent,rgba(246,214,220,0.5))] lg:block" />
-      <div className="absolute inset-x-0 bottom-0 h-[44%] bg-[linear-gradient(180deg,rgba(248,232,236,0),rgba(220,234,226,0.9))] lg:hidden" />
+    <div className="welcome-frame" aria-hidden="true">
+      <div className="welcome-stage">
+        <div className="absolute -top-[12%] -left-[8%] h-[70%] w-[72%] bg-[radial-gradient(ellipse_at_center,rgba(255,252,248,0.92),transparent_68%)]" />
+        <div className="absolute inset-x-0 top-[22%] h-[28%] bg-[radial-gradient(ellipse_at_center,rgba(198,220,204,0.4),transparent_70%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(180deg,transparent,rgba(220,234,226,0.88))]" />
 
-      <div className="absolute inset-x-0 top-0 h-[var(--scene-h)] lg:inset-y-0 lg:right-[28rem] lg:h-auto">
         <PropImage
+          prop="silhouette"
           src={WELCOME_PROPS.silhouette}
           width={404}
           height={605}
-          className="top-[1%] left-1/2 w-[68%] max-w-[400px] -translate-x-1/2 opacity-60 lg:top-[5%] lg:w-[56%]"
+          className="welcome-silhouette"
         />
         <PropImage
+          prop="tree-left"
           src={WELCOME_PROPS.treeAlt}
           width={313}
           height={463}
-          className="wd-sway bottom-[16%] left-[-1%] w-[36%] max-w-[220px] origin-bottom lg:bottom-[14%] lg:left-[2%] lg:w-[28%]"
+          className="welcome-tree welcome-tree-left wd-sway"
         />
         <PropImage
+          prop="tree-mid"
           src={WELCOME_PROPS.tree}
           width={323}
           height={465}
-          className="wd-sway bottom-[13%] left-[16%] w-[32%] max-w-[200px] origin-bottom lg:bottom-[11%] lg:left-[18%] lg:w-[26%]"
+          className="welcome-tree welcome-tree-mid wd-sway"
         />
         <PropImage
+          prop="tree-right"
           src={WELCOME_PROPS.tree}
           width={323}
           height={465}
-          className="wd-sway bottom-[15%] right-[1%] w-[34%] max-w-[210px] origin-bottom lg:right-[3%] lg:bottom-[13%] lg:w-[26%]"
+          className="welcome-tree welcome-tree-right wd-sway"
+        />
+        <PropImage
+          prop="arch"
+          src={WELCOME_PROPS.arch}
+          width={585}
+          height={615}
+          className="welcome-arch"
         />
 
-        <div className="absolute bottom-[7%] left-1/2 w-[74%] max-w-[440px] -translate-x-1/2 lg:bottom-[9%] lg:w-[62%]">
-          <div
-            className="w-full bg-[length:100%_100%] bg-no-repeat select-none"
-            style={{
-              ...PIXEL,
-              backgroundImage: `url("${WELCOME_PROPS.arch}")`,
-              aspectRatio: "585 / 615",
-            }}
-          />
-          <div className="absolute top-[33%] left-1/2 z-30 w-[32%] -translate-x-1/2">
-            <div className="wd-bell origin-top">
-              <div
-                className="w-full bg-[length:100%_100%] bg-no-repeat select-none"
-                style={{
-                  ...PIXEL,
-                  backgroundImage: `url("${WELCOME_PROPS.bell}")`,
-                  aspectRatio: "397 / 622",
-                }}
-              />
-            </div>
-          </div>
+        <div data-prop="path" className="welcome-path">
+          <div className="absolute inset-x-[4%] bottom-0 h-[78%] rounded-[100%] bg-[#c9b48a]/55" />
         </div>
-
-        <div className="absolute bottom-[8%] left-1/2 h-[15%] w-[78%] max-w-[520px] -translate-x-1/2 lg:bottom-[10%]">
-          <div className="absolute inset-x-[18%] bottom-0 h-[40%] rounded-[100%] bg-[#c9b48a]/50" />
-          <div className="absolute inset-x-0 bottom-[12%] h-[58%] rounded-[100%] bg-[#7ea15c]" />
-          <div className="absolute inset-x-[8%] bottom-[24%] h-[40%] rounded-[100%] bg-[#b6cb72]" />
-          <div className="absolute inset-x-[22%] bottom-[34%] h-[22%] rounded-[100%] bg-[#d7e39a]/80" />
+        <div data-prop="grass" className="welcome-grass">
+          <div className="absolute inset-x-[16%] bottom-0 h-[42%] rounded-[100%] bg-[#c9b48a]/45" />
+          <div className="absolute inset-x-0 bottom-[10%] h-[58%] rounded-[100%] bg-[#7ea15c]" />
+          <div className="absolute inset-x-[8%] bottom-[24%] h-[42%] rounded-[100%] bg-[#b6cb72]" />
+          <div className="absolute inset-x-[22%] bottom-[36%] h-[24%] rounded-[100%] bg-[#d7e39a]/80" />
         </div>
 
         {GROUND_PETALS.map((petal) => (
           <span
             key={`${petal.left}-${petal.bottom}`}
-            className="absolute rounded-full"
+            className="absolute z-[6] rounded-full"
             style={{
               left: petal.left,
               bottom: petal.bottom,
@@ -153,32 +161,56 @@ export function WelcomeScene({
           />
         ))}
 
-        <div className="absolute bottom-[10%] left-1/2 z-20 w-[62%] max-w-[400px] -translate-x-1/2 lg:bottom-[12%] lg:w-[52%]">
-          <svg viewBox="0 0 420 230" className="h-auto w-full overflow-visible">
-            <ellipse cx="150" cy="214" rx="42" ry="9" fill="#5c4638" opacity="0.2" />
-            <ellipse cx="284" cy="214" rx="42" ry="9" fill="#5c4638" opacity="0.2" />
-            <g transform="translate(150 218)">
-              <Character role="groom" mood="idle" showName={false} animateWave size={158} jumpFrame={jumpFrame} />
+        <div data-prop="couple" className="welcome-couple">
+          <svg viewBox={`0 0 ${COUPLE.w} ${COUPLE.h}`} className="absolute inset-0 h-full w-full overflow-visible">
+            <ellipse cx={COUPLE.groom} cy={COUPLE.foot - 2} rx="28" ry="6" fill="#5c4638" opacity="0.2" />
+            <ellipse cx={COUPLE.bride} cy={COUPLE.foot - 2} rx="28" ry="6" fill="#5c4638" opacity="0.2" />
+            <g transform={`translate(${COUPLE.groom} ${COUPLE.foot})`}>
+              <Character
+                role="groom"
+                mood="idle"
+                showName={false}
+                animateWave
+                size={COUPLE.sprite}
+                jumpFrame={jumpFrame}
+              />
             </g>
-            <g transform="translate(284 218)">
-              <Character role="bride" mood="idle" showName={false} animateWave size={158} jumpFrame={jumpFrame} />
+            <g transform={`translate(${COUPLE.bride} ${COUPLE.foot})`}>
+              <Character
+                role="bride"
+                mood="idle"
+                showName={false}
+                animateWave
+                size={COUPLE.sprite}
+                jumpFrame={jumpFrame}
+              />
             </g>
           </svg>
         </div>
-      </div>
 
-      <PropImage
-        src={WELCOME_PROPS.groundFlowers}
-        width={671}
-        height={404}
-        className="bottom-[calc(100%-var(--scene-h))] left-[-8%] z-40 w-[48%] lg:bottom-[-2%] lg:left-[-1%] lg:w-[24%] lg:max-w-[320px]"
-      />
-      <PropImage
-        src={WELCOME_PROPS.groundFlowers}
-        width={671}
-        height={404}
-        className="right-[-10%] bottom-[calc(100%-var(--scene-h))] z-40 w-[48%] scale-x-[-1] lg:right-[-1%] lg:bottom-[-3%] lg:w-[24%] lg:max-w-[320px]"
-      />
+        <PropImage
+          prop="bell"
+          src={WELCOME_PROPS.bell}
+          width={397}
+          height={622}
+          className="welcome-bell"
+          swing
+        />
+        <PropImage
+          prop="flowers-left"
+          src={WELCOME_PROPS.groundFlowers}
+          width={671}
+          height={404}
+          className="welcome-flowers welcome-flowers-left"
+        />
+        <PropImage
+          prop="flowers-right"
+          src={WELCOME_PROPS.groundFlowers}
+          width={671}
+          height={404}
+          className="welcome-flowers welcome-flowers-right"
+        />
+      </div>
     </div>
   )
 }
