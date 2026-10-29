@@ -1,12 +1,12 @@
 "use client"
 
 import { FormEvent, useState } from "react"
-import { FormStepper } from "@/components/form-stepper"
-import { Character } from "@/components/venue/character"
+import { WelcomeScene } from "@/components/welcome-scene"
 import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useCoupleJump } from "@/components/venue/character"
 import { COUPLE, VENUE_MAP } from "@/lib/event"
 import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
 
@@ -14,6 +14,8 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
   const [value, setValue] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [jumpPlayId, setJumpPlayId] = useState(0)
+  const jumpFrame = useCoupleJump(jumpPlayId)
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -32,37 +34,29 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
   }
 
   return (
-    <ScreenShell className="py-8">
-      <div className="my-auto">
-        <FormStepper current={1} />
-        <header className="mt-8 text-center">
-          <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
-          <h1 className="mt-2 font-display text-4xl leading-tight text-ink">
+    <ScreenShell className="justify-center py-8 sm:py-14">
+      <div className="flex flex-col justify-center gap-8 sm:gap-10">
+        <WelcomeScene jumpFrame={jumpFrame ?? 0} />
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-[1.75rem] border border-[#E6D5C3] bg-[#FFFCF8] px-6 py-8 shadow-[0_24px_50px_-32px_rgba(90,62,48,0.45)] sm:px-8 sm:py-9"
+          noValidate
+        >
+          <p className="text-center text-[13px] font-medium tracking-[0.28em] text-rose">งานมงคลสมรส</p>
+          <h1 className="mt-3 text-center font-display text-4xl leading-tight text-ink sm:text-5xl">
             {COUPLE.groomNickname}
-            <span className="px-2 text-rose">&</span>
+            <span className="px-2 font-serif text-rose italic">&</span>
             {COUPLE.brideNickname}
           </h1>
-          <div className="mt-2 flex justify-center" aria-hidden="true">
-            <svg viewBox="0 0 200 88" className="h-[4.75rem] w-[10.75rem] overflow-visible">
-              <g transform="translate(58 84)">
-                <Character role="groom" mood="idle" showName={false} animateWave />
-              </g>
-              <g transform="translate(142 84)">
-                <Character role="bride" mood="idle" showName={false} animateWave />
-              </g>
-            </svg>
-          </div>
-          <p className="mt-3 font-serif text-lg text-ink">{COUPLE.dateThai}</p>
-          <p className="mt-1 text-[15px] leading-normal text-ink">{VENUE_MAP.name}</p>
-          <p className="text-sm leading-6 text-muted-foreground">
-            {VENUE_MAP.area} · {VENUE_MAP.nameEn}
+          <p className="mt-4 text-center font-serif text-xl text-ink">{COUPLE.dateThai}</p>
+          <p className="mt-2 text-center text-[15px] leading-normal text-ink">{VENUE_MAP.name}</p>
+          <p className="text-center text-sm leading-6 text-muted-foreground">{VENUE_MAP.area}</p>
+          <p id="phone-hint" className="mt-6 text-center text-sm leading-6 text-muted-foreground">
+            กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้
           </p>
-        </header>
-        <p className="mt-6 text-center text-sm leading-6 text-muted-foreground">
-          กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้
-        </p>
-        <form onSubmit={handleSubmit} className="mt-4" noValidate>
-          <Label htmlFor="phone">เบอร์มือถือ</Label>
+          <Label htmlFor="phone" className="mt-4">
+            เบอร์มือถือ
+          </Label>
           <Input
             id="phone"
             name="tel"
@@ -72,8 +66,9 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
             placeholder="08X-XXX-XXXX"
             value={value}
             aria-invalid={error ? true : undefined}
-            aria-describedby={error ? "phone-error" : undefined}
-            className="mt-2 h-12 rounded-2xl bg-card px-4 text-base md:text-base"
+            aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
+            className="mt-2 h-12 rounded-2xl bg-white px-4 text-base focus-visible:border-rose/40 focus-visible:ring-rose/30 md:text-base"
+            onFocus={() => setJumpPlayId((id) => id + 1)}
             onChange={(event) => {
               setValue(maskPhoneInput(event.target.value))
               if (error) setError(null)
@@ -84,7 +79,11 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
               {error}
             </p>
           ) : null}
-          <Button type="submit" disabled={pending} className="mt-6 h-12 w-full rounded-full text-base">
+          <Button
+            type="submit"
+            disabled={pending}
+            className="mt-5 h-12 w-full rounded-full bg-blush text-base text-secondary-foreground shadow-none hover:bg-rose hover:text-paper focus-visible:border-rose/40 focus-visible:ring-rose/40"
+          >
             {pending ? "กำลังเปิด…" : "ต่อไป"}
           </Button>
         </form>

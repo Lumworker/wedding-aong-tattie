@@ -3,27 +3,12 @@
 import { useEffect, useState } from "react"
 import { useReducedMotion } from "framer-motion"
 import { spriteForGuest } from "@/lib/appearance"
+import { COUPLE_IDLE, COUPLE_JUMP, COUPLE_WAVE, coupleJumpOrigin, coupleWaveOrigin } from "@/lib/couple-atlas"
 import { COUPLE } from "@/lib/event"
 import type { Guest } from "@/lib/types"
 
 /** Square chibi frame, sized to sit on the altar without covering the aisle. */
 const COUPLE_SIZE = 56
-
-/** Wave strips: 4 frames of 256, 4px transparent gutter, outer pad included (1044×264). */
-const WAVE = {
-  frames: 4,
-  frame: 256,
-  gutter: 4,
-  width: 1044,
-  height: 264,
-  frameMs: 170,
-  cycles: 2,
-  pauseMs: 8400,
-} as const
-
-function waveOrigin(index: number) {
-  return WAVE.gutter + index * (WAVE.frame + WAVE.gutter)
-}
 
 /** Idle most of the time, then a short two-cycle wave. `delayMs` staggers the pair. */
 function useAltarWave(active: boolean, delayMs: number) {
@@ -31,10 +16,7 @@ function useAltarWave(active: boolean, delayMs: number) {
   const [frame, setFrame] = useState<number | null>(null)
 
   useEffect(() => {
-    if (!active || reduced) {
-      setFrame(null)
-      return
-    }
+    if (!active || reduced) return
 
     let wait = 0
     let tick = 0
@@ -43,18 +25,18 @@ function useAltarWave(active: boolean, delayMs: number) {
     const play = () => {
       if (stopped) return
       let step = 0
-      const total = WAVE.frames * WAVE.cycles
+      const total = COUPLE_WAVE.frames * COUPLE_WAVE.cycles
       setFrame(0)
       tick = window.setInterval(() => {
         step += 1
         if (step >= total) {
           window.clearInterval(tick)
           setFrame(null)
-          wait = window.setTimeout(play, WAVE.pauseMs)
+          wait = window.setTimeout(play, COUPLE_WAVE.pauseMs)
           return
         }
-        setFrame(step % WAVE.frames)
-      }, WAVE.frameMs)
+        setFrame(step % COUPLE_WAVE.frames)
+      }, COUPLE_WAVE.frameMs)
     }
 
     wait = window.setTimeout(play, 2400 + delayMs)
@@ -65,7 +47,41 @@ function useAltarWave(active: boolean, delayMs: number) {
     }
   }, [active, delayMs, reduced])
 
+  if (!active || reduced) return null
   return frame
+}
+
+/** Play the 6-frame jump once per `playId`. `0` and reduced motion stay idle. */
+export function useCoupleJump(playId: number) {
+  const reduced = useReducedMotion() === true
+  const [played, setPlayed] = useState<{ id: number; frame: number | null }>({ id: 0, frame: null })
+
+  useEffect(() => {
+    if (playId === 0 || reduced) return
+
+    let step = 0
+    let tick = 0
+    const start = window.setTimeout(() => {
+      setPlayed({ id: playId, frame: 0 })
+      tick = window.setInterval(() => {
+        step += 1
+        if (step >= COUPLE_JUMP.frames) {
+          window.clearInterval(tick)
+          setPlayed({ id: playId, frame: null })
+          return
+        }
+        setPlayed({ id: playId, frame: step })
+      }, COUPLE_JUMP.frameMs)
+    }, 0)
+
+    return () => {
+      window.clearTimeout(start)
+      window.clearInterval(tick)
+    }
+  }, [playId, reduced])
+
+  if (reduced || playId === 0 || played.id !== playId) return null
+  return played.frame
 }
 
 export type FigureRole = "guest" | "groom" | "bride"
@@ -114,6 +130,8 @@ function PixelCouple({
   href,
   waveHref,
   waveFrame,
+  jumpHref,
+  jumpFrame,
   label,
   showName,
   size,
@@ -121,30 +139,53 @@ function PixelCouple({
   href: string
   waveHref?: string
   waveFrame: number | null
+  jumpHref?: string
+  jumpFrame: number | null
   label: string
   showName: boolean
   size: number
 }) {
-  const waving = waveFrame !== null && waveHref
+  const jumping = jumpFrame !== null && Boolean(jumpHref)
+  const waving = !jumping && waveFrame !== null && Boolean(waveHref)
+  const drawW = size
+  const drawH = jumping ? size * (COUPLE_JUMP.frameH / COUPLE_JUMP.frameW) : size
+  const pose = jumping && jumpFrame > 0 ? "is-jumping" : "is-idle"
+
   return (
     <g>
       {label ? <title>{label}</title> : null}
       <ellipse cx="2" cy="4" rx={size * 0.22} ry="3.2" fill="#05040A" opacity="0.5" />
-      <g className="is-idle">
+      <g className={pose}>
         <g className="wd-bob">
-          {waving ? (
+          {jumping ? (
+            <svg
+              x={-drawW / 2}
+              y={-drawH}
+              width={drawW}
+              height={drawH}
+              viewBox={`${coupleJumpOrigin(jumpFrame)} 0 ${COUPLE_JUMP.frameW} ${COUPLE_JUMP.frameH}`}
+              overflow="hidden"
+            >
+              <image
+                href={jumpHref}
+                width={COUPLE_JUMP.width}
+                height={COUPLE_JUMP.height}
+                style={{ imageRendering: "pixelated" }}
+              />
+            </svg>
+          ) : waving ? (
             <svg
               x={-size / 2}
               y={-size}
               width={size}
               height={size}
-              viewBox={`${waveOrigin(waveFrame)} ${WAVE.gutter} ${WAVE.frame} ${WAVE.frame}`}
+              viewBox={`${coupleWaveOrigin(waveFrame)} ${COUPLE_WAVE.gutter} ${COUPLE_WAVE.frame} ${COUPLE_WAVE.frame}`}
               overflow="hidden"
             >
               <image
                 href={waveHref}
-                width={WAVE.width}
-                height={WAVE.height}
+                width={COUPLE_WAVE.width}
+                height={COUPLE_WAVE.height}
                 style={{ imageRendering: "pixelated" }}
               />
             </svg>
@@ -160,7 +201,7 @@ function PixelCouple({
           )}
         </g>
       </g>
-      {showName && label ? <Nameplate label={label} y={-size - 8} highlight hero /> : null}
+      {showName && label ? <Nameplate label={label} y={-drawH - 8} highlight hero /> : null}
     </g>
   )
 }
@@ -242,6 +283,8 @@ export function Character({
   facing = 1,
   frame = 0,
   animateWave = false,
+  size = COUPLE_SIZE,
+  jumpFrame = null,
 }: {
   role?: FigureRole
   guest?: Guest
@@ -253,29 +296,40 @@ export function Character({
   frame?: number
   /** Altar only: occasionally play the 4-frame wave strip. */
   animateWave?: boolean
+  /** Drawn width. Jump cells are 256×264, so height follows that aspect. */
+  size?: number
+  /**
+   * Welcome jump strip frame. `null` keeps the idle portrait (or the altar wave).
+   * `0` is the stand frame.
+   */
+  jumpFrame?: number | null
 }) {
   const waveFrame = useAltarWave(animateWave && (role === "groom" || role === "bride"), role === "bride" ? 2800 : 0)
   if (role === "groom") {
     return (
       <PixelCouple
-        href="/sprites/groom.png?v=5"
-        waveHref="/sprites/groom-wave.png?v=1"
+        href={COUPLE_IDLE.groom}
+        waveHref={COUPLE_WAVE.groom}
         waveFrame={waveFrame}
+        jumpHref={COUPLE_JUMP.groom}
+        jumpFrame={jumpFrame}
         label={name ?? COUPLE.groomNickname}
         showName={showName}
-        size={COUPLE_SIZE}
+        size={size}
       />
     )
   }
   if (role === "bride") {
     return (
       <PixelCouple
-        href="/sprites/bride.png?v=5"
-        waveHref="/sprites/bride-wave.png?v=1"
+        href={COUPLE_IDLE.bride}
+        waveHref={COUPLE_WAVE.bride}
         waveFrame={waveFrame}
+        jumpHref={COUPLE_JUMP.bride}
+        jumpFrame={jumpFrame}
         label={name ?? COUPLE.brideNickname}
         showName={showName}
-        size={COUPLE_SIZE}
+        size={size}
       />
     )
   }
