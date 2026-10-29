@@ -48,11 +48,6 @@ export function WeddingShell({ children }: { children: ReactNode }) {
       return
     }
 
-    if (pathname === ROUTES.register && !snapshot.phone) {
-      go(ROUTES.welcome)
-      return
-    }
-
     if (pathname === ROUTES.dashboard) {
       if (!snapshot.phone) go(ROUTES.welcome)
       else if (!snapshot.party) go(ROUTES.register)

@@ -14,22 +14,38 @@ export default function RegisterPage() {
   const search = `?${searchParams.toString()}`
   const phone = snapshot.phone
 
-  if (!phone) return null
+  if (!snapshot.ready) return null
 
   // Only bind saved party for the active phone — changing number never reuses old draft.
-  const party = snapshot.party?.phone === phone ? snapshot.party : null
+  const party = phone && snapshot.party?.phone === phone ? snapshot.party : null
+
+  function dropPhoneStep() {
+    if (searchParams.get("step") !== "phone") return
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("step")
+    const qs = params.toString()
+    router.replace(withQuery(ROUTES.register, qs ? `?${qs}` : ""))
+  }
 
   return (
     <RsvpForm
-      key={phone}
       phone={phone}
       party={party}
+      startAtPhone={searchParams.get("step") === "phone" || !phone}
+      onIdentify={async (nextPhone) => {
+        const next = await guestStore.setPhone(nextPhone)
+        if (next.party) {
+          router.push(withQuery(ROUTES.dashboard, search))
+          return "saved"
+        }
+        dropPhoneStep()
+        return "continue"
+      }}
       onSubmit={async (next: Party) => {
         await guestStore.saveParty(next)
         router.push(withQuery(ROUTES.dashboard, search))
       }}
-      onChangePhone={() => {
-        guestStore.clearPhone()
+      onLeave={() => {
         router.push(withQuery(ROUTES.welcome, search))
       }}
     />
