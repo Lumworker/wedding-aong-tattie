@@ -4,7 +4,7 @@ import { PetalField } from "@/components/petal-field"
 export function CoupleRunSplash() {
   return (
     <div
-      className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6 text-center"
+      className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 text-center"
       role="status"
     >
       <PetalField />

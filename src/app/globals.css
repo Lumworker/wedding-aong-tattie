@@ -11,15 +11,22 @@
   --font-serif: var(--font-thai-serif), "Noto Serif Thai", ui-serif, serif;
   --font-display: var(--font-cormorant), "Cormorant Garamond", ui-serif, serif;
   --font-heading: var(--font-thai-serif), "Noto Serif Thai", ui-serif, serif;
-  --color-cream: #f6f1ea;
-  --color-blush: #e7c4c4;
-  --color-blush-deep: #c48984;
-  --color-rose: #8f5e58;
-  --color-sage: #8fa08a;
-  --color-sage-deep: #3f5344;
-  --color-ink: #2a2623;
-  --color-gold: #b8956a;
-  --color-paper: #fffcf8;
+  --color-wash: var(--wash);
+  --color-wash-deep: var(--wash-deep);
+  --color-cream: var(--cream);
+  --color-nude: var(--nude);
+  --color-blush: var(--blush);
+  --color-blush-pale: var(--blush-pale);
+  --color-blush-deep: var(--blush-deep);
+  --color-mint: var(--mint);
+  --color-sage: var(--sage);
+  --color-sage-deep: var(--sage-deep);
+  --color-aqua: var(--aqua);
+  --color-sky: var(--sky);
+  --color-ink: var(--ink);
+  --color-taupe: var(--taupe);
+  --color-rose: var(--rose);
+  --color-paper: var(--cream);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -59,29 +66,50 @@
 }
 
 :root {
-  --background: #f6f1ea;
-  --foreground: #2a2623;
-  --card: #fffcf8;
-  --card-foreground: #2a2623;
-  --popover: #fffcf8;
-  --popover-foreground: #2a2623;
-  --primary: #3f5344;
-  --primary-foreground: #f6f1ea;
-  --secondary: #f3e6e1;
-  --secondary-foreground: #5c3a36;
-  --muted: #efe6db;
-  --muted-foreground: #4e463f;
-  --accent: #e7c4c4;
-  --accent-foreground: #2a2623;
+  /* Wedding CI. Washes and the warm row are the labeled board; aqua and sky are sampled from the cool row. */
+  --wash: #f8ede1;
+  --wash-mid: #f4e6d6;
+  --wash-deep: #e6d5c3;
+  --cream: #fff8f1;
+  --nude: #e3d6cb;
+  --blush: #f3c7d6;
+  --blush-pale: #f8e8ec;
+  --mint: #d9e8d6;
+  --sage: #c1d3c3;
+  --aqua: #d1ebec;
+  --sky: #c8e6f1;
+  --ink: #2a2623;
+  --taupe: #4e463f;
+  /* Rose stays dark enough for text and primary hover (soft pink fails as text). */
+  --rose: #8f5e58;
+  /* Sage darkened along the CI hue so status text and dots stay readable on cream. */
+  --sage-deep: #3f6944;
+  /* Midpoint of soft pink and rose, for small marks that need more presence than the wash. */
+  --blush-deep: #c19297;
+
+  --background: var(--wash);
+  --foreground: var(--ink);
+  --card: var(--cream);
+  --card-foreground: var(--ink);
+  --popover: var(--cream);
+  --popover-foreground: var(--ink);
+  --primary: var(--blush);
+  --primary-foreground: var(--ink);
+  --secondary: var(--blush-pale);
+  --secondary-foreground: var(--ink);
+  --muted: var(--nude);
+  --muted-foreground: var(--taupe);
+  --accent: var(--blush-pale);
+  --accent-foreground: var(--ink);
   --destructive: #8f3d3a;
-  --border: #e4d8cc;
-  --input: #e0d3c6;
-  --ring: #6e8a6a;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: var(--wash-deep);
+  --input: var(--nude);
+  --ring: var(--rose);
+  --chart-1: var(--blush);
+  --chart-2: var(--mint);
+  --chart-3: var(--sage);
+  --chart-4: var(--aqua);
+  --chart-5: var(--sky);
   --radius: 1rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -136,10 +164,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: linear-gradient(180deg, var(--wash) 0%, var(--wash-mid) 48%, var(--wash-deep) 100%);
+    background-attachment: fixed;
   }
   ::selection {
-    background: #e7c4c4;
-    color: #2a2623;
+    background: var(--blush);
+    color: var(--ink);
   }
 }
 

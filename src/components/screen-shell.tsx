@@ -14,7 +14,7 @@ export function ScreenShell({
   return (
     <div className={cn("relative mx-auto flex min-h-dvh w-full flex-col px-5 py-10", width, className)}>
       <PetalField />
-      <div className="relative z-10 flex flex-1 flex-col">{children}</div>
+      <div className="relative z-10 flex min-h-full w-full flex-1 flex-col">{children}</div>
     </div>
   )
 }

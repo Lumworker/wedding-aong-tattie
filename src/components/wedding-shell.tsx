@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion"
 import { CoupleRunSplash } from "@/components/couple-run"
 import { ROUTES, withQuery } from "@/lib/routes"
 import { guestStore } from "@/lib/guest-store"
-import { cn } from "@/lib/utils"
 
 const fade = {
   initial: { opacity: 0, y: 16 },
@@ -65,14 +64,7 @@ export function WeddingShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div
-      className={cn(
-        "relative min-h-dvh",
-        pathname === ROUTES.welcome
-          ? "bg-[linear-gradient(180deg,#F8EDE1_0%,#F4E6D6_48%,#E6D5C3_100%)]"
-          : "bg-background"
-      )}
-    >
+    <div className="relative min-h-dvh">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={pathname} {...fade}>
           {children}
