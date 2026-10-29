@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Build venue guest and plant atlases from the vendored CC0 pixel packs.
+"""Build the venue plant atlas from the vendored CC0 pixel packs.
+
+Guest sprites ship as public/sprites/guests.png via scripts/build-guests.py.
+The Pixel People compositor below is kept, but this script no longer writes
+guests-male.png or guests-female.png.
 
 Sources (see public/sprites/ATTRIBUTION.md):
-- TokyoGeisha, Pixel People (CC0) — bodies, hair, tops, bottoms
+- TokyoGeisha, Pixel People (CC0) — unused guest compositor
 - Robert Ramsay, Pixelled trees (CC0)
 - SpiderDave, Flowers (CC0) — 12×24 plant strip
-
-Guests are composited, dressed in a small wedding palette, then nearest-neighbor
-halved so their pixels match the chapel scene. Walk cycle is a one-pixel step.
 """
 
 from __future__ import annotations
@@ -487,8 +488,7 @@ def main() -> None:
     flowers, tufts = build_flowers()
     plants, meta = pack_plants(trees, flowers, tufts)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    male.save(OUT_DIR / "guests-male.png")
-    female.save(OUT_DIR / "guests-female.png")
+    # guests.png is produced by scripts/build-guests.py.
     plants.save(OUT_DIR / "plants.png")
     write_plant_atlas(meta)
     metrics = {

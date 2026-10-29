@@ -9,45 +9,40 @@ export type SpriteAtlas = {
   count: number
   width: number
   height: number
-  /** SVG units per frame pixel. 2 keeps guest pixels chunky beside the couple. */
+  /** SVG units per frame pixel. Guest cells are scaled to GUEST_DRAW_HEIGHT. */
   pixel: number
   /** Source art faces left (−1) or right (1). */
   artFacing: 1 | -1
 }
 
-/** Male guests — 6×4 characters, 2 frames each, from Pixel People. */
-export const MALE_ATLAS: SpriteAtlas = {
-  href: "/sprites/guests-male.png?v=8",
-  frameW: 23,
-  frameH: 40,
-  frames: 2,
-  cols: 6,
-  rows: 4,
-  count: 24,
-  width: 276,
-  height: 160,
-  pixel: 2,
-  artFacing: 1,
-}
+/**
+ * Drawn guest height in scene units. Followers (`frameH` 26 × pixel 1.7 ≈ 44)
+ * stay about 60% of this, under the couple.
+ */
+const GUEST_DRAW_HEIGHT = 80
 
-/** Female guests — same cell size as the male sheet. */
-export const FEMALE_ATLAS: SpriteAtlas = {
-  href: "/sprites/guests-female.png?v=8",
-  frameW: 23,
-  frameH: 40,
-  frames: 2,
+/**
+ * Venue guests — one 2×6 sheet, one pose per cell.
+ * Indices 0–5 are the top row (male). Indices 6–11 are the bottom row (female).
+ * Art faces slightly right. Built by scripts/build-guests.py.
+ */
+export const GUEST_ATLAS: SpriteAtlas = {
+  href: "/sprites/guests.png?v=9",
+  frameW: 177,
+  frameH: 309,
+  frames: 1,
   cols: 6,
-  rows: 4,
-  count: 24,
-  width: 276,
-  height: 160,
-  pixel: 2,
+  rows: 2,
+  count: 12,
+  width: 1062,
+  height: 618,
+  pixel: GUEST_DRAW_HEIGHT / 309,
   artFacing: 1,
 }
 
 /**
  * Companion people — 8 front-facing variants.
- * `pixel` 1.7 is about 60% of a guest (frame 40 × pixel 2).
+ * `pixel` 1.7 is about 60% of a guest (guest cells draw at 80 scene units).
  * artFacing 1: the sheet faces the camera, so scene facing is not pre-mirrored.
  */
 export const FOLLOWER_ATLAS: SpriteAtlas = {
