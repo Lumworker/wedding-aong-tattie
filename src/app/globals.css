@@ -508,10 +508,10 @@
 }
 
 /*
-  Welcome only. Chocolate #5C3A26 on cream #F1E7D3 is 8.19:1, so text and the
-  register button use that pair. Sage #A3B18A on cream is 1.86:1, so sage stays
-  in the washes behind the couple and never in small type. Tokens live on
-  .welcome-palette so the rest of the site keeps its own CI.
+  Welcome only. The landscape plate is sage, cream, and lavender — chocolate
+  stays on the card, type, and register button. Chocolate on cream is 8.19:1.
+  Sage on cream is 1.86:1, so sage is a card accent, not small type.
+  Tokens live on .welcome-palette so the rest of the site keeps its own CI.
 */
 .welcome-palette {
   --wp-chocolate: #5c3a26;
@@ -527,32 +527,17 @@
   color: var(--wp-cream);
 }
 
-.welcome-wash {
-  pointer-events: none;
+.welcome-landscape {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-}
-
-.welcome-wash-sage {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--wp-sage);
-  filter: blur(40px);
-}
-
-.welcome-wash-sage-a {
-  top: -14%;
-  left: -12%;
-  width: 62%;
-  height: 52%;
-}
-
-.welcome-wash-sage-b {
-  right: -14%;
-  bottom: -16%;
-  width: 54%;
-  height: 48%;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
 }
 
 .welcome-palette .welcome-card {
@@ -594,60 +579,27 @@
   color: var(--wp-cream);
 }
 
-/* Couple slot. 5:4 on a phone so the card still fits; 16:10 beside the card. */
-.welcome-frame {
-  position: relative;
-  /* Shrink on a short phone so the register card stays on screen. */
-  width: min(100%, 26rem, max(12rem, calc((100dvh - 22rem) * 5 / 4)));
-  max-width: 460px;
-  aspect-ratio: 5 / 4;
-  min-width: 0;
-  pointer-events: none;
-}
-
-.welcome-stage {
+/* Couple is centered on the meadow. The card sits above them on a phone and to the right on a desktop. */
+.welcome-scene {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-}
-
-.welcome-glow {
-  position: absolute;
-  left: 50%;
-  top: 52%;
-  width: 92%;
-  height: 86%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background:
-    radial-gradient(ellipse at 50% 62%, var(--wp-cream) 0%, transparent 48%),
-    var(--wp-sage);
-  filter: blur(10px);
+  z-index: 10;
   pointer-events: none;
 }
 
 .welcome-couple {
   position: absolute;
-  z-index: 2;
   left: 50%;
-  top: 54%;
-  width: 88%;
-  max-width: 400px;
+  bottom: max(19.5rem, 34%);
+  width: min(72vw, 320px);
   aspect-ratio: 240 / 140;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
 }
 
 @media (min-width: 1024px) {
-  .welcome-frame {
-    /* Card is 23rem with a 2rem gap. */
-    width: min(36rem, calc(68dvh * 16 / 10), calc(100% - 25rem));
-    max-width: 620px;
-    aspect-ratio: 16 / 10;
-  }
-
   .welcome-couple {
-    width: 78%;
-    max-width: 460px;
+    bottom: 16%;
+    width: min(28vw, 380px);
   }
 }
 

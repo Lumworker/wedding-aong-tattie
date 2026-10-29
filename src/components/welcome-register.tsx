@@ -22,14 +22,11 @@ export function WelcomeRegister({ onRegister }: { onRegister: () => void }) {
 
   return (
     <div className="welcome-palette relative min-h-dvh overflow-x-clip">
-      <div className="welcome-wash" aria-hidden="true">
-        <span className="welcome-wash-sage welcome-wash-sage-a" />
-        <span className="welcome-wash-sage welcome-wash-sage-b" />
-      </div>
+      <img src="/sprites/welcome-landscape.png?v=2" alt="" className="welcome-landscape" />
       <PetalField className="z-20" />
-      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[1200px] flex-col items-center justify-center px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-8 lg:py-6">
-        <WelcomeScene jumpFrame={frame} />
-        <div className="welcome-card relative z-30 mt-3 w-full max-w-lg shrink-0 rounded-[1.35rem] px-6 py-7 lg:mt-0 lg:w-[23rem] lg:max-w-none lg:px-7">
+      <WelcomeScene jumpFrame={frame} />
+      <div className="relative z-30 mx-auto flex min-h-dvh w-full max-w-[1200px] flex-col items-center justify-end px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:items-end lg:justify-center lg:px-10 lg:py-8">
+        <div className="welcome-card w-full max-w-lg shrink-0 rounded-[1.35rem] px-6 py-7 lg:w-[23rem] lg:max-w-none lg:px-7">
           <p className="welcome-kicker text-center text-[13px] font-medium tracking-[0.22em]">งานมงคลสมรส</p>
           <h1 className="welcome-title mt-2 text-center font-display text-4xl leading-none">
             {COUPLE.groomNickname}

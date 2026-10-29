@@ -50,13 +50,11 @@ export function WelcomeScene({
 }) {
   if (compact) return <CompactWelcome jumpFrame={jumpFrame} />
   return (
-    <div className="welcome-frame" aria-hidden="true">
-      <div className="welcome-stage">
-        <div className="welcome-glow" />
-        <div data-prop="couple" className="welcome-couple">
+    <div className="welcome-scene" aria-hidden="true">
+      <div data-prop="couple" className="welcome-couple">
           <svg viewBox={`0 0 ${COUPLE.w} ${COUPLE.h}`} className="absolute inset-0 h-full w-full overflow-visible">
-            <ellipse cx={COUPLE.groom} cy={COUPLE.foot - 2} rx="28" ry="6" fill="#5C3A26" opacity="0.22" />
-            <ellipse cx={COUPLE.bride} cy={COUPLE.foot - 2} rx="28" ry="6" fill="#5C3A26" opacity="0.22" />
+            <ellipse cx={COUPLE.groom} cy={COUPLE.foot - 2} rx="28" ry="6" fill="#6d7b62" opacity="0.28" />
+            <ellipse cx={COUPLE.bride} cy={COUPLE.foot - 2} rx="28" ry="6" fill="#6d7b62" opacity="0.28" />
             <g transform={`translate(${COUPLE.groom} ${COUPLE.foot})`}>
               <Character
                 role="groom"
@@ -78,7 +76,6 @@ export function WelcomeScene({
               />
             </g>
           </svg>
-        </div>
       </div>
     </div>
   )
