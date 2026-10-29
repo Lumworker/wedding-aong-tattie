@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react"
 import { FormStepper } from "@/components/form-stepper"
+import { Character } from "@/components/venue/character"
 import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,6 +42,16 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
             <span className="px-2 text-rose">&</span>
             {COUPLE.brideNickname}
           </h1>
+          <div className="mt-2 flex justify-center" aria-hidden="true">
+            <svg viewBox="0 0 200 88" className="h-[4.75rem] w-[10.75rem] overflow-visible">
+              <g transform="translate(58 84)">
+                <Character role="groom" mood="idle" showName={false} animateWave />
+              </g>
+              <g transform="translate(142 84)">
+                <Character role="bride" mood="idle" showName={false} animateWave />
+              </g>
+            </svg>
+          </div>
           <p className="mt-3 font-serif text-lg text-ink">{COUPLE.dateThai}</p>
           <p className="mt-1 text-[15px] leading-normal text-ink">{VENUE_MAP.name}</p>
           <p className="text-sm leading-6 text-muted-foreground">

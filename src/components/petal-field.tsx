@@ -55,7 +55,7 @@ export function PetalField() {
             y: "110vh",
             x: [0, petal.drift, 0],
             rotate: [0, 80, 160],
-            opacity: [0, 0.55, 0.55, 0],
+            opacity: [0, 0.72, 0.72, 0],
           }}
           transition={{
             duration: petal.duration,
