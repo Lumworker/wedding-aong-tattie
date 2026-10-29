@@ -446,6 +446,44 @@
   animation: wd-ring 2.8s ease-in-out infinite;
 }
 
+/* Loading run: 1044×264 strip, frame at 4 + i*(256+4), y=4. Window is exactly one 256 frame. */
+.couple-run {
+  --run-scale: calc(120 / 256);
+  display: block;
+  width: 120px;
+  height: 120px;
+  background-repeat: no-repeat;
+  background-size: calc(1044px * var(--run-scale)) calc(264px * var(--run-scale));
+  animation: couple-run 0.64s infinite;
+}
+
+.couple-run-groom {
+  background-image: url("/sprites/groom-run.png");
+}
+
+.couple-run-bride {
+  background-image: url("/sprites/bride-run.png");
+}
+
+@keyframes couple-run {
+  0%,
+  24% {
+    background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
+  }
+  25%,
+  49% {
+    background-position: calc(-264px * var(--run-scale)) calc(-4px * var(--run-scale));
+  }
+  50%,
+  74% {
+    background-position: calc(-524px * var(--run-scale)) calc(-4px * var(--run-scale));
+  }
+  75%,
+  100% {
+    background-position: calc(-784px * var(--run-scale)) calc(-4px * var(--run-scale));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hd2d-world {
@@ -473,6 +511,7 @@
   .wd-cloud,
   .wd-bird,
   .wd-ring,
+  .couple-run,
   .wd-shaft,
   .wd-mote,
   .is-walking .wd-bob,

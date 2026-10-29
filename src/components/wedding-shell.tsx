@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore, type ReactNode } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
+import { CoupleRunSplash } from "@/components/couple-run"
 import { ROUTES, withQuery } from "@/lib/routes"
 import { guestStore } from "@/lib/guest-store"
 
@@ -59,14 +60,7 @@ export function WeddingShell({ children }: { children: ReactNode }) {
   }, [snapshot.ready, snapshot.phone, snapshot.party, pathname, router, search])
 
   if (!snapshot.ready) {
-    return (
-      <div className="relative min-h-dvh bg-background">
-        <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-          <p className="font-display text-5xl text-rose italic motion-safe:animate-pulse">C & P</p>
-          <p className="mt-4 text-sm text-muted-foreground">กำลังเปิดคำเชิญ</p>
-        </div>
-      </div>
-    )
+    return <CoupleRunSplash />
   }
 
   return (
