@@ -1,6 +1,72 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useReducedMotion } from "framer-motion"
 import { spriteForGuest } from "@/lib/appearance"
 import { COUPLE } from "@/lib/event"
 import type { Guest } from "@/lib/types"
+
+/** Square chibi frame, sized to sit on the altar without covering the aisle. */
+const COUPLE_SIZE = 56
+
+/** Wave strips: 4 frames of 256, 4px transparent gutter, outer pad included (1044×264). */
+const WAVE = {
+  frames: 4,
+  frame: 256,
+  gutter: 4,
+  width: 1044,
+  height: 264,
+  frameMs: 170,
+  cycles: 2,
+  pauseMs: 8400,
+} as const
+
+function waveOrigin(index: number) {
+  return WAVE.gutter + index * (WAVE.frame + WAVE.gutter)
+}
+
+/** Idle most of the time, then a short two-cycle wave. `delayMs` staggers the pair. */
+function useAltarWave(active: boolean, delayMs: number) {
+  const reduced = useReducedMotion() === true
+  const [frame, setFrame] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!active || reduced) {
+      setFrame(null)
+      return
+    }
+
+    let wait = 0
+    let tick = 0
+    let stopped = false
+
+    const play = () => {
+      if (stopped) return
+      let step = 0
+      const total = WAVE.frames * WAVE.cycles
+      setFrame(0)
+      tick = window.setInterval(() => {
+        step += 1
+        if (step >= total) {
+          window.clearInterval(tick)
+          setFrame(null)
+          wait = window.setTimeout(play, WAVE.pauseMs)
+          return
+        }
+        setFrame(step % WAVE.frames)
+      }, WAVE.frameMs)
+    }
+
+    wait = window.setTimeout(play, 2400 + delayMs)
+    return () => {
+      stopped = true
+      window.clearTimeout(wait)
+      window.clearInterval(tick)
+    }
+  }, [active, delayMs, reduced])
+
+  return frame
+}
 
 export type FigureRole = "guest" | "groom" | "bride"
 export type FigureMood = "idle" | "walk" | "cheer" | "sit"
@@ -46,34 +112,55 @@ function Nameplate({
 
 function PixelCouple({
   href,
+  waveHref,
+  waveFrame,
   label,
   showName,
-  w,
-  h,
+  size,
 }: {
   href: string
+  waveHref?: string
+  waveFrame: number | null
   label: string
   showName: boolean
-  w: number
-  h: number
+  size: number
 }) {
+  const waving = waveFrame !== null && waveHref
   return (
     <g>
       {label ? <title>{label}</title> : null}
-      <ellipse cx="2" cy="4" rx={w * 0.28} ry="3.2" fill="#05040A" opacity="0.5" />
+      <ellipse cx="2" cy="4" rx={size * 0.22} ry="3.2" fill="#05040A" opacity="0.5" />
       <g className="is-idle">
         <g className="wd-bob">
-          <image
-            href={href}
-            x={-w / 2}
-            y={-h}
-            width={w}
-            height={h}
-            style={{ imageRendering: "pixelated" }}
-          />
+          {waving ? (
+            <svg
+              x={-size / 2}
+              y={-size}
+              width={size}
+              height={size}
+              viewBox={`${waveOrigin(waveFrame)} ${WAVE.gutter} ${WAVE.frame} ${WAVE.frame}`}
+              overflow="hidden"
+            >
+              <image
+                href={waveHref}
+                width={WAVE.width}
+                height={WAVE.height}
+                style={{ imageRendering: "pixelated" }}
+              />
+            </svg>
+          ) : (
+            <image
+              href={href}
+              x={-size / 2}
+              y={-size}
+              width={size}
+              height={size}
+              style={{ imageRendering: "pixelated" }}
+            />
+          )}
         </g>
       </g>
-      {showName && label ? <Nameplate label={label} y={-h - 8} highlight hero /> : null}
+      {showName && label ? <Nameplate label={label} y={-size - 8} highlight hero /> : null}
     </g>
   )
 }
@@ -154,6 +241,7 @@ export function Character({
   name,
   facing = 1,
   frame = 0,
+  animateWave = false,
 }: {
   role?: FigureRole
   guest?: Guest
@@ -163,12 +251,33 @@ export function Character({
   name?: string
   facing?: 1 | -1
   frame?: number
+  /** Altar only: occasionally play the 4-frame wave strip. */
+  animateWave?: boolean
 }) {
+  const waveFrame = useAltarWave(animateWave && (role === "groom" || role === "bride"), role === "bride" ? 2800 : 0)
   if (role === "groom") {
-    return <PixelCouple href="/sprites/groom.png?v=4" label={name ?? COUPLE.groomNickname} showName={showName} w={48} h={68} />
+    return (
+      <PixelCouple
+        href="/sprites/groom.png?v=5"
+        waveHref="/sprites/groom-wave.png?v=1"
+        waveFrame={waveFrame}
+        label={name ?? COUPLE.groomNickname}
+        showName={showName}
+        size={COUPLE_SIZE}
+      />
+    )
   }
   if (role === "bride") {
-    return <PixelCouple href="/sprites/bride.png?v=4" label={name ?? COUPLE.brideNickname} showName={showName} w={48} h={68} />
+    return (
+      <PixelCouple
+        href="/sprites/bride.png?v=5"
+        waveHref="/sprites/bride-wave.png?v=1"
+        waveFrame={waveFrame}
+        label={name ?? COUPLE.brideNickname}
+        showName={showName}
+        size={COUPLE_SIZE}
+      />
+    )
   }
   return (
     <AtlasGuest
