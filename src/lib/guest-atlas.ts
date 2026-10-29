@@ -17,7 +17,7 @@ export type SpriteAtlas = {
 
 /** Male guests — 6×4 characters, 2 frames each, from Pixel People. */
 export const MALE_ATLAS: SpriteAtlas = {
-  href: "/sprites/guests-male.png?v=7",
+  href: "/sprites/guests-male.png?v=8",
   frameW: 23,
   frameH: 40,
   frames: 2,
@@ -32,7 +32,7 @@ export const MALE_ATLAS: SpriteAtlas = {
 
 /** Female guests — same cell size as the male sheet. */
 export const FEMALE_ATLAS: SpriteAtlas = {
-  href: "/sprites/guests-female.png?v=7",
+  href: "/sprites/guests-female.png?v=8",
   frameW: 23,
   frameH: 40,
   frames: 2,
@@ -46,20 +46,20 @@ export const FEMALE_ATLAS: SpriteAtlas = {
 }
 
 /**
- * Companion cats — 4 variants in a row.
- * Each frame has a transparent gutter so scaling does not sample the next cat.
- * `pixel` 1.4 draws the opaque cat at about 60% of a guest's height (guests are 2px per texel).
+ * Companion people — 8 front-facing variants.
+ * `pixel` 1.7 is about 60% of a guest (frame 40 × pixel 2).
+ * artFacing 1: the sheet faces the camera, so scene facing is not pre-mirrored.
  */
-export const CAT_ATLAS: SpriteAtlas = {
-  href: "/sprites/cats.png?v=8",
-  frameW: 44,
-  frameH: 42,
+export const FOLLOWER_ATLAS: SpriteAtlas = {
+  href: "/sprites/followers.png?v=1",
+  frameW: 17,
+  frameH: 26,
   frames: 1,
-  cols: 4,
+  cols: 8,
   rows: 1,
-  count: 4,
-  width: 176,
-  height: 42,
-  pixel: 1.4,
-  artFacing: -1,
+  count: 8,
+  width: 136,
+  height: 26,
+  pixel: 1.7,
+  artFacing: 1,
 }

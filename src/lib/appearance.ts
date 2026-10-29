@@ -1,4 +1,4 @@
-import { CAT_ATLAS, FEMALE_ATLAS, MALE_ATLAS, type SpriteAtlas } from "@/lib/guest-atlas"
+import { FEMALE_ATLAS, FOLLOWER_ATLAS, MALE_ATLAS, type SpriteAtlas } from "@/lib/guest-atlas"
 import type { Guest } from "@/lib/types"
 
 export type GuestSprite = {
@@ -18,7 +18,7 @@ function hash(id: string) {
 }
 
 function pickAtlas(guest: Guest): SpriteAtlas {
-  if (guest.isCompanion) return CAT_ATLAS
+  if (guest.isCompanion) return FOLLOWER_ATLAS
   if (guest.gender === "female") return FEMALE_ATLAS
   if (guest.gender === "male") return MALE_ATLAS
   return hash(guest.id) & 1 ? FEMALE_ATLAS : MALE_ATLAS
