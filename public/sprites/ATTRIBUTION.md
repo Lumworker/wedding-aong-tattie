@@ -4,7 +4,8 @@ Pixel guests, trees, and flowers share one chunky pixel size so they sit with th
 
 ## Couple and chapel
 
-- `groom.png` / `bride.png` — pixel portraits of อ๋อง and แทตตี้.
+- `groom.png` / `bride.png` — idle chibi portraits of อ๋อง and แทตตี้, original Game Boy Emerald–style art made for this wedding.
+- `groom-wave.png` / `bride-wave.png` — matching wave strips. Four 256×256 frames in a row, with a 4px transparent gutter (and the same pad around the sheet) so frames do not bleed. The sheet is 1044×264.
 - `church.png` — chapel cropped from the user-supplied town building sheet.
 - `cats.png` — 4 companion cat variants for followers. Each cat sits in its own frame with a transparent gutter so the next cat does not show through when the sprite is scaled.
 

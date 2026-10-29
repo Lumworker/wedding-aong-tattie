@@ -39,8 +39,14 @@ function CoupleActor({
       onClick={() => router.push("/story")}
     >
       <title>{`อ่านประวัติ${role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname}`}</title>
-      <rect x={-32} y={-82} width={64} height={90} fill="transparent" />
-      <Character role={role} mood="idle" showName name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname} />
+      <rect x={-32} y={-68} width={64} height={76} fill="transparent" />
+      <Character
+        role={role}
+        mood="idle"
+        animateWave
+        showName
+        name={role === "bride" ? COUPLE.brideNickname : COUPLE.groomNickname}
+      />
     </motion.g>
   )
 }
