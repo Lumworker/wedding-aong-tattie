@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useReducedMotion } from "framer-motion"
 import { spriteForGuest } from "@/lib/appearance"
 import { COUPLE_IDLE, COUPLE_JUMP, COUPLE_WAVE, coupleJumpOrigin, coupleWaveOrigin } from "@/lib/couple-atlas"
@@ -49,6 +49,99 @@ function useAltarWave(active: boolean, delayMs: number) {
 
   if (!active || reduced) return null
   return frame
+}
+
+/**
+ * Register CTA playback. Hover loops the hop. A click finishes the current
+ * cycle (or starts one) and calls back when the land frame ends.
+ * Reduced motion stays idle and completes immediately.
+ */
+export function useCoupleJumpPlayback() {
+  const reduced = useReducedMotion() === true
+  const [frame, setFrame] = useState<number | null>(null)
+  const loopRef = useRef(false)
+  const onceRef = useRef<(() => void) | null>(null)
+  const timerRef = useRef(0)
+  const runningRef = useRef(false)
+  const stepRef = useRef(0)
+  const mountedRef = useRef(true)
+
+  const stopTimer = useCallback(() => {
+    window.clearInterval(timerRef.current)
+    timerRef.current = 0
+    runningRef.current = false
+  }, [])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      stopTimer()
+    }
+  }, [stopTimer])
+
+  useEffect(() => {
+    if (!reduced) return
+    onceRef.current = null
+    loopRef.current = false
+    stopTimer()
+  }, [reduced, stopTimer])
+
+  const start = useCallback(() => {
+    if (runningRef.current || reduced) return
+    runningRef.current = true
+    stepRef.current = 0
+    setFrame(0)
+    timerRef.current = window.setInterval(() => {
+      stepRef.current += 1
+      if (stepRef.current < COUPLE_JUMP.frames) {
+        setFrame(stepRef.current)
+        return
+      }
+      const done = onceRef.current
+      onceRef.current = null
+      if (done || !loopRef.current) {
+        stopTimer()
+        stepRef.current = 0
+        setFrame(null)
+        if (done && mountedRef.current) done()
+        return
+      }
+      stepRef.current = 0
+      setFrame(0)
+    }, COUPLE_JUMP.frameMs)
+  }, [reduced, stopTimer])
+
+  const setLoop = useCallback(
+    (on: boolean) => {
+      if (reduced || onceRef.current) return
+      loopRef.current = on
+      if (on) {
+        start()
+        return
+      }
+      stopTimer()
+      stepRef.current = 0
+      setFrame(null)
+    },
+    [reduced, start, stopTimer]
+  )
+
+  const playOnce = useCallback(
+    (onDone: () => void) => {
+      if (reduced) {
+        onDone()
+        return
+      }
+      if (onceRef.current) return
+      loopRef.current = false
+      onceRef.current = onDone
+      if (!runningRef.current) start()
+    },
+    [reduced, start]
+  )
+
+  return { frame: reduced ? null : frame, setLoop, playOnce }
 }
 
 /** Play the 6-frame jump once per `playId`. `0` and reduced motion stay idle. */
