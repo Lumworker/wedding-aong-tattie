@@ -1,6 +1,6 @@
 export type Gender = "male" | "female" | "other"
 export type AgeGroup = "adult" | "child"
-export type Attendance = "attending" | "unsure"
+export type Attendance = "attending" | "unsure" | "declined"
 export type FamilySide = "groom" | "bride"
 
 export type Guest = {

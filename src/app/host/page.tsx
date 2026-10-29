@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { sideLabel } from "@/lib/labels"
+import { attendanceLabel, sideLabel } from "@/lib/labels"
 import { formatThaiMobile } from "@/lib/phone"
 import type { Party } from "@/lib/types"
 
@@ -12,6 +12,7 @@ type Summary = {
   guests: number
   attending: number
   unsure: number
+  declined: number
   withCompanions: number
   companions: number
 }
@@ -104,6 +105,7 @@ export default function HostPage() {
             <Stat label="คณะ" value={summary.parties} />
             <Stat label="มา" value={summary.attending} />
             <Stat label="ยังไม่แน่ใจ" value={summary.unsure} />
+            <Stat label="ไปไม่ได้" value={summary.declined} />
             <Stat label="คณะที่มีผู้ติดตาม" value={summary.withCompanions} />
             <Stat label="ผู้ติดตาม" value={summary.companions} />
             <Stat label="ทั้งหมด" value={summary.guests} />
@@ -136,7 +138,7 @@ function PartyLine({ party }: { party: Party }) {
     <p className="mt-2 flex flex-wrap gap-x-2 text-sm text-muted-foreground">
       <span className="text-[11px]">ชื่อที่บ่าวสาวรู้จัก</span>
       <span className="text-ink">{main.name}</span>
-      <span>{main.attendance === "attending" ? "มา" : "ยังไม่แน่ใจ"}</span>
+      <span>{attendanceLabel(main.attendance)}</span>
       {main.side ? <span>{sideLabel(main.side)}</span> : null}
       <span>{companions > 0 ? `มีผู้ติดตาม ${companions}` : "ไม่มีผู้ติดตาม"}</span>
     </p>

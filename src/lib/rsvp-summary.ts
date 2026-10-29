@@ -9,7 +9,8 @@ export function summarizeParties(parties: Party[]) {
     parties: parties.length,
     guests: guests.length,
     attending: attending.length,
-    unsure: guests.length - attending.length,
+    unsure: guests.filter((guest) => guest.attendance === "unsure").length,
+    declined: guests.filter((guest) => guest.attendance === "declined").length,
     withCompanions: parties.filter((party) => party.guests.some((guest) => guest.isCompanion)).length,
     companions: companions.length,
   }

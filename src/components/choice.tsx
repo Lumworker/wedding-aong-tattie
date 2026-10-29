@@ -6,17 +6,20 @@ export function Choice<T extends string>({
   value,
   onChange,
   options,
+  stacked = false,
 }: {
   legend: string
   name: string
   value: T | null
   onChange: (value: T) => void
   options: { value: T; label: string; hint?: string }[]
+  /** Full-width rows. Easier to tap when the labels are longer than a short word. */
+  stacked?: boolean
 }) {
   return (
     <fieldset>
       <legend className="mb-2 text-[15px] leading-normal font-medium">{legend}</legend>
-      <div className={cn("grid gap-2", options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+      <div className={cn("grid gap-2", stacked ? "grid-cols-1" : options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
         {options.map((option) => {
           const selected = value === option.value
           return (
@@ -27,7 +30,7 @@ export function Choice<T extends string>({
                 "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
                 selected
                   ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-background text-foreground hover:bg-muted"
+                  : "border-border bg-card text-foreground hover:bg-muted"
               )}
             >
               <input

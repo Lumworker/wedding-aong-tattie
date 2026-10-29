@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,24 +17,21 @@ function scrollFieldIntoView(target: EventTarget | null) {
 
 export function WishComposer({
   party,
-  phone,
   wishes,
+  editToken,
   onSend,
   onUpdate,
 }: {
   party: Guest[]
-  phone: string
   wishes: Wish[]
+  /** Set when the guest taps แก้ไข on a wish they already sent. */
+  editToken: { id: string; at: number } | null
   onSend: (from: string, text: string) => void | Promise<void>
   onUpdate: (wish: Wish) => void | Promise<void>
 }) {
   const names = useMemo(
     () => party.filter((guest) => !guest.isCompanion).map((guest) => guest.name).filter(Boolean),
     [party]
-  )
-  const mine = useMemo(
-    () => wishes.filter((wish) => wish.partyPhone === phone).slice().reverse(),
-    [wishes, phone]
   )
 
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -47,23 +44,28 @@ export function WishComposer({
   const remaining = WISH_TEXT_MAX - count
   const ready = from.trim().length > 0 && text.trim().length > 0 && count <= WISH_TEXT_MAX
   const editing = editingId !== null
+  const appliedEdit = useRef<number | null>(null)
 
   useEffect(() => {
     if (!editing && names.length === 1 && !from) setFrom(names[0])
   }, [editing, names, from])
 
-  function resetComposer(nextFrom = names[0] ?? "") {
-    setEditingId(null)
-    setFrom(nextFrom)
-    setText("")
-  }
-
-  function startEdit(wish: Wish) {
+  useEffect(() => {
+    if (!editToken || appliedEdit.current === editToken.at) return
+    const wish = wishes.find((item) => item.id === editToken.id)
+    if (!wish) return
+    appliedEdit.current = editToken.at
     setEditingId(wish.id)
     setFrom(names.includes(wish.from) || names.length === 0 ? wish.from : names[0])
     setText(clipWishText(wish.text))
     setStatus("idle")
     window.requestAnimationFrame(() => document.getElementById("wish-text")?.focus())
+  }, [editToken, names, wishes])
+
+  function resetComposer(nextFrom = names[0] ?? "") {
+    setEditingId(null)
+    setFrom(nextFrom)
+    setText("")
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -104,12 +106,10 @@ export function WishComposer({
   return (
     <div className="rounded-[1.4rem] border border-border bg-card p-4">
       <form onSubmit={handleSubmit}>
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="font-serif text-xl">{editing ? "แก้ไขคำอวยพร" : "คำอวยพร"}</h2>
-          {names.length === 1 && !editing ? (
-            <p className="min-w-0 text-[13px] leading-normal text-muted-foreground">จาก {from || names[0]}</p>
-          ) : null}
-        </div>
+        {editing ? <p className="mb-2 text-[15px] font-medium text-ink">กำลังแก้ไข</p> : null}
+        {names.length === 1 && !editing ? (
+          <p className="mb-2 text-[13px] leading-normal text-muted-foreground">จาก {from || names[0]}</p>
+        ) : null}
 
         {names.length > 1 ? (
           <div className="mt-3">
@@ -210,36 +210,6 @@ export function WishComposer({
           </p>
         ) : null}
       </form>
-
-      {mine.length > 0 ? (
-        <section className="mt-4 border-t border-border pt-3">
-          <h3 className="text-[15px] font-medium">ประวัติการอวยพร</h3>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">แตะรายการเพื่อแก้ไข</p>
-          <ul className="mt-2 flex flex-col gap-2">
-            {mine.map((wish) => {
-              const active = wish.id === editingId
-              return (
-                <li key={wish.id}>
-                  <button
-                    type="button"
-                    onClick={() => startEdit(wish)}
-                    className={cn(
-                      "min-h-11 w-full rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                      "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card",
-                      active
-                        ? "border-primary bg-primary/8"
-                        : "border-border bg-background hover:bg-muted"
-                    )}
-                  >
-                    <p className="text-[15px] leading-normal font-medium text-ink">{wish.from}</p>
-                    <p className="mt-1 text-[15px] leading-relaxed whitespace-pre-wrap text-muted-foreground">{wish.text}</p>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-      ) : null}
     </div>
   )
 }

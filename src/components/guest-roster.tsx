@@ -32,10 +32,15 @@ function GuestPortrait({ guest }: { guest: Guest }) {
   )
 }
 
-function StatusDot({ attending }: { attending: boolean }) {
+function StatusDot({ attendance }: { attendance: Guest["attendance"] }) {
   return (
     <span
-      className={cn("size-2.5 shrink-0 rounded-full", attending ? "bg-sage-deep" : "bg-blush-deep")}
+      className={cn(
+        "size-2.5 shrink-0 rounded-full",
+        attendance === "attending" && "bg-sage-deep",
+        attendance === "unsure" && "bg-blush-deep",
+        attendance === "declined" && "bg-muted-foreground"
+      )}
       aria-hidden="true"
     />
   )
@@ -63,17 +68,19 @@ function partyHeadline(main: Guest, count: number) {
       : main.side === "bride"
         ? `ฝั่ง${COUPLE.brideNickname}`
         : null
-  const attendance = main.attendance === "attending" ? "เข้าร่วม" : "ยังไม่แน่ใจ"
-  return [side, attendance, `${count} คน`].filter(Boolean).join(" · ")
+  return [side, attendanceLabel(main.attendance), `${count} คน`].filter(Boolean).join(" · ")
 }
 
 /** Party card: shared side and attendance once, then a row per person. */
 export function PartySummary({
   guests,
   empty,
+  hideHeadline = false,
 }: {
   guests: Guest[]
   empty?: string
+  /** Parent already shows side, attendance, and count. */
+  hideHeadline?: boolean
 }) {
   const main = guests.find((guest) => !guest.isCompanion) ?? guests[0]
   const ordered = main ? [main, ...guests.filter((guest) => guest.id !== main.id)] : []
@@ -88,7 +95,11 @@ export function PartySummary({
 
   return (
     <div className="overflow-hidden rounded-[1.4rem] border border-border bg-card">
-      <p className="border-b border-border px-4 py-3 text-[15px] leading-relaxed font-medium text-ink">{partyHeadline(main, guests.length)}</p>
+      {hideHeadline ? null : (
+        <p className="border-b border-border px-4 py-3 text-[15px] leading-relaxed font-medium text-ink">
+          {partyHeadline(main, guests.length)}
+        </p>
+      )}
       <ul className="divide-y divide-border">
         {ordered.map((guest) => (
           <li key={guest.id} className="flex items-center gap-3 px-4 py-3">
@@ -147,7 +158,7 @@ export function GuestRoster({
           <ul className="divide-y divide-border overflow-hidden rounded-[1.4rem] border border-border bg-card">
             {shown.map((guest) => (
               <li key={guest.id} className="flex items-center gap-3 px-3 py-2.5">
-                <StatusDot attending={guest.attendance === "attending"} />
+                <StatusDot attendance={guest.attendance} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[15px] leading-relaxed font-medium break-words">{guest.name}</p>
                   <p className="text-[13px] leading-normal text-muted-foreground">
@@ -165,7 +176,7 @@ export function GuestRoster({
               <ul className="mt-2 divide-y divide-border overflow-hidden rounded-[1.4rem] border border-border bg-card">
                 {extra.map((guest) => (
                   <li key={guest.id} className="flex items-center gap-3 px-3 py-2.5">
-                    <StatusDot attending={guest.attendance === "attending"} />
+                    <StatusDot attendance={guest.attendance} />
                     <div className="min-w-0 flex-1">
                       <p className="text-[15px] leading-relaxed font-medium break-words">{guest.name}</p>
                       <p className="text-[13px] leading-5 text-muted-foreground">{attendanceLabel(guest.attendance)}</p>

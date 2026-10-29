@@ -3,12 +3,14 @@
 import { FormEvent, useState } from "react"
 import { Minus, Plus } from "lucide-react"
 import { Choice } from "@/components/choice"
+import { FormStepper } from "@/components/form-stepper"
 import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { COUPLE, PARTY_MAX } from "@/lib/event"
 import { newId } from "@/lib/id"
+import { formatThaiMobile } from "@/lib/phone"
 import type { Attendance, FamilySide, Gender, Guest, Party } from "@/lib/types"
 
 const COMPANION_MAX = PARTY_MAX - 1
@@ -17,13 +19,14 @@ type Draft = {
   id: string
   name: string
   gender: Gender | null
-  attendance: Attendance
+  attendance: Attendance | null
   side: FamilySide | null
 }
 
 type Errors = {
   name?: string
   gender?: string
+  attendance?: string
   side?: string
 }
 
@@ -32,7 +35,7 @@ function blank(): Draft {
     id: newId("guest"),
     name: "",
     gender: null,
-    attendance: "attending",
+    attendance: null,
     side: null,
   }
 }
@@ -46,15 +49,11 @@ function fromParty(party: Party | null): { person: Draft; companions: number } {
       id: main.id,
       name: main.name,
       gender: main.gender,
-      attendance: normalizeAttendance(main.attendance),
+      attendance: main.attendance,
       side: main.side ?? null,
     },
     companions: Math.min(COMPANION_MAX, Math.max(0, companions)),
   }
-}
-
-function normalizeAttendance(value: string): Attendance {
-  return value === "attending" ? "attending" : "unsure"
 }
 
 function buildCompanions(
@@ -100,6 +99,7 @@ export function RsvpForm({
   onChangePhone: () => void
 }) {
   const initial = fromParty(party)
+  const editing = Boolean(party?.guests.length)
   const [person, setPerson] = useState<Draft>(initial.person)
   const [companions, setCompanions] = useState(initial.companions)
   const [errors, setErrors] = useState<Errors>({})
@@ -113,6 +113,7 @@ export function RsvpForm({
       const cleared = { ...current }
       if (next.name !== undefined) delete cleared.name
       if (next.gender !== undefined) delete cleared.gender
+      if (next.attendance !== undefined) delete cleared.attendance
       if (next.side !== undefined) delete cleared.side
       return cleared
     })
@@ -124,32 +125,38 @@ export function RsvpForm({
     setSummary(null)
   }
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (saving) return
+  function validatePerson() {
     const nextErrors: Errors = {}
+    if (!person.attendance) nextErrors.attendance = "กรุณาเลือกว่าจะมาร่วมงานหรือไม่"
     if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อที่บ่าวสาวรู้จัก"
+    if (!person.side) nextErrors.side = "กรุณาเลือกฝั่ง"
     if (!person.gender) nextErrors.gender = "กรุณาเลือกเพศ"
-    if (!person.side) nextErrors.side = "กรุณาเลือกฝั่งญาติ"
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       setSummary("กรุณาตรวจสอบข้อมูลให้ครบ")
-      document.getElementById("guest-main")?.scrollIntoView({ behavior: "smooth", block: "center" })
+      const anchor = nextErrors.attendance || nextErrors.name ? "guest-main" : "guest-visit"
+      document.getElementById(anchor)?.scrollIntoView({ behavior: "smooth", block: "center" })
       if (nextErrors.name) document.getElementById("name-main")?.focus()
-      return
+      return null
     }
 
-    const gender = person.gender as Gender
-    const side = person.side as FamilySide
     const main: Guest = {
       id: person.id,
       name: person.name.trim(),
-      gender,
+      gender: person.gender as Gender,
       ageGroup: "adult",
-      attendance: person.attendance,
-      side,
+      attendance: person.attendance as Attendance,
+      side: person.side as FamilySide,
       partyPhone: phone,
     }
+    return main
+  }
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (saving) return
+    const main = validatePerson()
+    if (!main) return
 
     setSaving(true)
     setSummary(null)
@@ -157,10 +164,7 @@ export function RsvpForm({
       await onSubmit({
         phone,
         updatedAt: new Date().toISOString(),
-        guests: [
-          main,
-          ...buildCompanions(companions, phone, main, party?.guests ?? []),
-        ],
+        guests: [main, ...buildCompanions(companions, phone, main, party?.guests ?? [])],
       })
     } catch (error) {
       setSummary(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ")
@@ -170,148 +174,140 @@ export function RsvpForm({
   }
 
   return (
-    <ScreenShell width="max-w-xl" className="px-4 sm:px-6">
-      <header>
-        <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
-        <h1 className="mt-2 font-display text-4xl leading-snug text-ink sm:text-5xl">ตอบรับคำเชิญ</h1>
-        <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
-          กรอกข้อมูลของคุณ แล้วเพิ่มจำนวนผู้ติดตามได้ถ้ามี ผู้ติดตามไม่ต้องกรอกรายละเอียด — คณะละไม่เกิน {PARTY_MAX} คน (รวมคุณ)
-        </p>
-        {party?.guests.length ? (
-          <p className="mt-2 text-sm leading-6 text-sage-deep">เคยบันทึกแล้ว ตรวจข้อมูลแล้วกดเข้างานได้</p>
-        ) : null}
-        <Button type="button" variant="secondary" className="mt-3 h-auto min-h-11 rounded-full px-4 py-2.5 text-[15px]" onClick={onChangePhone}>
-          ใช้เบอร์อื่น
-        </Button>
-      </header>
-
-      <form
-        onSubmit={handleSubmit}
-        className="mt-6 flex flex-1 flex-col"
-        noValidate
-        onFocusCapture={(event) => {
-          const target = event.target
-          if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return
-          window.setTimeout(() => target.scrollIntoView({ block: "center", behavior: "smooth" }), 300)
-        }}
-      >
-        <article
-          id="guest-main"
-          className="rounded-[1.6rem] border border-border bg-card p-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.55)]"
+    <ScreenShell width="max-w-md" className="px-4 py-8 sm:px-6">
+      <div className="my-auto">
+        <FormStepper current={2} />
+        <form
+          onSubmit={handleSubmit}
+          className="mt-8"
+          noValidate
+          onFocusCapture={(event) => {
+            const target = event.target
+            if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return
+            window.setTimeout(() => target.scrollIntoView({ block: "center", behavior: "smooth" }), 300)
+          }}
         >
-          <h2 className="mb-3 font-serif text-xl">ข้อมูลของคุณ</h2>
-          <Label htmlFor="name-main">ชื่อที่บ่าวสาวรู้จัก</Label>
-          <Input
-            id="name-main"
-            value={person.name}
-            maxLength={40}
-            placeholder="ชื่อที่บ่าวสาวรู้จัก"
-            autoComplete="name"
-            aria-invalid={errors.name ? true : undefined}
-            aria-describedby={errors.name ? "error-name" : undefined}
-            className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-background px-4 text-base leading-normal md:text-base"
-            onChange={(event) => patch({ name: event.target.value })}
-          />
-          {errors.name ? (
-            <p id="error-name" className="mt-2 text-sm text-destructive">
-              {errors.name}
-            </p>
-          ) : null}
+          <h1 className="font-serif text-2xl text-ink">{editing ? "แก้คำตอบ" : "ตอบรับคำเชิญ"}</h1>
+          {editing ? <p className="mt-2 text-sm leading-6 text-sage-deep">ตรวจคำตอบเดิม แล้วบันทึกได้เลย</p> : null}
 
-          <div className="mt-4 flex flex-col gap-4">
+          <div id="guest-main" className="mt-6 flex flex-col gap-5">
             <Choice
-              legend="เพศ"
-              name="gender-main"
-              value={person.gender}
-              onChange={(gender) => patch({ gender })}
+              legend="การร่วมงาน"
+              name="attendance-main"
+              stacked
+              value={person.attendance}
+              onChange={(attendance) => patch({ attendance })}
               options={[
-                { value: "male", label: "ชาย" },
-                { value: "female", label: "หญิง" },
-                { value: "other", label: "อื่น ๆ" },
+                { value: "attending", label: "เข้าร่วม" },
+                { value: "unsure", label: "ยังไม่แน่ใจ" },
+                { value: "declined", label: "ไปไม่ได้" },
               ]}
             />
-            {errors.gender ? <p className="text-sm text-destructive">{errors.gender}</p> : null}
+            {errors.attendance ? <p className="-mt-3 text-sm text-destructive">{errors.attendance}</p> : null}
 
+            <div>
+              <Label htmlFor="name-main">ชื่อที่บ่าวสาวรู้จัก</Label>
+              <Input
+                id="name-main"
+                value={person.name}
+                maxLength={40}
+                placeholder="เช่น ชื่อเล่น"
+                autoComplete="name"
+                aria-invalid={errors.name ? true : undefined}
+                aria-describedby={errors.name ? "error-name" : undefined}
+                className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+                onChange={(event) => patch({ name: event.target.value })}
+              />
+              {errors.name ? (
+                <p id="error-name" className="mt-2 text-sm text-destructive">
+                  {errors.name}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[15px] leading-normal font-medium">ผู้ติดตาม</p>
+                <p className="text-[13px] leading-6 text-muted-foreground">รวม {partySize} คน · สถานะเดียวกับคุณ · ไม่ต้องกรอกชื่อ</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-11 min-h-11 min-w-11 rounded-full bg-card"
+                  aria-label="ลดจำนวนผู้ติดตาม"
+                  disabled={companions <= 0}
+                  onClick={() => setCompanionCount(companions - 1)}
+                >
+                  <Minus />
+                </Button>
+                <p className="w-8 text-center font-sans text-xl leading-normal font-bold tabular-nums text-ink" aria-live="polite">
+                  {companions}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-11 min-h-11 min-w-11 rounded-full bg-card"
+                  aria-label="เพิ่มจำนวนผู้ติดตาม"
+                  disabled={companions >= COMPANION_MAX}
+                  onClick={() => setCompanionCount(companions + 1)}
+                >
+                  <Plus />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div id="guest-visit" className="mt-6 flex flex-col gap-5 border-t border-border pt-6">
             <Choice
-              legend="ญาติฝั่ง"
+              legend="มาฝั่งไหน"
               name="side-main"
               value={person.side}
               onChange={(side) => patch({ side })}
               options={[
-                { value: "groom", label: "ฝั่งเจ้าบ่าว", hint: COUPLE.groomNickname },
-                { value: "bride", label: "ฝั่งเจ้าสาว", hint: COUPLE.brideNickname },
+                { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}` },
+                { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}` },
               ]}
             />
-            {errors.side ? <p className="text-sm text-destructive">{errors.side}</p> : null}
+            {errors.side ? <p className="-mt-3 text-sm text-destructive">{errors.side}</p> : null}
 
-            <Choice
-              legend="การร่วมงาน"
-              name="attendance-main"
-              value={person.attendance}
-              onChange={(attendance) => patch({ attendance })}
-              options={[
-                { value: "attending", label: "เข้าร่วมงาน", hint: "นั่งเพว์ในโบสถ์" },
-                { value: "unsure", label: "ยังไม่แน่ใจ", hint: "แจ้งภายหลังได้" },
-              ]}
-            />
-          </div>
-        </article>
-
-        <div className="mt-4 rounded-[1.6rem] border border-border bg-card px-4 py-4 shadow-[0_18px_50px_-36px_rgba(42,38,35,0.6)]">
-          <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">จำนวนผู้ติดตาม</p>
-              <p className="text-[13px] leading-6 text-muted-foreground">
-                ไม่ต้องกรอกข้อมูลผู้ติดตาม · ได้สูงสุด {COMPANION_MAX} คน (รวมคุณแล้วไม่เกิน {PARTY_MAX})
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="size-11 min-h-11 min-w-11 rounded-full bg-background"
-                aria-label="ลดจำนวนผู้ติดตาม"
-                disabled={companions <= 0}
-                onClick={() => setCompanionCount(companions - 1)}
-              >
-                <Minus />
-              </Button>
-              <p className="w-10 text-center font-sans text-xl leading-normal font-bold tabular-nums text-ink" aria-live="polite">
-                {companions}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="size-11 min-h-11 min-w-11 rounded-full bg-background"
-                aria-label="เพิ่มจำนวนผู้ติดตาม"
-                disabled={companions >= COMPANION_MAX}
-                onClick={() => setCompanionCount(companions + 1)}
-              >
-                <Plus />
-              </Button>
+              <Choice
+                legend="เพศ"
+                name="gender-main"
+                value={person.gender}
+                onChange={(gender) => patch({ gender })}
+                options={[
+                  { value: "male", label: "ชาย" },
+                  { value: "female", label: "หญิง" },
+                  { value: "other", label: "อื่น ๆ" },
+                ]}
+              />
+              <p className="mt-2 text-[13px] leading-normal text-muted-foreground">ใช้เลือกตัวในฉากงาน</p>
+              {errors.gender ? <p className="mt-2 text-sm text-destructive">{errors.gender}</p> : null}
             </div>
           </div>
-        </div>
 
-        <div className="sticky bottom-0 z-10 -mx-4 mt-4 scroll-mb-8 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0">
           {summary ? (
-            <p role="alert" className="mb-2 text-sm text-destructive">
+            <p role="alert" className="mt-4 text-sm text-destructive">
               {summary}
             </p>
-          ) : (
-            <p className="mb-2 text-sm text-muted-foreground" aria-live="polite">
-              ทั้งคณะ {partySize} คน
-              {companions > 0 ? ` · ผู้ติดตาม ${companions} คน` : ""}
-              {person.attendance === "attending" ? " · ยืนยันเข้าร่วมงาน" : " · ยังไม่แน่ใจ"}
-            </p>
-          )}
-          <Button type="submit" disabled={saving} className="h-auto min-h-12 w-full rounded-full py-3 text-base leading-normal">
-            {saving ? "กำลังบันทึก…" : "บันทึกและเข้างาน"}
+          ) : null}
+          <Button type="submit" disabled={saving} className="mt-6 h-12 w-full rounded-full text-base">
+            {saving ? "กำลังบันทึก…" : editing ? "บันทึก" : "บันทึกและเข้างาน"}
           </Button>
-        </div>
-      </form>
+          <button
+            type="button"
+            disabled={saving}
+            className="mt-1 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground disabled:opacity-50"
+            onClick={onChangePhone}
+          >
+            {formatThaiMobile(phone)} · ใช้เบอร์อื่น
+          </button>
+        </form>
+      </div>
     </ScreenShell>
   )
 }

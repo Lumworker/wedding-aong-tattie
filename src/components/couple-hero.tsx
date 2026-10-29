@@ -9,9 +9,11 @@ import { cn } from "@/lib/utils"
 export function CoupleHero({
   className,
   hint = true,
+  compact = false,
 }: {
   className?: string
   hint?: boolean
+  compact?: boolean
 }) {
   const reduced = useReducedMotion() === true
 
@@ -31,7 +33,7 @@ export function CoupleHero({
         whileTap={reduced ? undefined : { scale: 1.18 }}
         transition={{ type: "spring", stiffness: 320, damping: 18 }}
       >
-        <svg viewBox="0 0 220 150" className="h-36 w-56 overflow-visible" aria-hidden="true">
+        <svg viewBox="0 0 220 150" className={cn("overflow-visible", compact ? "h-24 w-40" : "h-36 w-56")} aria-hidden="true">
           <ellipse cx="110" cy="138" rx="70" ry="8" fill="#2A2623" opacity="0.06" />
           <g transform="translate(78 142) scale(0.92)">
             <Character role="groom" mood="idle" showName={false} />

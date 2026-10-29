@@ -1,12 +1,12 @@
 "use client"
 
 import { FormEvent, useState } from "react"
-import { CoupleHero } from "@/components/couple-hero"
-import { EventTitle, Ornament } from "@/components/event-title"
+import { FormStepper } from "@/components/form-stepper"
 import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { COUPLE, VENUE_MAP } from "@/lib/event"
 import { maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
 
 export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void | Promise<void> }) {
@@ -31,49 +31,53 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
   }
 
   return (
-    <ScreenShell className="justify-center">
-      <CoupleHero className="mb-6" />
-      <EventTitle variant="hero" />
-      <form
-        onSubmit={handleSubmit}
-        className="mt-8 rounded-[1.7rem] border border-border bg-card/90 p-5 shadow-[0_24px_60px_-36px_rgba(42,38,35,0.55)] backdrop-blur-sm"
-        noValidate
-      >
-        <Label htmlFor="phone" className="text-base text-ink">
-          เบอร์มือถือ
-        </Label>
-        <p id="phone-hint" className="mt-1 text-sm leading-6 text-muted-foreground">
-          ใช้เบอร์มือถือสำหรับการลงทะเบียนและติดต่อ
-        </p>
-        <Input
-          id="phone"
-          name="tel"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="เบอร์มือถือ"
-          value={value}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
-          className="mt-3 h-12 rounded-2xl bg-background px-4 text-base md:text-base"
-          onChange={(event) => {
-            setValue(maskPhoneInput(event.target.value))
-            if (error) setError(null)
-          }}
-        />
-        {error ? (
-          <p id="phone-error" role="alert" className="mt-2 text-sm text-destructive">
-            {error}
+    <ScreenShell className="py-8">
+      <div className="my-auto">
+        <FormStepper current={1} />
+        <header className="mt-8 text-center">
+          <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
+          <h1 className="mt-2 font-display text-4xl leading-tight text-ink">
+            {COUPLE.groomNickname}
+            <span className="px-2 text-rose">&</span>
+            {COUPLE.brideNickname}
+          </h1>
+          <p className="mt-3 font-serif text-lg text-ink">{COUPLE.dateThai}</p>
+          <p className="mt-1 text-[15px] leading-normal text-ink">{VENUE_MAP.name}</p>
+          <p className="text-sm leading-6 text-muted-foreground">
+            {VENUE_MAP.area} · {VENUE_MAP.nameEn}
           </p>
-        ) : null}
-        <Button type="submit" disabled={pending} className="mt-4 h-12 w-full rounded-full text-base">
-          {pending ? "กำลังเปิด…" : "ต่อไป"}
-        </Button>
-        <Ornament className="mt-5" />
-        <p className="text-center text-[13px] leading-6 text-muted-foreground">
-          ถ้าเบอร์นี้ตอบรับไว้แล้ว จะพาเข้าฉากงานเลย
+        </header>
+        <p className="mt-6 text-center text-sm leading-6 text-muted-foreground">
+          กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้
         </p>
-      </form>
+        <form onSubmit={handleSubmit} className="mt-4" noValidate>
+          <Label htmlFor="phone">เบอร์มือถือ</Label>
+          <Input
+            id="phone"
+            name="tel"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="08X-XXX-XXXX"
+            value={value}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "phone-error" : undefined}
+            className="mt-2 h-12 rounded-2xl bg-card px-4 text-base md:text-base"
+            onChange={(event) => {
+              setValue(maskPhoneInput(event.target.value))
+              if (error) setError(null)
+            }}
+          />
+          {error ? (
+            <p id="phone-error" role="alert" className="mt-2 text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
+          <Button type="submit" disabled={pending} className="mt-6 h-12 w-full rounded-full text-base">
+            {pending ? "กำลังเปิด…" : "ต่อไป"}
+          </Button>
+        </form>
+      </div>
     </ScreenShell>
   )
 }

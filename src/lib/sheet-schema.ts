@@ -34,7 +34,8 @@ function asGender(value: string): Gender {
 }
 
 function asAttendance(value: string): Attendance {
-  return value === "attending" ? "attending" : "unsure"
+  if (value === "attending" || value === "unsure" || value === "declined") return value
+  return "unsure"
 }
 
 export function sideToSheet(side: FamilySide | undefined): string {
