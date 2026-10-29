@@ -446,23 +446,16 @@
   animation: wd-ring 2.8s ease-in-out infinite;
 }
 
-/* Loading run: 1044×264 strip, frame at 4 + i*(256+4), y=4. Window is exactly one 256 frame. */
+/* Loading run: 1556×264 strip. Frame is 384×256 at x = 4 + i*(384+4), y = 4. */
 .couple-run {
-  --run-scale: calc(120 / 256);
+  --run-scale: calc(280 / 384);
   display: block;
-  width: 120px;
-  height: 120px;
+  width: calc(384px * var(--run-scale));
+  height: calc(256px * var(--run-scale));
+  background-image: url("/sprites/couple-run.png");
   background-repeat: no-repeat;
-  background-size: calc(1044px * var(--run-scale)) calc(264px * var(--run-scale));
+  background-size: calc(1556px * var(--run-scale)) calc(264px * var(--run-scale));
   animation: couple-run 0.64s infinite;
-}
-
-.couple-run-groom {
-  background-image: url("/sprites/groom-run.png");
-}
-
-.couple-run-bride {
-  background-image: url("/sprites/bride-run.png");
 }
 
 @keyframes couple-run {
@@ -472,15 +465,15 @@
   }
   25%,
   49% {
-    background-position: calc(-264px * var(--run-scale)) calc(-4px * var(--run-scale));
+    background-position: calc(-392px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
   50%,
   74% {
-    background-position: calc(-524px * var(--run-scale)) calc(-4px * var(--run-scale));
+    background-position: calc(-780px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
   75%,
   100% {
-    background-position: calc(-784px * var(--run-scale)) calc(-4px * var(--run-scale));
+    background-position: calc(-1168px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
 }
 
