@@ -14,12 +14,12 @@ import { useCoupleJumpPlayback } from "@/components/venue/character"
 import { COUPLE_PEEK } from "@/lib/couple-atlas"
 import { COUPLE, PARTY_MAX } from "@/lib/event"
 import { newId } from "@/lib/id"
-import { formatThaiMobile } from "@/lib/phone"
+import { formatThaiMobile, maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
 import type { Attendance, FamilySide, Gender, Guest, Party } from "@/lib/types"
 
 const COMPANION_MAX = PARTY_MAX - 1
 
-type Stage = "intro" | "attend" | "details"
+type Stage = "phone" | "intro" | "attend" | "details"
 
 type Draft = {
   id: string
@@ -106,6 +106,86 @@ function StepCard({ children }: { children: ReactNode }) {
   )
 }
 
+function PhoneStep({
+  initialValue,
+  onSubmit,
+  onBack,
+}: {
+  initialValue: string
+  onSubmit: (phone: string) => Promise<void>
+  onBack: () => void
+}) {
+  const [value, setValue] = useState(initialValue)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (pending) return
+    const phone = normalizeThaiMobile(value)
+    if (!phone) {
+      setError("กรุณากรอกเบอร์มือถือไทย 10 หลัก ขึ้นต้นด้วย 06, 08 หรือ 09")
+      return
+    }
+    setPending(true)
+    setError(null)
+    try {
+      await onSubmit(phone)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "เปิดข้อมูลไม่สำเร็จ")
+      setPending(false)
+    }
+  }
+
+  return (
+    <StepCard>
+      <form onSubmit={handleSubmit} noValidate>
+        <h1 id="register-step-title" tabIndex={-1} className="text-center font-serif text-2xl text-ink outline-none">
+          เบอร์มือถือ
+        </h1>
+        <p id="phone-hint" className="mt-3 text-center text-sm leading-6 text-muted-foreground">
+          กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้
+        </p>
+        <Label htmlFor="phone" className="mt-4">
+          เบอร์มือถือ
+        </Label>
+        <Input
+          id="phone"
+          name="tel"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="08X-XXX-XXXX"
+          value={value}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
+          className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+          onChange={(event) => {
+            setValue(maskPhoneInput(event.target.value))
+            if (error) setError(null)
+          }}
+        />
+        {error ? (
+          <p id="phone-error" role="alert" className="mt-2 text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
+        <Button type="submit" disabled={pending} className="mt-6 h-12 w-full rounded-full text-base">
+          {pending ? "กำลังเปิด…" : "ต่อไป"}
+        </Button>
+        <button
+          type="button"
+          disabled={pending}
+          className="mt-1 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground disabled:opacity-50"
+          onClick={onBack}
+        >
+          ย้อนกลับ
+        </button>
+      </form>
+    </StepCard>
+  )
+}
+
 function RegisterIntro({
   editing,
   phone,
@@ -162,17 +242,24 @@ function RegisterIntro({
 export function RsvpForm({
   phone,
   party,
+  startAtPhone,
+  onIdentify,
   onSubmit,
-  onChangePhone,
+  onLeave,
 }: {
-  phone: string
+  phone: string | null
   party: Party | null
+  /** Welcome CTA and a missing session both open the phone step before attendance. */
+  startAtPhone: boolean
+  onIdentify: (phone: string) => Promise<"continue" | "saved">
   onSubmit: (party: Party) => void | Promise<void>
-  onChangePhone: () => void
+  onLeave: () => void
 }) {
   const initial = fromParty(party)
   const editing = Boolean(party?.guests.length)
-  const [stage, setStage] = useState<Stage>("intro")
+  const [stage, setStage] = useState<Stage>(startAtPhone || !phone ? "phone" : "intro")
+  const resumed = useRef(stage === "intro")
+  const activePhone = useRef(phone)
   const [person, setPerson] = useState<Draft>(initial.person)
   const [companions, setCompanions] = useState(initial.companions)
   const [errors, setErrors] = useState<Errors>({})
@@ -184,6 +271,37 @@ export function RsvpForm({
     if (stage === "intro") return
     document.getElementById("register-step-title")?.focus()
   }, [stage])
+
+  function resetDraft() {
+    const blankDraft = fromParty(null)
+    setPerson(blankDraft.person)
+    setCompanions(0)
+    setErrors({})
+    setSummary(null)
+  }
+
+  async function identify(nextPhone: string) {
+    const result = await onIdentify(nextPhone)
+    if (result === "saved") return
+    if (activePhone.current !== nextPhone) {
+      activePhone.current = nextPhone
+      resetDraft()
+    }
+    resumed.current = false
+    setStage("attend")
+  }
+
+  function changeNumber() {
+    setStage("phone")
+  }
+
+  function backFromPhone() {
+    if (phone && resumed.current) {
+      setStage("intro")
+      return
+    }
+    onLeave()
+  }
 
   function patch(next: Partial<Draft>) {
     setPerson((current) => ({ ...current, ...next }))
@@ -212,6 +330,11 @@ export function RsvpForm({
   }
 
   function buildMain() {
+    if (!phone) {
+      setSummary("กรุณากรอกเบอร์มือถือ")
+      setStage("phone")
+      return null
+    }
     const nextErrors: Errors = {}
     if (!person.attendance) nextErrors.attendance = "กรุณาเลือกว่าจะมาร่วมงานหรือไม่"
     if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อที่บ่าวสาวรู้จัก"
@@ -240,7 +363,7 @@ export function RsvpForm({
     event.preventDefault()
     if (saving) return
     const main = buildMain()
-    if (!main) return
+    if (!main || !phone) return
 
     setSaving(true)
     setSummary(null)
@@ -260,8 +383,17 @@ export function RsvpForm({
   return (
     <ScreenShell width="max-w-lg" className="px-4 py-3 sm:px-6 sm:py-8">
       <div className="flex flex-1 flex-col" data-register-stage={stage}>
-        {stage === "intro" ? (
-          <RegisterIntro editing={editing} phone={phone} onAdvance={() => setStage("attend")} onChangePhone={onChangePhone} />
+        {stage === "phone" ? (
+          <PhoneStep
+            key={phone ?? "new"}
+            initialValue={phone ? formatThaiMobile(phone) : ""}
+            onSubmit={identify}
+            onBack={backFromPhone}
+          />
+        ) : null}
+
+        {stage === "intro" && phone ? (
+          <RegisterIntro editing={editing} phone={phone} onAdvance={() => setStage("attend")} onChangePhone={changeNumber} />
         ) : null}
 
         {stage === "attend" ? (
@@ -291,7 +423,7 @@ export function RsvpForm({
             <button
               type="button"
               className="mt-1 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground"
-              onClick={() => setStage("intro")}
+              onClick={() => setStage(resumed.current ? "intro" : "phone")}
             >
               ย้อนกลับ
             </button>
