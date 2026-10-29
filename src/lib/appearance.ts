@@ -1,4 +1,4 @@
-import { FEMALE_ATLAS, FOLLOWER_ATLAS, MALE_ATLAS, type SpriteAtlas } from "@/lib/guest-atlas"
+import { FOLLOWER_ATLAS, GUEST_ATLAS, type SpriteAtlas } from "@/lib/guest-atlas"
 import type { Guest } from "@/lib/types"
 
 export type GuestSprite = {
@@ -17,16 +17,22 @@ function hash(id: string) {
   return h >>> 0
 }
 
-function pickAtlas(guest: Guest): SpriteAtlas {
-  if (guest.isCompanion) return FOLLOWER_ATLAS
-  if (guest.gender === "female") return FEMALE_ATLAS
-  if (guest.gender === "male") return MALE_ATLAS
-  return hash(guest.id) & 1 ? FEMALE_ATLAS : MALE_ATLAS
+/** Males are guests.png indices 0–5. Females are 6–11. */
+function guestIndex(guest: Guest) {
+  const pick = hash(guest.id)
+  if (guest.gender === "female") return GUEST_ATLAS.cols + (pick % GUEST_ATLAS.cols)
+  if (guest.gender === "male") return pick % GUEST_ATLAS.cols
+  return pick % GUEST_ATLAS.count
+}
+
+function spriteIndex(guest: Guest, atlas: SpriteAtlas) {
+  if (guest.isCompanion) return hash(guest.id) % atlas.count
+  return guestIndex(guest)
 }
 
 export function spriteForGuest(guest: Guest): GuestSprite {
-  const atlas = pickAtlas(guest)
-  const index = hash(guest.id) % atlas.count
+  const atlas = guest.isCompanion ? FOLLOWER_ATLAS : GUEST_ATLAS
+  const index = spriteIndex(guest, atlas)
   return {
     atlas,
     index,
