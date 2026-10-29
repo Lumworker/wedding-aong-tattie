@@ -507,6 +507,209 @@
   }
 }
 
+/*
+  Welcome lawn. Props are a percent of the design frame (4:5 mobile, 16:10 desktop),
+  never the PNG's native pixel size. Desktop widths are the locked ui scale.
+  Mobile widths are 0.85× those, except corner flowers which stay ≤28vw.
+  Pixel caps sit under each file's intrinsic size (silhouette 404×605, arch 585×615,
+  trees ~320×465, flowers 671×404, bell 397×622).
+*/
+.welcome-frame {
+  position: relative;
+  /* 4:5 lawn, narrowed when a phone needs the RSVP card on screen. */
+  width: min(100%, max(10rem, calc((100dvh - 27.5rem) * 4 / 5)));
+  max-width: 720px;
+  aspect-ratio: 4 / 5;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.welcome-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.welcome-prop {
+  position: absolute;
+  display: block;
+  height: auto;
+  max-width: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  image-rendering: pixelated;
+  user-select: none;
+  pointer-events: none;
+}
+
+.welcome-silhouette {
+  z-index: 1;
+  left: 50%;
+  bottom: 16%;
+  width: 32.3%;
+  max-width: min(32.3%, 380px);
+  max-height: min(52%, 540px);
+  transform: translateX(-50%);
+  opacity: 0.78;
+}
+
+.welcome-tree {
+  z-index: 2;
+  bottom: 3%;
+  width: 17%;
+  max-width: min(17%, 280px);
+  max-height: min(28%, 400px);
+  transform-origin: bottom center;
+}
+
+.welcome-tree-left { left: 0; }
+.welcome-tree-mid { left: 14%; }
+.welcome-tree-right { right: 0; }
+
+.welcome-arch {
+  z-index: 3;
+  left: 50%;
+  bottom: 3%;
+  width: 38.25%;
+  max-width: min(38.25%, 520px);
+  max-height: min(48%, 540px);
+  transform: translateX(-50%);
+}
+
+.welcome-path,
+.welcome-grass {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.welcome-path {
+  z-index: 4;
+  bottom: 0;
+  width: 38.25%;
+  max-width: min(38.25%, 520px);
+  height: 7%;
+  max-height: 40px;
+}
+
+.welcome-grass {
+  z-index: 5;
+  bottom: 1.5%;
+  width: 29%;
+  max-width: min(29%, 320px);
+  height: 11%;
+  max-height: 64px;
+}
+
+.welcome-couple {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  bottom: 6.5%;
+  width: 20.4%;
+  max-width: min(20.4%, 210px);
+  max-height: min(28%, 150px);
+  aspect-ratio: 240 / 140;
+  transform: translateX(-50%);
+}
+
+.welcome-bell {
+  z-index: 8;
+  left: 50%;
+  bottom: 17%;
+  width: 8.5%;
+  max-width: min(8.5%, 180px);
+  max-height: min(18%, 260px);
+  transform: translateX(-50%);
+}
+
+.welcome-bell .wd-bell {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  image-rendering: pixelated;
+  transform-origin: top center;
+}
+
+.welcome-flowers {
+  z-index: 9;
+  bottom: -3%;
+  width: min(28%, 28vw);
+  max-width: min(28%, 28vw, 240px);
+  max-height: min(18%, 170px);
+}
+
+.welcome-flowers-left { left: -1%; }
+.welcome-flowers-right {
+  right: -1%;
+  transform: scaleX(-1);
+}
+
+@media (min-width: 1024px) {
+  .welcome-frame {
+    /* Card is 23rem with a 2rem gap. Cap the lawn near 720px so the pair stays together. */
+    width: min(720px, calc(72dvh * 16 / 10), calc(100% - 25rem));
+    max-width: 720px;
+    aspect-ratio: 16 / 10;
+  }
+
+  .welcome-silhouette {
+    bottom: auto;
+    top: 0;
+    width: 38%;
+    max-width: min(38%, 380px);
+    max-height: min(94%, 540px);
+  }
+
+  .welcome-tree {
+    width: 20%;
+    max-width: min(20%, 280px);
+    max-height: min(50%, 400px);
+  }
+
+  .welcome-tree-mid { left: 8%; }
+
+  .welcome-arch {
+    width: 45%;
+    max-width: min(45%, 520px);
+    max-height: min(82%, 540px);
+  }
+
+  .welcome-path {
+    width: 45%;
+    max-width: min(45%, 520px);
+  }
+
+  .welcome-grass {
+    width: 34%;
+    max-width: min(34%, 320px);
+    height: 12%;
+  }
+
+  .welcome-couple {
+    width: 24%;
+    max-width: min(24%, 220px);
+    max-height: min(36%, 160px);
+  }
+
+  .welcome-bell {
+    bottom: 29%;
+    width: 10%;
+    max-width: min(10%, 180px);
+    max-height: min(32%, 260px);
+  }
+
+  .welcome-flowers {
+    width: 15%;
+    max-width: min(15%, 200px);
+    max-height: min(20%, 170px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hd2d-world {

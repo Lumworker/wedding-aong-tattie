@@ -34,13 +34,13 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
   }
 
   return (
-    <div className="relative min-h-dvh overflow-x-clip bg-[linear-gradient(180deg,var(--wash)_0%,var(--blush-pale)_100%)] [--scene-h:min(62vh,540px)]">
-      <WelcomeScene jumpFrame={jumpFrame} />
+    <div className="relative min-h-dvh overflow-x-clip bg-[linear-gradient(180deg,var(--wash)_0%,var(--blush-pale)_100%)]">
       <PetalField className="z-20" />
-      <div className="relative z-30 flex min-h-dvh flex-col px-4 pt-[var(--scene-h)] pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:items-end lg:justify-center lg:px-12 lg:pt-0 lg:pb-0">
+      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[1200px] flex-col items-center px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-8 lg:py-6">
+        <WelcomeScene jumpFrame={jumpFrame} />
         <form
           onSubmit={handleSubmit}
-          className="mt-auto w-full rounded-[1.35rem] border border-border bg-card px-6 py-7 shadow-[0_18px_44px_-24px_rgba(80,48,58,0.35)] lg:mt-0 lg:w-[23rem] lg:px-7"
+          className="relative z-30 mt-3 w-full max-w-lg shrink-0 rounded-[1.35rem] border border-border bg-card px-6 py-7 shadow-[0_18px_44px_-24px_rgba(80,48,58,0.35)] lg:mt-0 lg:w-[23rem] lg:max-w-none lg:px-7"
           noValidate
         >
           <p className="text-center text-[13px] font-medium tracking-[0.22em] text-rose">งานมงคลสมรส</p>
