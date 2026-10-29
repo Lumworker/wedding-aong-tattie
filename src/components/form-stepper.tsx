@@ -1,13 +1,13 @@
 import { cn } from "@/lib/utils"
 
 const STEPS = [
-  { step: 1, label: "เบอร์" },
-  { step: 2, label: "ตอบรับ" },
+  { step: 1, label: "การเข้าร่วม" },
+  { step: 2, label: "รายละเอียด" },
 ] as const
 
 export function FormStepper({ current, className }: { current: 1 | 2; className?: string }) {
   return (
-    <nav aria-label="ขั้นตอนการกรอกข้อมูล" className={className}>
+    <nav aria-label="ขั้นตอนการลงทะเบียน" className={className}>
       <ol className="flex items-center justify-center">
         {STEPS.map((item, index) => {
           const active = item.step === current

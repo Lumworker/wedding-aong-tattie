@@ -37,6 +37,15 @@ export const COUPLE_JUMP = {
   frameMs: 120,
 } as const
 
+/**
+ * Head-and-shoulders peeks for the registration cards.
+ * Hands sit at the bottom of each file; the card edge belongs under the collar.
+ */
+export const COUPLE_PEEK = {
+  groom: "/sprites/groom-peek.png?v=1",
+  bride: "/sprites/bride-peek.png?v=1",
+} as const
+
 export function coupleJumpOrigin(index: number) {
   return index * (COUPLE_JUMP.frameW + COUPLE_JUMP.gutter)
 }

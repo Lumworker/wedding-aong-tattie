@@ -1,19 +1,25 @@
 "use client"
 
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useRef, useState, type ReactNode } from "react"
 import { Minus, Plus } from "lucide-react"
 import { Choice } from "@/components/choice"
+import { CouplePeek } from "@/components/couple-peek"
 import { FormStepper } from "@/components/form-stepper"
 import { ScreenShell } from "@/components/screen-shell"
+import { WelcomeScene } from "@/components/welcome-scene"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useCoupleJumpPlayback } from "@/components/venue/character"
+import { COUPLE_PEEK } from "@/lib/couple-atlas"
 import { COUPLE, PARTY_MAX } from "@/lib/event"
 import { newId } from "@/lib/id"
 import { formatThaiMobile } from "@/lib/phone"
 import type { Attendance, FamilySide, Gender, Guest, Party } from "@/lib/types"
 
 const COMPANION_MAX = PARTY_MAX - 1
+
+type Stage = "intro" | "attend" | "details"
 
 type Draft = {
   id: string
@@ -87,6 +93,72 @@ function buildCompanions(
   }))
 }
 
+function StepCard({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex flex-1 flex-col justify-center">
+      <div className="relative mx-auto mt-[5.75rem] w-full max-w-md sm:mt-32">
+        <CouplePeek />
+        <div className="relative z-10 rounded-[1.75rem] border border-[#E6D5C3] bg-[#FFFCF8] px-5 pt-6 pb-4 shadow-[0_24px_50px_-32px_rgba(90,62,48,0.45)] sm:px-7 sm:pt-8 sm:pb-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RegisterIntro({
+  editing,
+  phone,
+  onAdvance,
+  onChangePhone,
+}: {
+  editing: boolean
+  phone: string
+  onAdvance: () => void
+  onChangePhone: () => void
+}) {
+  const { frame, setLoop, playOnce } = useCoupleJumpPlayback()
+  const leaving = useRef(false)
+
+  useEffect(() => {
+    for (const src of [COUPLE_PEEK.groom, COUPLE_PEEK.bride]) {
+      const image = new Image()
+      image.src = src
+    }
+  }, [])
+
+  function enter() {
+    if (leaving.current) return
+    leaving.current = true
+    playOnce(onAdvance)
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-5">
+      <WelcomeScene jumpFrame={frame} compact />
+      <div className="flex w-full max-w-xs flex-col items-center">
+        {editing ? <p className="mb-3 text-center text-sm text-muted-foreground">แก้คำตอบที่บันทึกไว้</p> : null}
+        <Button
+          type="button"
+          className="h-14 w-full rounded-full bg-blush text-lg text-secondary-foreground shadow-none hover:bg-rose hover:text-paper focus-visible:border-rose/40 focus-visible:ring-rose/40"
+          onPointerEnter={() => setLoop(true)}
+          onPointerLeave={() => setLoop(false)}
+          onClick={enter}
+        >
+          ลงทะเบียน
+        </Button>
+        <button
+          type="button"
+          className="mt-2 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground"
+          onClick={onChangePhone}
+        >
+          {formatThaiMobile(phone)} · ใช้เบอร์อื่น
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function RsvpForm({
   phone,
   party,
@@ -100,12 +172,18 @@ export function RsvpForm({
 }) {
   const initial = fromParty(party)
   const editing = Boolean(party?.guests.length)
+  const [stage, setStage] = useState<Stage>("intro")
   const [person, setPerson] = useState<Draft>(initial.person)
   const [companions, setCompanions] = useState(initial.companions)
   const [errors, setErrors] = useState<Errors>({})
   const [summary, setSummary] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const partySize = 1 + companions
+
+  useEffect(() => {
+    if (stage === "intro") return
+    document.getElementById("register-step-title")?.focus()
+  }, [stage])
 
   function patch(next: Partial<Draft>) {
     setPerson((current) => ({ ...current, ...next }))
@@ -125,7 +203,15 @@ export function RsvpForm({
     setSummary(null)
   }
 
-  function validatePerson() {
+  function goToDetails() {
+    if (!person.attendance) {
+      setErrors((current) => ({ ...current, attendance: "กรุณาเลือกว่าจะมาร่วมงานหรือไม่" }))
+      return
+    }
+    setStage("details")
+  }
+
+  function buildMain() {
     const nextErrors: Errors = {}
     if (!person.attendance) nextErrors.attendance = "กรุณาเลือกว่าจะมาร่วมงานหรือไม่"
     if (!person.name.trim()) nextErrors.name = "กรุณากรอกชื่อที่บ่าวสาวรู้จัก"
@@ -134,8 +220,6 @@ export function RsvpForm({
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       setSummary("กรุณาตรวจสอบข้อมูลให้ครบ")
-      const anchor = nextErrors.attendance || nextErrors.name ? "guest-main" : "guest-visit"
-      document.getElementById(anchor)?.scrollIntoView({ behavior: "smooth", block: "center" })
       if (nextErrors.name) document.getElementById("name-main")?.focus()
       return null
     }
@@ -155,7 +239,7 @@ export function RsvpForm({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (saving) return
-    const main = validatePerson()
+    const main = buildMain()
     if (!main) return
 
     setSaving(true)
@@ -174,139 +258,166 @@ export function RsvpForm({
   }
 
   return (
-    <ScreenShell width="max-w-md" className="px-4 py-8 sm:px-6">
-      <div className="my-auto">
-        <FormStepper current={2} />
-        <form
-          onSubmit={handleSubmit}
-          className="mt-8"
-          noValidate
-          onFocusCapture={(event) => {
-            const target = event.target
-            if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return
-            window.setTimeout(() => target.scrollIntoView({ block: "center", behavior: "smooth" }), 300)
-          }}
-        >
-          <h1 className="font-serif text-2xl text-ink">{editing ? "แก้คำตอบ" : "ตอบรับคำเชิญ"}</h1>
-          {editing ? <p className="mt-2 text-sm leading-6 text-sage-deep">ตรวจคำตอบเดิม แล้วบันทึกได้เลย</p> : null}
+    <ScreenShell width="max-w-lg" className="px-4 py-3 sm:px-6 sm:py-8">
+      <div className="flex flex-1 flex-col" data-register-stage={stage}>
+        {stage === "intro" ? (
+          <RegisterIntro editing={editing} phone={phone} onAdvance={() => setStage("attend")} onChangePhone={onChangePhone} />
+        ) : null}
 
-          <div id="guest-main" className="mt-6 flex flex-col gap-5">
-            <Choice
-              legend="การร่วมงาน"
-              name="attendance-main"
-              stacked
-              value={person.attendance}
-              onChange={(attendance) => patch({ attendance })}
-              options={[
-                { value: "attending", label: "เข้าร่วม" },
-                { value: "unsure", label: "ยังไม่แน่ใจ" },
-                { value: "declined", label: "ไปไม่ได้" },
-              ]}
-            />
-            {errors.attendance ? <p className="-mt-3 text-sm text-destructive">{errors.attendance}</p> : null}
-
-            <div>
-              <Label htmlFor="name-main">ชื่อที่บ่าวสาวรู้จัก</Label>
-              <Input
-                id="name-main"
-                value={person.name}
-                maxLength={40}
-                placeholder="เช่น ชื่อเล่น"
-                autoComplete="name"
-                aria-invalid={errors.name ? true : undefined}
-                aria-describedby={errors.name ? "error-name" : undefined}
-                className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
-                onChange={(event) => patch({ name: event.target.value })}
-              />
-              {errors.name ? (
-                <p id="error-name" className="mt-2 text-sm text-destructive">
-                  {errors.name}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[15px] leading-normal font-medium">ผู้ติดตาม</p>
-                <p className="text-[13px] leading-6 text-muted-foreground">รวม {partySize} คน · สถานะเดียวกับคุณ · ไม่ต้องกรอกชื่อ</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="size-11 min-h-11 min-w-11 rounded-full bg-card"
-                  aria-label="ลดจำนวนผู้ติดตาม"
-                  disabled={companions <= 0}
-                  onClick={() => setCompanionCount(companions - 1)}
-                >
-                  <Minus />
-                </Button>
-                <p className="w-8 text-center font-sans text-xl leading-normal font-bold tabular-nums text-ink" aria-live="polite">
-                  {companions}
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="size-11 min-h-11 min-w-11 rounded-full bg-card"
-                  aria-label="เพิ่มจำนวนผู้ติดตาม"
-                  disabled={companions >= COMPANION_MAX}
-                  onClick={() => setCompanionCount(companions + 1)}
-                >
-                  <Plus />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div id="guest-visit" className="mt-6 flex flex-col gap-5 border-t border-border pt-6">
-            <Choice
-              legend="มาฝั่งไหน"
-              name="side-main"
-              value={person.side}
-              onChange={(side) => patch({ side })}
-              options={[
-                { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}` },
-                { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}` },
-              ]}
-            />
-            {errors.side ? <p className="-mt-3 text-sm text-destructive">{errors.side}</p> : null}
-
-            <div>
+        {stage === "attend" ? (
+          <StepCard>
+            <FormStepper current={1} />
+            <h1 id="register-step-title" tabIndex={-1} className="mt-4 text-center font-serif text-2xl text-ink outline-none">
+              การเข้าร่วมงาน
+            </h1>
+            <div className="mt-5">
               <Choice
-                legend="เพศ"
-                name="gender-main"
-                value={person.gender}
-                onChange={(gender) => patch({ gender })}
+                legend="จะมาร่วมงานหรือไม่"
+                name="attendance-main"
+                stacked
+                value={person.attendance}
+                onChange={(attendance) => patch({ attendance })}
                 options={[
-                  { value: "male", label: "ชาย" },
-                  { value: "female", label: "หญิง" },
-                  { value: "other", label: "อื่น ๆ" },
+                  { value: "attending", label: "เข้าร่วม" },
+                  { value: "unsure", label: "ยังไม่แน่ใจ" },
+                  { value: "declined", label: "ไปไม่ได้" },
                 ]}
               />
-              <p className="mt-2 text-[13px] leading-normal text-muted-foreground">ใช้เลือกตัวในฉากงาน</p>
-              {errors.gender ? <p className="mt-2 text-sm text-destructive">{errors.gender}</p> : null}
+              {errors.attendance ? <p className="mt-2 text-sm text-destructive">{errors.attendance}</p> : null}
             </div>
-          </div>
+            <Button type="button" className="mt-6 h-12 w-full rounded-full text-base" onClick={goToDetails}>
+              ต่อไป
+            </Button>
+            <button
+              type="button"
+              className="mt-1 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground"
+              onClick={() => setStage("intro")}
+            >
+              ย้อนกลับ
+            </button>
+          </StepCard>
+        ) : null}
 
-          {summary ? (
-            <p role="alert" className="mt-4 text-sm text-destructive">
-              {summary}
-            </p>
-          ) : null}
-          <Button type="submit" disabled={saving} className="mt-6 h-12 w-full rounded-full text-base">
-            {saving ? "กำลังบันทึก…" : editing ? "บันทึก" : "บันทึกและเข้างาน"}
-          </Button>
-          <button
-            type="button"
-            disabled={saving}
-            className="mt-1 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground disabled:opacity-50"
-            onClick={onChangePhone}
-          >
-            {formatThaiMobile(phone)} · ใช้เบอร์อื่น
-          </button>
-        </form>
+        {stage === "details" ? (
+          <StepCard>
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              onFocusCapture={(event) => {
+                const target = event.target
+                if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return
+                window.setTimeout(() => target.scrollIntoView({ block: "center", behavior: "smooth" }), 300)
+              }}
+            >
+              <FormStepper current={2} />
+              <h1 id="register-step-title" tabIndex={-1} className="mt-4 text-center font-serif text-2xl text-ink outline-none">
+                รายละเอียด
+              </h1>
+              <div className="mt-4 flex flex-col gap-4">
+                <div>
+                  <Label htmlFor="name-main">ชื่อที่บ่าวสาวรู้จัก</Label>
+                  <Input
+                    id="name-main"
+                    value={person.name}
+                    maxLength={40}
+                    placeholder="เช่น ชื่อเล่น"
+                    autoComplete="name"
+                    aria-invalid={errors.name ? true : undefined}
+                    aria-describedby={errors.name ? "error-name" : undefined}
+                    className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+                    onChange={(event) => patch({ name: event.target.value })}
+                  />
+                  {errors.name ? (
+                    <p id="error-name" className="mt-2 text-sm text-destructive">
+                      {errors.name}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <Choice
+                    legend="มาฝั่งไหน"
+                    name="side-main"
+                    value={person.side}
+                    onChange={(side) => patch({ side })}
+                    options={[
+                      { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}` },
+                      { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}` },
+                    ]}
+                  />
+                  {errors.side ? <p className="mt-2 text-sm text-destructive">{errors.side}</p> : null}
+                </div>
+
+                <div>
+                  <Choice
+                    legend="เพศ"
+                    name="gender-main"
+                    value={person.gender}
+                    onChange={(gender) => patch({ gender })}
+                    options={[
+                      { value: "male", label: "ชาย" },
+                      { value: "female", label: "หญิง" },
+                      { value: "other", label: "อื่น ๆ" },
+                    ]}
+                  />
+                  <p className="mt-2 text-[13px] leading-normal text-muted-foreground">ใช้เลือกตัวในฉากงาน</p>
+                  {errors.gender ? <p className="mt-2 text-sm text-destructive">{errors.gender}</p> : null}
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[15px] leading-normal font-medium">จำนวนผู้ติดตาม</p>
+                    <p className="text-[13px] leading-6 text-muted-foreground">รวม {partySize} คน · ไม่ต้องกรอกชื่อ</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-11 min-h-11 min-w-11 rounded-full bg-card"
+                      aria-label="ลดจำนวนผู้ติดตาม"
+                      disabled={companions <= 0 || saving}
+                      onClick={() => setCompanionCount(companions - 1)}
+                    >
+                      <Minus />
+                    </Button>
+                    <p className="w-8 text-center font-sans text-xl leading-normal font-bold tabular-nums text-ink" aria-live="polite">
+                      {companions}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-11 min-h-11 min-w-11 rounded-full bg-card"
+                      aria-label="เพิ่มจำนวนผู้ติดตาม"
+                      disabled={companions >= COMPANION_MAX || saving}
+                      onClick={() => setCompanionCount(companions + 1)}
+                    >
+                      <Plus />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {summary ? (
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  {summary}
+                </p>
+              ) : null}
+              <Button type="submit" disabled={saving} className="mt-4 h-12 w-full rounded-full text-base">
+                {saving ? "กำลังบันทึก…" : editing ? "บันทึก" : "บันทึกและเข้างาน"}
+              </Button>
+              <button
+                type="button"
+                disabled={saving}
+                className="mt-1 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground disabled:opacity-50"
+                onClick={() => setStage("attend")}
+              >
+                ย้อนกลับ
+              </button>
+            </form>
+          </StepCard>
+        ) : null}
       </div>
     </ScreenShell>
   )
