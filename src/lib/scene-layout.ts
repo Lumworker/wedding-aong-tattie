@@ -40,8 +40,8 @@ const AISLE = [
 /**
  * Couple sprites stay the ceremony focus (drawn at 1.15×, about 78px tall).
  * The signed-in guest is larger than the old default. Everyone else shrinks.
- * Cats share the leader's scale. Their sheet is drawn so the visible cat
- * is about 60% of a nearby guest's height.
+ * Followers share the leader's scale. Their sheet is drawn at about 60%
+ * of a nearby guest's height.
  */
 const SELF_SCALE = 1.28
 const CROWD_SCALE = 0.72

@@ -50,22 +50,17 @@ HAIR_SOURCES: list[tuple[int, tuple[int, int, int] | None]] = [
 TOP_SHAPES = [0, 1, 4, 6]
 PANT_SHAPES = [2, 4, 0, 17]
 
-MALE_TOPS = [
-    (28, 36, 58),
-    (36, 36, 40),
-    (244, 240, 232),
-    (22, 22, 26),
-    (92, 46, 58),
-]
-MALE_PANTS = [(22, 22, 26), (28, 36, 58), (48, 48, 52)]
-FEMALE_TOPS = [
-    (250, 246, 240),
-    (232, 176, 184),
-    (255, 252, 248),
-    (196, 120, 132),
-    (236, 214, 196),
-]
-FEMALE_PANTS = [(250, 246, 240), (214, 150, 160), (28, 28, 32), (36, 44, 68)]
+# Wedding palette: ivory, blush, navy, black, sage, gold.
+IVORY = (246, 240, 226)
+BLUSH = (236, 178, 182)
+NAVY = (30, 42, 78)
+BLACK = (24, 24, 28)
+SAGE = (138, 164, 128)
+GOLD = (206, 168, 92)
+MALE_TOPS = [NAVY, BLACK, IVORY, SAGE, GOLD, NAVY]
+MALE_PANTS = [BLACK, NAVY, (58, 60, 64)]
+FEMALE_TOPS = [IVORY, BLUSH, SAGE, GOLD, NAVY, BLUSH]
+FEMALE_PANTS = [IVORY, BLUSH, BLACK, NAVY]
 SHOE = (28, 26, 30)
 
 # Artist-pixel boxes on the 4×-prestretched tree sheet, after dividing by 4.
