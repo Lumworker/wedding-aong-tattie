@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import { FLOWERS, PLANT_SHEET } from "@/lib/plant-atlas"
+import { cn } from "@/lib/utils"
 
 /** Single blooms from the flower row — the rose bush is too wide to fall. */
 const FLOAT_INDICES = [4, 6, 7, 8, 10, 12] as const
@@ -20,6 +21,12 @@ const PETALS = [
   { left: "47%", delay: 3.6, duration: 14, size: 20, drift: -18, plant: 3 },
   { left: "69%", delay: 4.1, duration: 16, size: 18, drift: 14, plant: 4 },
   { left: "92%", delay: 1.1, duration: 13, size: 20, drift: -10, plant: 5 },
+  { left: "8%", delay: 2.4, duration: 14, size: 15, drift: 20, plant: 2 },
+  { left: "33%", delay: 4.4, duration: 12, size: 22, drift: -8, plant: 4 },
+  { left: "57%", delay: 1.6, duration: 15, size: 17, drift: 18, plant: 0 },
+  { left: "78%", delay: 3.4, duration: 13.5, size: 21, drift: -22, plant: 3 },
+  { left: "22%", delay: 5, duration: 16, size: 14, drift: 11, plant: 5 },
+  { left: "95%", delay: 0.4, duration: 11, size: 16, drift: -14, plant: 1 },
 ]
 
 function plantStyle(index: number, size: number): CSSProperties {
@@ -36,12 +43,12 @@ function plantStyle(index: number, size: number): CSSProperties {
   }
 }
 
-export function PetalField() {
+export function PetalField({ className }: { className?: string }) {
   const reduced = useReducedMotion()
   if (reduced) return null
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)} aria-hidden="true">
       {PETALS.map((petal, index) => (
         <motion.span
           key={index}
@@ -55,7 +62,7 @@ export function PetalField() {
             y: "110vh",
             x: [0, petal.drift, 0],
             rotate: [0, 80, 160],
-            opacity: [0, 0.72, 0.72, 0],
+            opacity: [0, 0.86, 0.86, 0],
           }}
           transition={{
             duration: petal.duration,
