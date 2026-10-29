@@ -1,8 +1,8 @@
 "use client"
 
 import { FormEvent, useState } from "react"
+import { PetalField } from "@/components/petal-field"
 import { WelcomeScene } from "@/components/welcome-scene"
-import { ScreenShell } from "@/components/screen-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,39 +34,30 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
   }
 
   return (
-    <ScreenShell className="h-dvh max-h-dvh overflow-y-auto overscroll-y-contain px-4 py-0 pt-[clamp(0.75rem,2.2dvh,2.75rem)] pb-[max(clamp(0.75rem,2.2dvh,2.75rem),env(safe-area-inset-bottom))] sm:px-5">
-      <div className="grid min-h-full flex-1 grid-rows-[minmax(7.5rem,1fr)_auto] gap-[clamp(0.4rem,1.5dvh,1.5rem)]">
-        <WelcomeScene jumpFrame={jumpFrame ?? 0} />
+    <div className="relative min-h-dvh overflow-x-clip bg-[linear-gradient(180deg,var(--wash)_0%,var(--blush-pale)_100%)] [--scene-h:min(62vh,540px)]">
+      <WelcomeScene jumpFrame={jumpFrame} />
+      <PetalField className="z-20" />
+      <div className="relative z-30 flex min-h-dvh flex-col px-4 pt-[var(--scene-h)] pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:items-end lg:justify-center lg:px-12 lg:pt-0 lg:pb-0">
         <form
           onSubmit={handleSubmit}
-          className="rounded-[clamp(1.25rem,2dvh,1.75rem)] border border-border bg-card px-[clamp(1.1rem,4vw,2rem)] py-[clamp(0.85rem,2.1dvh,2.25rem)] shadow-[0_24px_50px_-32px_rgba(90,62,48,0.35)]"
+          className="mt-auto w-full rounded-[1.35rem] border border-border bg-card px-6 py-7 shadow-[0_18px_44px_-24px_rgba(80,48,58,0.35)] lg:mt-0 lg:w-[23rem] lg:px-7"
           noValidate
         >
-          <p className="text-center text-[clamp(0.68rem,1.45dvh,0.8125rem)] font-medium tracking-[0.22em] text-rose sm:tracking-[0.28em]">
-            งานมงคลสมรส
-          </p>
-          <h1 className="mt-[clamp(0.2rem,0.7dvh,0.75rem)] text-center font-display text-[clamp(1.65rem,5dvh,3rem)] leading-tight text-ink">
+          <p className="text-center text-[13px] font-medium tracking-[0.22em] text-rose">งานมงคลสมรส</p>
+          <h1 className="mt-2 text-center font-display text-4xl leading-none text-ink">
             {COUPLE.groomNickname}
-            <span className="px-[0.35em] font-serif text-[0.72em] text-rose italic">&</span>
+            <span className="px-2 font-serif text-rose italic">&</span>
             {COUPLE.brideNickname}
           </h1>
-          <p className="mt-[clamp(0.25rem,0.9dvh,1rem)] text-center font-serif text-[clamp(1rem,2.5dvh,1.25rem)] leading-snug text-ink">
-            {COUPLE.dateThai}
+          <p className="mt-3 text-center font-serif text-lg text-ink">{COUPLE.dateThai}</p>
+          <p className="mt-1 text-center text-sm leading-6 text-muted-foreground">
+            {VENUE_MAP.name} · {VENUE_MAP.area}
           </p>
-          <p className="mt-[clamp(0.15rem,0.55dvh,0.5rem)] text-center text-[clamp(0.82rem,1.85dvh,0.9375rem)] leading-snug text-ink">
-            {VENUE_MAP.name}
-          </p>
-          <p className="text-center text-[clamp(0.75rem,1.65dvh,0.875rem)] leading-snug text-muted-foreground">
-            {VENUE_MAP.area}
-          </p>
-          <p
-            id="phone-hint"
-            className="mt-[clamp(0.45rem,1.4dvh,1.5rem)] text-center text-[clamp(0.75rem,1.65dvh,0.875rem)] leading-snug text-muted-foreground"
-          >
+          <p id="phone-hint" className="mt-5 text-sm leading-6 text-muted-foreground">
             กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้
           </p>
-          <Label htmlFor="phone" className="mt-[clamp(0.35rem,1dvh,1rem)] text-[clamp(0.8rem,1.7dvh,0.875rem)]">
-            เบอร์มือถือ
+          <Label htmlFor="phone" className="mt-4 text-base font-semibold text-ink">
+            ตอบรับ
           </Label>
           <Input
             id="phone"
@@ -78,7 +69,7 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
             value={value}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
-            className="mt-[clamp(0.2rem,0.5dvh,0.5rem)] h-[clamp(2.75rem,5.5dvh,3rem)] rounded-2xl bg-wash px-4 text-base focus-visible:border-rose/40 focus-visible:ring-rose/30 md:text-base"
+            className="mt-2 h-12 rounded-xl border-transparent bg-wash px-4 text-base focus-visible:border-rose/40 focus-visible:ring-rose/30 md:text-base"
             onFocus={() => setJumpPlayId((id) => id + 1)}
             onChange={(event) => {
               setValue(maskPhoneInput(event.target.value))
@@ -93,12 +84,12 @@ export function PhoneForm({ onContinue }: { onContinue: (phone: string) => void 
           <Button
             type="submit"
             disabled={pending}
-            className="mt-[clamp(0.5rem,1.4dvh,1.25rem)] h-[clamp(2.75rem,5.5dvh,3rem)] w-full rounded-full text-base"
+            className="mt-4 h-12 w-full rounded-xl bg-blush text-base text-ink shadow-none hover:bg-rose hover:text-cream focus-visible:border-rose/40 focus-visible:ring-rose/40"
           >
             {pending ? "กำลังเปิด…" : "ต่อไป"}
           </Button>
         </form>
       </div>
-    </ScreenShell>
+    </div>
   )
 }

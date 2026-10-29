@@ -1,5 +1,6 @@
 import { ALTAR_FLOWERS, FlowerSprite, PEW_FLOWERS, PlantSprite, TuftSprite } from "@/components/venue/plant"
 import { TREES } from "@/lib/plant-atlas"
+import { CHURCH_SPRITE } from "@/lib/prop-sprites"
 import { PEW } from "@/lib/scene-layout"
 
 function Candle({ x, y }: { x: number; y: number }) {
@@ -63,10 +64,10 @@ function AltarFlowers({ x, y, seed }: { x: number; y: number; seed: number }) {
 }
 
 export function SceneBackdrop() {
-  const churchW = 300
-  const churchH = 450
+  const churchH = 440
+  const churchW = Math.round(churchH * (428 / 605))
   const churchX = (640 - churchW) / 2
-  const churchY = 28
+  const churchY = 36
 
   return (
     <g>
@@ -100,7 +101,7 @@ export function SceneBackdrop() {
       <rect width="640" height="900" fill="url(#wd-sky)" />
       <circle cx="520" cy="64" r="70" fill="#F4C878" opacity="0.35" filter="url(#wd-soft)" />
 
-      <Pixel href="/sprites/church.png" x={churchX} y={churchY} width={churchW} height={churchH} />
+      <Pixel href={CHURCH_SPRITE} x={churchX} y={churchY} width={churchW} height={churchH} />
       <PlantSprite frame={treeByName("oak")} x={28} y={536} delay={0.1} sway />
       <PlantSprite frame={treeByName("pine")} x={132} y={470} delay={0.4} sway />
       <PlantSprite frame={treeByName("maple")} x={456} y={508} delay={0.6} sway />
