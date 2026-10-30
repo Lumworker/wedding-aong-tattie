@@ -1,17 +1,39 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { PetalField } from "@/components/petal-field"
 import { WelcomeScene } from "@/components/welcome-scene"
 import { Button } from "@/components/ui/button"
 import { useCoupleJumpPlayback } from "@/components/venue/character"
+import { COUPLE_JUMP } from "@/lib/couple-atlas"
 import { COUPLE, VENUE_MAP } from "@/lib/event"
+
+/**
+ * Jump strips are not in the scene until the register hover. Hold the decoded
+ * images so that first hop does not wait on the PNG.
+ */
+const warmedJumpSheets: HTMLImageElement[] = []
+
+function warmCoupleJumpSheets() {
+  if (warmedJumpSheets.length > 0) return
+  for (const src of [COUPLE_JUMP.groom, COUPLE_JUMP.bride]) {
+    const image = new Image()
+    image.decoding = "async"
+    image.src = src
+    void image.decode().catch(() => {})
+    warmedJumpSheets.push(image)
+  }
+}
 
 /** Welcome lawn: invitation card and a single register action. Phone comes later. */
 export function WelcomeRegister({ onRegister }: { onRegister: () => void }) {
   const { frame, setLoop, playOnce } = useCoupleJumpPlayback()
   const leaving = useRef(false)
   const [pending, setPending] = useState(false)
+
+  useEffect(() => {
+    warmCoupleJumpSheets()
+  }, [])
 
   function enter() {
     if (leaving.current) return

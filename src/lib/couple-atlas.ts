@@ -35,8 +35,8 @@ export const COUPLE_WAVE = {
 } as const
 
 export const COUPLE_JUMP = {
-  groom: "/sprites/groom-jump.png?v=3",
-  bride: "/sprites/bride-jump.png?v=3",
+  groom: "/sprites/groom-jump.png?v=4",
+  bride: "/sprites/bride-jump.png?v=4",
   frames: 6,
   frameW: 256,
   frameH: 264,
@@ -51,12 +51,12 @@ export const COUPLE_JUMP = {
    */
   arc: [0, -5, 32, 58, 24, 0],
   /**
-   * Opaque foot line above the cell bottom. The groom hop is baked into the
-   * sheet; the bride hem stays on the floor, so motion supplies her lift.
-   * Offsetting by this keeps one shared arc instead of stacking both.
+   * Opaque foot line above the cell bottom. Both strips are bottom-aligned
+   * on every frame, so the line is flat and `arc` alone lifts the body.
+   * Groom shoes sit 6px up (figure about 250 tall). Bride hem stays 12px up.
    */
   foot: {
-    groom: [12, 27, 57, 82, 26, 4],
+    groom: [6, 6, 6, 6, 6, 6],
     bride: [12, 12, 12, 12, 12, 12],
   },
 } as const
