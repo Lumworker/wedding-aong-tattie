@@ -1,14 +1,53 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useReducedMotion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { spriteForGuest } from "@/lib/appearance"
-import { COUPLE_IDLE, COUPLE_JUMP, COUPLE_WAVE, coupleJumpOrigin, coupleWaveOrigin } from "@/lib/couple-atlas"
+import {
+  COUPLE_IDLE,
+  COUPLE_JUMP,
+  COUPLE_WAVE,
+  coupleJumpEase,
+  coupleJumpOffset,
+  coupleJumpOrigin,
+  coupleWaveOrigin,
+} from "@/lib/couple-atlas"
 import { COUPLE } from "@/lib/event"
 import type { Guest } from "@/lib/types"
 
 /** Square chibi frame, sized to sit on the altar without covering the aisle. */
 const COUPLE_SIZE = 56
+
+/** Show each frame for its own hold, then call `onDone`. Returns a cancel. */
+function playHolds(
+  frames: readonly number[],
+  holdMs: readonly number[],
+  onFrame: (frame: number) => void,
+  onDone: () => void,
+) {
+  let index = 0
+  let timer = 0
+  let stopped = false
+
+  const step = () => {
+    if (stopped) return
+    if (index >= frames.length) {
+      onDone()
+      return
+    }
+    const frame = frames[index]
+    onFrame(frame)
+    const ms = holdMs[index] ?? holdMs[holdMs.length - 1]
+    index += 1
+    timer = window.setTimeout(step, ms)
+  }
+
+  step()
+  return () => {
+    stopped = true
+    window.clearTimeout(timer)
+  }
+}
 
 /** Idle most of the time, then a short two-cycle wave. `delayMs` staggers the pair. */
 function useAltarWave(active: boolean, delayMs: number) {
@@ -18,32 +57,30 @@ function useAltarWave(active: boolean, delayMs: number) {
   useEffect(() => {
     if (!active || reduced) return
 
-    let wait = 0
-    let tick = 0
+    let timer = 0
+    let cancel = () => {}
     let stopped = false
 
     const play = () => {
       if (stopped) return
-      let step = 0
-      const total = COUPLE_WAVE.frames * COUPLE_WAVE.cycles
-      setFrame(0)
-      tick = window.setInterval(() => {
-        step += 1
-        if (step >= total) {
-          window.clearInterval(tick)
+      const sequence = Array.from({ length: COUPLE_WAVE.frames * COUPLE_WAVE.cycles }, (_, step) => step % COUPLE_WAVE.frames)
+      const holds = sequence.map((index) => COUPLE_WAVE.frameMs[index])
+      cancel = playHolds(sequence, holds, setFrame, () => {
+        if (stopped) return
+        setFrame(COUPLE_WAVE.settleFrame)
+        timer = window.setTimeout(() => {
+          if (stopped) return
           setFrame(null)
-          wait = window.setTimeout(play, COUPLE_WAVE.pauseMs)
-          return
-        }
-        setFrame(step % COUPLE_WAVE.frames)
-      }, COUPLE_WAVE.frameMs)
+          timer = window.setTimeout(play, COUPLE_WAVE.pauseMs)
+        }, COUPLE_WAVE.settleMs)
+      })
     }
 
-    wait = window.setTimeout(play, 2400 + delayMs)
+    timer = window.setTimeout(play, 2400 + delayMs)
     return () => {
       stopped = true
-      window.clearTimeout(wait)
-      window.clearInterval(tick)
+      window.clearTimeout(timer)
+      cancel()
     }
   }, [active, delayMs, reduced])
 
@@ -52,8 +89,9 @@ function useAltarWave(active: boolean, delayMs: number) {
 }
 
 /**
- * Register CTA playback. Hover loops the hop. A click finishes the current
- * cycle (or starts one) and calls back when the land frame ends.
+ * Register CTA playback. Hover loops the hop. Leaving the pointer lets the
+ * current arc land instead of cutting to the stand frame. A click finishes
+ * the cycle (or starts one) and calls back when the land frame ends.
  * Reduced motion stays idle and completes immediately.
  */
 export function useCoupleJumpPlayback() {
@@ -61,14 +99,13 @@ export function useCoupleJumpPlayback() {
   const [frame, setFrame] = useState<number | null>(null)
   const loopRef = useRef(false)
   const onceRef = useRef<(() => void) | null>(null)
-  const timerRef = useRef(0)
+  const cancelRef = useRef<(() => void) | null>(null)
   const runningRef = useRef(false)
-  const stepRef = useRef(0)
   const mountedRef = useRef(true)
 
   const stopTimer = useCallback(() => {
-    window.clearInterval(timerRef.current)
-    timerRef.current = 0
+    cancelRef.current?.()
+    cancelRef.current = null
     runningRef.current = false
   }, [])
 
@@ -90,41 +127,45 @@ export function useCoupleJumpPlayback() {
   const start = useCallback(() => {
     if (runningRef.current || reduced) return
     runningRef.current = true
-    stepRef.current = 0
-    setFrame(0)
-    timerRef.current = window.setInterval(() => {
-      stepRef.current += 1
-      if (stepRef.current < COUPLE_JUMP.frames) {
-        setFrame(stepRef.current)
-        return
-      }
-      const done = onceRef.current
-      onceRef.current = null
-      if (done || !loopRef.current) {
-        stopTimer()
-        stepRef.current = 0
-        setFrame(null)
-        if (done && mountedRef.current) done()
-        return
-      }
-      stepRef.current = 0
-      setFrame(0)
-    }, COUPLE_JUMP.frameMs)
-  }, [reduced, stopTimer])
+    const frames = Array.from({ length: COUPLE_JUMP.frames }, (_, index) => index)
+
+    const run = () => {
+      cancelRef.current = playHolds(
+        frames,
+        COUPLE_JUMP.frameMs,
+        (next) => {
+          if (mountedRef.current) setFrame(next)
+        },
+        () => {
+          cancelRef.current = null
+          if (!mountedRef.current) {
+            runningRef.current = false
+            return
+          }
+          const done = onceRef.current
+          onceRef.current = null
+          if (done || !loopRef.current) {
+            runningRef.current = false
+            setFrame(null)
+            if (done) done()
+            return
+          }
+          // Next cycle opens on the stand hold, eased down from the landing.
+          run()
+        },
+      )
+    }
+
+    run()
+  }, [reduced])
 
   const setLoop = useCallback(
     (on: boolean) => {
       if (reduced || onceRef.current) return
       loopRef.current = on
-      if (on) {
-        start()
-        return
-      }
-      stopTimer()
-      stepRef.current = 0
-      setFrame(null)
+      if (on) start()
     },
-    [reduced, start, stopTimer]
+    [reduced, start],
   )
 
   const playOnce = useCallback(
@@ -138,7 +179,7 @@ export function useCoupleJumpPlayback() {
       onceRef.current = onDone
       if (!runningRef.current) start()
     },
-    [reduced, start]
+    [reduced, start],
   )
 
   return { frame: reduced ? null : frame, setLoop, playOnce }
@@ -152,24 +193,20 @@ export function useCoupleJump(playId: number) {
   useEffect(() => {
     if (playId === 0 || reduced) return
 
-    let step = 0
-    let tick = 0
+    let cancel = () => {}
+    const frames = Array.from({ length: COUPLE_JUMP.frames }, (_, index) => index)
     const start = window.setTimeout(() => {
-      setPlayed({ id: playId, frame: 0 })
-      tick = window.setInterval(() => {
-        step += 1
-        if (step >= COUPLE_JUMP.frames) {
-          window.clearInterval(tick)
-          setPlayed({ id: playId, frame: null })
-          return
-        }
-        setPlayed({ id: playId, frame: step })
-      }, COUPLE_JUMP.frameMs)
+      cancel = playHolds(
+        frames,
+        COUPLE_JUMP.frameMs,
+        (frame) => setPlayed({ id: playId, frame }),
+        () => setPlayed({ id: playId, frame: null }),
+      )
     }, 0)
 
     return () => {
       window.clearTimeout(start)
-      window.clearInterval(tick)
+      cancel()
     }
   }, [playId, reduced])
 
@@ -225,6 +262,7 @@ function PixelCouple({
   waveFrame,
   jumpHref,
   jumpFrame,
+  bodyY,
   label,
   showName,
   size,
@@ -234,66 +272,82 @@ function PixelCouple({
   waveFrame: number | null
   jumpHref?: string
   jumpFrame: number | null
+  /** Whole-body hop, scene pixels, positive down. Idle stays at 0. */
+  bodyY: number
   label: string
   showName: boolean
   size: number
 }) {
   const jumping = jumpFrame !== null && Boolean(jumpHref)
-  const waving = !jumping && waveFrame !== null && Boolean(waveHref)
   const drawW = size
   const drawH = jumping ? size * (COUPLE_JUMP.frameH / COUPLE_JUMP.frameW) : size
-  const pose = jumping && jumpFrame > 0 ? "is-jumping" : "is-idle"
+  const pose = jumping ? "is-jumping" : "is-idle"
+
+  let sprite
+  if (jumpFrame !== null && jumpHref) {
+    sprite = (
+      <motion.g
+        initial={false}
+        animate={{ y: bodyY }}
+        transition={{ duration: COUPLE_JUMP.frameMs[jumpFrame] / 1000, ease: coupleJumpEase(jumpFrame) }}
+      >
+        <svg
+          x={-drawW / 2}
+          y={-drawH}
+          width={drawW}
+          height={drawH}
+          viewBox={`${coupleJumpOrigin(jumpFrame)} 0 ${COUPLE_JUMP.frameW} ${COUPLE_JUMP.frameH}`}
+          overflow="hidden"
+        >
+          <image
+            href={jumpHref}
+            width={COUPLE_JUMP.width}
+            height={COUPLE_JUMP.height}
+            style={{ imageRendering: "pixelated" }}
+          />
+        </svg>
+      </motion.g>
+    )
+  } else if (waveFrame !== null && waveHref) {
+    sprite = (
+      <g className="wd-bob">
+        <svg
+          x={-size / 2}
+          y={-size}
+          width={size}
+          height={size}
+          viewBox={`${coupleWaveOrigin(waveFrame)} ${COUPLE_WAVE.gutter} ${COUPLE_WAVE.frame} ${COUPLE_WAVE.frame}`}
+          overflow="hidden"
+        >
+          <image
+            href={waveHref}
+            width={COUPLE_WAVE.width}
+            height={COUPLE_WAVE.height}
+            style={{ imageRendering: "pixelated" }}
+          />
+        </svg>
+      </g>
+    )
+  } else {
+    sprite = (
+      <g className="wd-bob">
+        <image
+          href={href}
+          x={-size / 2}
+          y={-size}
+          width={size}
+          height={size}
+          style={{ imageRendering: "pixelated" }}
+        />
+      </g>
+    )
+  }
 
   return (
     <g>
       {label ? <title>{label}</title> : null}
       <ellipse cx="2" cy="4" rx={size * 0.22} ry="3.2" fill="#05040A" opacity="0.5" />
-      <g className={pose}>
-        <g className="wd-bob">
-          {jumping ? (
-            <svg
-              x={-drawW / 2}
-              y={-drawH}
-              width={drawW}
-              height={drawH}
-              viewBox={`${coupleJumpOrigin(jumpFrame)} 0 ${COUPLE_JUMP.frameW} ${COUPLE_JUMP.frameH}`}
-              overflow="hidden"
-            >
-              <image
-                href={jumpHref}
-                width={COUPLE_JUMP.width}
-                height={COUPLE_JUMP.height}
-                style={{ imageRendering: "pixelated" }}
-              />
-            </svg>
-          ) : waving ? (
-            <svg
-              x={-size / 2}
-              y={-size}
-              width={size}
-              height={size}
-              viewBox={`${coupleWaveOrigin(waveFrame)} ${COUPLE_WAVE.gutter} ${COUPLE_WAVE.frame} ${COUPLE_WAVE.frame}`}
-              overflow="hidden"
-            >
-              <image
-                href={waveHref}
-                width={COUPLE_WAVE.width}
-                height={COUPLE_WAVE.height}
-                style={{ imageRendering: "pixelated" }}
-              />
-            </svg>
-          ) : (
-            <image
-              href={href}
-              x={-size / 2}
-              y={-size}
-              width={size}
-              height={size}
-              style={{ imageRendering: "pixelated" }}
-            />
-          )}
-        </g>
-      </g>
+      <g className={pose}>{sprite}</g>
       {showName && label ? <Nameplate label={label} y={-drawH - 8} highlight hero /> : null}
     </g>
   )
@@ -406,6 +460,7 @@ export function Character({
         waveFrame={waveFrame}
         jumpHref={COUPLE_JUMP.groom}
         jumpFrame={jumpFrame}
+        bodyY={jumpFrame === null ? 0 : coupleJumpOffset("groom", jumpFrame, size)}
         label={name ?? COUPLE.groomNickname}
         showName={showName}
         size={size}
@@ -420,6 +475,7 @@ export function Character({
         waveFrame={waveFrame}
         jumpHref={COUPLE_JUMP.bride}
         jumpFrame={jumpFrame}
+        bodyY={jumpFrame === null ? 0 : coupleJumpOffset("bride", jumpFrame, size)}
         label={name ?? COUPLE.brideNickname}
         showName={showName}
         size={size}
