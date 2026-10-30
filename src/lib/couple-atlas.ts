@@ -36,7 +36,7 @@ export const COUPLE_WAVE = {
 
 export const COUPLE_JUMP = {
   groom: "/sprites/groom-jump.png?v=4",
-  bride: "/sprites/bride-jump.png?v=5",
+  bride: "/sprites/bride-jump.png?v=6",
   frames: 6,
   frameW: 256,
   frameH: 264,
@@ -48,8 +48,10 @@ export const COUPLE_JUMP = {
   /**
    * Whole-body hop in sheet pixels, positive up. Crouch dips; the apex is
    * frame 3; land returns to the stand line. Framer Motion eases between these.
+   * Welcome sprite 148 maps frame 3 to translateY(-20.8px), 62% of the old -33.5px,
+   * so the feet stay nearer the ground shadow. Land stays on the stand line.
    */
-  arc: [0, -5, 32, 58, 24, 0],
+  arc: [0, -3, 20, 36, 15, 0],
   /**
    * Opaque foot line above the cell bottom. Both strips are bottom-aligned
    * on every frame, so the line is flat and `arc` alone lifts the body.
