@@ -18,8 +18,8 @@ export const COUPLE_IDLE = {
 } as const
 
 export const COUPLE_WAVE = {
-  groom: "/sprites/groom-wave.png?v=3",
-  bride: "/sprites/bride-wave.png?v=3",
+  groom: "/sprites/groom-wave.png?v=4",
+  bride: "/sprites/bride-wave.png?v=4",
   frames: 4,
   frame: 256,
   gutter: 4,
