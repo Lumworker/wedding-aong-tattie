@@ -3,7 +3,12 @@
  * 264px-tall row; jump cells are wider in time (6 frames) with an 8px gutter.
  *
  * Jump sheet 1576×264 = 6×256 cells + 5×8 gutters, no outer pad.
- * Frame order: stand, crouch, rise, peak, descend, land.
+ * Frame order: stand, crouch, mid-rise, peak, mid-descend, soft land.
+ *
+ * Holds are uneven on purpose. Anticipation (crouch) and the landing sit
+ * longer than the airborne frames, and the peak keeps one extra beat.
+ * Wave frames alternate a lower hand and a raised hand; the raise rests
+ * longer than the dip so the arm does not tick on a flat clock.
  */
 
 export const COUPLE_IDLE = {
@@ -20,22 +25,75 @@ export const COUPLE_WAVE = {
   gutter: 4,
   width: 1044,
   height: 264,
-  frameMs: 170,
+  /** Lower, raised, lower, raised. Average 200ms (was a flat 170). */
+  frameMs: [190, 250, 150, 210],
   cycles: 2,
   pauseMs: 8400,
+  /** Lower hand, held before the idle portrait so the raise does not cut off. */
+  settleFrame: 0,
+  settleMs: 230,
 } as const
 
 export const COUPLE_JUMP = {
-  groom: "/sprites/groom-jump.png?v=2",
-  bride: "/sprites/bride-jump.png?v=2",
+  groom: "/sprites/groom-jump.png?v=3",
+  bride: "/sprites/bride-jump.png?v=3",
   frames: 6,
   frameW: 256,
   frameH: 264,
   gutter: 8,
   width: 1576,
   height: 264,
-  frameMs: 120,
+  /** Stand, crouch, mid-rise, peak, mid-descend, land. Average ~157ms (was 120). */
+  frameMs: [140, 220, 90, 150, 100, 240],
+  /**
+   * Whole-body hop in sheet pixels, positive up. Crouch dips; the apex is
+   * frame 3; land returns to the stand line. Framer Motion eases between these.
+   */
+  arc: [0, -5, 32, 58, 24, 0],
+  /**
+   * Opaque foot line above the cell bottom. The groom hop is baked into the
+   * sheet; the bride hem stays on the floor, so motion supplies her lift.
+   * Offsetting by this keeps one shared arc instead of stacking both.
+   */
+  foot: {
+    groom: [12, 27, 57, 82, 26, 4],
+    bride: [12, 12, 12, 12, 12, 12],
+  },
 } as const
+
+const JUMP_EASE = {
+  stand: [0.22, 1, 0.36, 1],
+  crouch: [0.45, 0.05, 0.55, 1],
+  rise: [0.16, 0.84, 0.3, 1],
+  peak: [0.12, 0.9, 0.28, 1],
+  descend: [0.55, 0.05, 0.9, 0.45],
+  land: [0.16, 1, 0.3, 1],
+} as const
+
+export function coupleJumpEase(frame: number) {
+  switch (frame) {
+    case 1:
+      return JUMP_EASE.crouch
+    case 2:
+      return JUMP_EASE.rise
+    case 3:
+      return JUMP_EASE.peak
+    case 4:
+      return JUMP_EASE.descend
+    case 5:
+      return JUMP_EASE.land
+    default:
+      return JUMP_EASE.stand
+  }
+}
+
+/** Scene-space translateY (positive down) so both sprites share `arc`. */
+export function coupleJumpOffset(role: "groom" | "bride", frame: number, size: number) {
+  const foot = COUPLE_JUMP.foot[role]
+  const artLift = foot[frame] - foot[0]
+  const scale = size / COUPLE_JUMP.frameW
+  return (artLift - COUPLE_JUMP.arc[frame]) * scale
+}
 
 /**
  * Head-and-shoulders peeks for the registration cards.
