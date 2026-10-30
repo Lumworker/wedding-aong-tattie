@@ -22,7 +22,7 @@ export function WelcomeRegister({ onRegister }: { onRegister: () => void }) {
 
   return (
     <div className="welcome-palette relative min-h-dvh overflow-x-clip">
-      <img src="/sprites/welcome-landscape.png?v=4" alt="" className="welcome-landscape" />
+      <img src="/sprites/welcome-landscape.png?v=5" alt="" className="welcome-landscape" />
       <PetalField className="z-20" />
       <WelcomeScene jumpFrame={frame} />
       <div className="relative z-30 mx-auto flex min-h-dvh w-full max-w-[1200px] flex-col items-center justify-end px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:items-end lg:justify-center lg:px-10 lg:py-8">
