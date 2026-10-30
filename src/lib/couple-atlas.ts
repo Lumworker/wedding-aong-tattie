@@ -35,7 +35,7 @@ export const COUPLE_WAVE = {
 } as const
 
 export const COUPLE_JUMP = {
-  groom: "/sprites/groom-jump.png?v=4",
+  groom: "/sprites/groom-jump.png?v=5",
   bride: "/sprites/bride-jump.png?v=7",
   frames: 6,
   frameW: 256,
