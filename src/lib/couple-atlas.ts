@@ -33,12 +33,15 @@ export const COUPLE_WAVE = {
   settleFrame: 0,
   settleMs: 230,
   /**
-   * Sheet-pixel nudge added to viewBox x so the body stays locked near idle
-   * center (~128). Wave F0–F1 sit ~10px left of idle; F2–F3 drift right.
+   * Sheet-pixel nudge added to viewBox x so the body lands exactly on the idle
+   * portrait. Measured by pixel-matching legs and head against idle: every wave
+   * frame shares one body position, drawn 19px (groom) / 6px (bride) right of
+   * idle. The nudge must be the same on all frames, or the body slides while
+   * the arm moves. Positive x moves the art left in the viewport.
    */
   shiftX: {
-    groom: [-10, -10, 1, 2],
-    bride: [-10, -10, 0, 2],
+    groom: [19, 19, 19, 19],
+    bride: [6, 6, 6, 6],
   },
 } as const
 
