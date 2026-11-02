@@ -58,3 +58,15 @@ export const FOLLOWER_ATLAS: SpriteAtlas = {
   pixel: 1.7,
   artFacing: 1,
 }
+
+/**
+ * Dashboard balcony guests — guests.png re-encoded onto the couple's pixel grid
+ * (48px tall native, stored at 2×). Same index order as GUEST_ATLAS (0–5 male, 6–11 female).
+ */
+export const GUEST_GRID = {
+  href: "/sprites/guests-grid.png?v=1",
+  cell: 58,
+  height: 96,
+  width: 696,
+  count: 12,
+} as const
