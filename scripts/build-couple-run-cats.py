@@ -100,31 +100,48 @@ def tween(a,b,t):
     al=m[...,3:]; rgb=np.where(al>1e-3,m[...,:3]/np.maximum(al,1e-3),0)
     al=np.where(al>0.5,1.0,al*1.4).clip(0,1)
     return np.concatenate([rgb,al],-1)
-SEQ={}
+def spread(a):
+    """Leg reach: width of the lowest 22% of the cat. Small = legs gathered, big = stretched out."""
+    m=a[...,3]>0.3; ys,xs=np.where(m); top=ys.max()-int((ys.max()-ys.min())*0.22)
+    band=np.where(m[top:].any(0))[0]; return band.max()-band.min()
+# Bound cycle: gather -> stretch (flight) -> land -> gather. Sort the usable frames by leg reach,
+# go up through every other one and come back down through the rest, so no pose repeats and the
+# reach rises and falls smoothly. Frame 7 is dropped for both cats (off-model envelope / scale).
+USE=[0,1,2,3,4,5,6]
+SEQ={}; LIFT={}
 for k in ('W','O'):
-    keys=head_lock([layer(k,f) for f in ORDER[k]], k)
-    seq=[]
+    layers={f:layer(k,f) for f in USE}
+    sp={f:spread(layers[f]) for f in USE}
+    srt=sorted(USE,key=lambda f:sp[f])
+    cyc=srt[0::2]+srt[1::2][::-1]
+    print(k,'reach',{f:int(sp[f]) for f in srt},'cycle',cyc)
+    keys=head_lock([layers[f] for f in cyc], k)
+    lo,hi=min(sp.values()),max(sp.values())
+    reach=[(sp[f]-lo)/(hi-lo) for f in cyc]
+    seq=[]; lift=[]
     for i,a in enumerate(keys):
-        b=keys[(i+1)%len(keys)]
-        seq += [a, tween(a,b,1/3), tween(a,b,2/3)]
-    SEQ[k]=seq
+        j=(i+1)%len(keys); b=keys[j]
+        for t in (0,1/3,2/3):
+            seq.append(a if t==0 else tween(a,b,t)); lift.append(reach[i]*(1-t)+reach[j]*t)
+    SEQ[k]=seq; LIFT[k]=lift
 N=len(SEQ['W']); PHASE={'W':0,'O':N//2}
+BOB=4  # px the body rises at full stretch (in flight), 0 when the legs are gathered on the ground
 frames=[]
 for t in range(N):
     frame=Image.new('RGBA',(FW,FH),(0,0,0,0))
     for k in ('W','O'):
-        a=SEQ[k][(t+PHASE[k])%N]
-        frame.alpha_composite(Image.fromarray((a*255).clip(0,255).astype(np.uint8)))
+        i=(t+PHASE[k])%N; a=SEQ[k][i]
+        frame.alpha_composite(Image.fromarray((a*255).clip(0,255).astype(np.uint8)),(0,-round(BOB*LIFT[k][i])))
     frames.append(frame)
 PAD,GUT=4,8
 sheet=Image.new('RGBA',(PAD*2+FW*N+GUT*(N-1), PAD*2+FH),(0,0,0,0))
 for i,fr in enumerate(frames): sheet.alpha_composite(fr,(PAD+i*(FW+GUT),PAD))
-sheet.save('couple-run.png'); print(sheet.size)
+sheet.save('couple-run.png'); sheet.save('couple-run.webp','WEBP',quality=90,method=6,alpha_quality=100); print(sheet.size)
 bg=(241,231,211,255)
 gif=[Image.alpha_composite(Image.new('RGBA',(FW,FH),bg),fr).convert('P',palette=Image.ADAPTIVE) for fr in frames]
-gif[0].save('preview.gif',save_all=True,append_images=gif[1:],duration=36,loop=0,disposal=2)
-strip=Image.new('RGBA',(FW*6,FH*3),bg)
-for i,fr in enumerate(frames): strip.alpha_composite(fr,((i%6)*FW,(i//6)*FH))
+gif[0].save('preview.gif',save_all=True,append_images=gif[1:],duration=30,loop=0,disposal=2)
+strip=Image.new('RGBA',(FW*7,FH*3),bg)
+for i,fr in enumerate(frames): strip.alpha_composite(fr,((i%7)*FW,(i//7)*FH))
 on=Image.new('RGBA',(FW,FH),bg)
 for fr in frames[::3]:
     a=np.array(fr); a[...,3]=(a[...,3]*0.2).astype('uint8'); on.alpha_composite(Image.fromarray(a))
