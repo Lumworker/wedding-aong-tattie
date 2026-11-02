@@ -31,7 +31,7 @@ export function EventTitle({
 
   return (
     <div className={variant === "hero" ? "text-center" : "text-left"}>
-      <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
+      <p className="text-[13px] font-medium tracking-[0.06em] text-rose uppercase">งานมงคลสมรส</p>
       <h1
         className={cn(
           "font-display leading-tight text-ink",

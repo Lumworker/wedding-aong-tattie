@@ -6,17 +6,15 @@ import { Choice } from "@/components/choice"
 import { CouplePeek } from "@/components/couple-peek"
 import { FormStepper, type StepperItem } from "@/components/form-stepper"
 import { ScreenShell } from "@/components/screen-shell"
-import { WelcomeScene } from "@/components/welcome-scene"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useCoupleJumpPlayback } from "@/components/venue/character"
-import { COUPLE_PEEK } from "@/lib/couple-atlas"
 import { COUPLE, DRESS_CODE, PARTY_MAX, VENUE_MAP } from "@/lib/event"
 import { newId } from "@/lib/id"
 import { attendanceLabel, stepIcon, travelIcon, travelLabel } from "@/lib/labels"
 import { formatThaiMobile, maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
-import { DEFAULT_PROVINCE, PROVINCES, looksLikePlate, normalizePlate } from "@/lib/plate"
+import { ProvinceCombobox } from "@/components/province-combobox"
+import { DEFAULT_PROVINCE, looksLikePlate, normalizePlate } from "@/lib/plate"
 import type { AgeGroup, Attendance, Car, FamilySide, Gender, Guest, Party, Travel, TravelMode } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -216,11 +214,11 @@ function StepActions({
   onPrimary?: () => void
 }) {
   return (
-    <div className="sticky bottom-0 z-20 -mx-5 mt-5 bg-[#FFFCF8] px-5 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:static sm:mx-0 sm:px-0 sm:pb-0">
+    <div className="sticky bottom-0 z-20 -mx-5 mt-5 bg-[#FFFFFF] px-5 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:static sm:mx-0 sm:px-0 sm:pb-0">
       <Button
         type={submit ? "submit" : "button"}
         disabled={pending}
-        className="h-12 w-full rounded-full text-base"
+        className="h-12 w-full rounded-lg text-base"
         onClick={submit ? undefined : onPrimary}
       >
         {primary}
@@ -251,7 +249,7 @@ function StepCard({ children }: { children: ReactNode }) {
     <div className="flex flex-1 flex-col justify-center">
       <div className="relative mx-auto mt-[5.75rem] w-full max-w-md sm:mt-32">
         <CouplePeek />
-        <div className="relative z-10 rounded-[1.75rem] border border-[#E6D5C3] bg-[#FFFCF8] px-5 pt-6 pb-4 shadow-[0_24px_50px_-32px_rgba(90,62,48,0.45)] sm:px-7 sm:pt-8 sm:pb-6">
+        <div className="relative z-10 rounded-xl border border-[#E6DED0] bg-white px-5 pt-6 pb-4 shadow-[0_18px_40px_-30px_rgba(43,38,33,0.45)] sm:px-7 sm:pt-8 sm:pb-6">
           {children}
         </div>
       </div>
@@ -316,7 +314,12 @@ function PhoneStep({
         <p id="phone-hint" className="mt-3 text-center text-sm leading-6 text-muted-foreground">
           {needName
             ? "เบอร์นี้ลงทะเบียนไว้แล้ว กรอกชื่อที่ใช้ตอนลงทะเบียนเพื่อเปิดคำตอบ"
-            : "กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้"}
+            : (
+                <>
+                  <span className="block">กรอกเบอร์มือถือเพื่อตอบรับ</span>
+                  <span className="block">หรือเปิดคำตอบที่บันทึกไว้</span>
+                </>
+              )}
         </p>
         <Label htmlFor="phone" className="mt-4">
           เบอร์มือถือ
@@ -331,7 +334,7 @@ function PhoneStep({
           value={value}
           aria-invalid={error && !needName ? true : undefined}
           aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
-          className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+          className="mt-2 h-12 scroll-mb-40 rounded-lg bg-card px-4 text-base leading-normal md:text-base"
           onChange={(event) => {
             setValue(maskPhoneInput(event.target.value))
             setNeedName(false)
@@ -351,7 +354,7 @@ function PhoneStep({
               autoComplete="name"
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? "phone-error" : undefined}
-              className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+              className="mt-2 h-12 scroll-mb-40 rounded-lg bg-card px-4 text-base leading-normal md:text-base"
               onChange={(event) => {
                 setName(event.target.value)
                 if (error) setError(null)
@@ -364,7 +367,7 @@ function PhoneStep({
             {error}
           </p>
         ) : null}
-        <Button type="submit" disabled={pending} className="mt-6 h-12 w-full rounded-full text-base">
+        <Button type="submit" disabled={pending} className="mt-6 h-12 w-full rounded-lg text-base">
           {pending ? "กำลังเปิด…" : needName ? "เปิดคำตอบ" : "ต่อไป"}
         </Button>
         <button
@@ -380,62 +383,9 @@ function PhoneStep({
   )
 }
 
-function RegisterIntro({
-  editing,
-  phone,
-  onAdvance,
-  onChangePhone,
-}: {
-  editing: boolean
-  phone: string
-  onAdvance: () => void
-  onChangePhone: () => void
-}) {
-  const { frame, setLoop, playOnce } = useCoupleJumpPlayback()
-  const leaving = useRef(false)
-
-  useEffect(() => {
-    for (const src of [COUPLE_PEEK.groom, COUPLE_PEEK.bride]) {
-      const image = new Image()
-      image.src = src
-    }
-  }, [])
-
-  function enter() {
-    if (leaving.current) return
-    leaving.current = true
-    playOnce(onAdvance)
-  }
-
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-5">
-      <WelcomeScene jumpFrame={frame} compact />
-      <div className="flex w-full max-w-xs flex-col items-center">
-        {editing ? <p className="mb-3 text-center text-sm text-muted-foreground">แก้คำตอบที่บันทึกไว้</p> : null}
-        <Button
-          type="button"
-          className="h-14 w-full rounded-full bg-blush text-lg text-secondary-foreground shadow-none hover:bg-rose hover:text-paper focus-visible:border-rose/40 focus-visible:ring-rose/40"
-          onPointerEnter={() => setLoop(true)}
-          onPointerLeave={() => setLoop(false)}
-          onClick={enter}
-        >
-          ลงทะเบียน
-        </Button>
-        <button
-          type="button"
-          className="mt-2 flex min-h-11 w-full items-center justify-center text-sm text-muted-foreground"
-          onClick={onChangePhone}
-        >
-          {formatThaiMobile(phone)} · ใช้เบอร์อื่น
-        </button>
-      </div>
-    </div>
-  )
-}
-
 function ReviewRow({ label, value, onEdit }: { label: string; value: ReactNode; onEdit: () => void }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-[#E6D5C3] py-3 last:border-b-0">
+    <div className="flex items-start justify-between gap-3 border-b border-[#E6DED0] py-3 last:border-b-0">
       <div className="min-w-0">
         <p className="text-[13px] leading-normal text-muted-foreground">{label}</p>
         <div className="mt-0.5 text-[15px] leading-normal text-ink">{value}</div>
@@ -445,7 +395,7 @@ function ReviewRow({ label, value, onEdit }: { label: string; value: ReactNode; 
         className="min-h-11 shrink-0 px-2 text-sm font-medium text-ink underline underline-offset-4"
         onClick={onEdit}
       >
-        แก้
+        แก้ไข
       </button>
     </div>
   )
@@ -492,6 +442,8 @@ export function RsvpForm({
   const [kids, setKids] = useState(initial.kids)
   const [travel, setTravel] = useState<Travel>(initial.travel)
   const [errors, setErrors] = useState<Errors>({})
+  /** Plates the guest has left at least once; the shape hint waits until then. */
+  const [plateDone, setPlateDone] = useState<Record<string, boolean>>({})
   const [summary, setSummary] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const declined = person.attendance === "declined"
@@ -520,10 +472,11 @@ export function RsvpForm({
       ? "phone"
       : urlStep && (FORM_STAGES as string[]).includes(urlStep)
         ? guard(urlStep as Stage)
-        : "intro"
+        : editing
+          ? guard("review")
+          : "attend"
 
   useEffect(() => {
-    if (stage === "intro") return
     document.getElementById("register-step-title")?.focus()
   }, [stage])
 
@@ -566,7 +519,7 @@ export function RsvpForm({
 
   function backFromPhone() {
     if (phone && party) {
-      onNavigate("intro")
+      onNavigate("review")
       return
     }
     onLeave()
@@ -596,12 +549,9 @@ export function RsvpForm({
 
   function patchCar(id: string, next: Partial<Car>) {
     setTravel((current) => ({ ...current, cars: current.cars.map((car) => (car.id === id ? { ...car, ...next } : car)) }))
-    setErrors((current) => {
-      if (!current.cars?.[id]) return current
-      const cars = { ...current.cars }
-      delete cars[id]
-      return { ...current, cars }
-    })
+    // A duplicate error can sit on the other car, so any plate edit clears them all;
+    // they are checked again on "ต่อไป".
+    setErrors((current) => (current.cars ? { ...current, cars: undefined } : current))
   }
 
   function chooseAttendance(attendance: Attendance) {
@@ -611,7 +561,6 @@ export function RsvpForm({
       setKids(0)
       setTravel(NO_TRAVEL)
     }
-    window.setTimeout(() => onNavigate("about"), 250)
   }
 
   function checkAbout() {
@@ -730,14 +679,6 @@ export function RsvpForm({
           />
         ) : null}
 
-        {stage === "intro" && phone ? (
-          <RegisterIntro
-            editing={editing}
-            phone={phone}
-            onAdvance={() => onNavigate(editing ? "review" : "attend")}
-            onChangePhone={() => onNavigate("phone")}
-          />
-        ) : null}
 
         {stage === "attend" ? (
           <StepCard>
@@ -749,13 +690,13 @@ export function RsvpForm({
               <Choice
                 legend="การเข้าร่วมงาน"
                 name="attendance-main"
-                stacked
+                leadFull
                 value={person.attendance}
                 onChange={chooseAttendance}
                 options={[
-                  { value: "attending", label: "เข้าร่วม" },
-                  { value: "unsure", label: "ยังไม่แน่ใจ" },
-                  { value: "declined", label: "ไปไม่ได้" },
+                  { value: "attending", label: "เข้าร่วม", emoji: "🎉" },
+                  { value: "unsure", label: "ยังไม่แน่ใจ", emoji: "🤔" },
+                  { value: "declined", label: "ไปไม่ได้", emoji: "🙏" },
                 ]}
               />
               <FieldError>{errors.attendance}</FieldError>
@@ -769,7 +710,7 @@ export function RsvpForm({
                 }
                 go("about")
               }}
-              onBack={() => onNavigate(party ? "intro" : "phone")}
+              onBack={() => (party ? onLeave() : onNavigate("phone"))}
             />
           </StepCard>
         ) : null}
@@ -791,7 +732,7 @@ export function RsvpForm({
                   autoComplete="name"
                   aria-invalid={errors.name ? true : undefined}
                   aria-describedby={errors.name ? "error-name" : undefined}
-                  className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+                  className="mt-2 h-12 scroll-mb-40 rounded-lg bg-card px-4 text-base leading-normal md:text-base"
                   onChange={(event) => patch({ name: event.target.value })}
                 />
                 <FieldError id="error-name">{errors.name}</FieldError>
@@ -803,8 +744,8 @@ export function RsvpForm({
                   value={person.side}
                   onChange={(side) => patch({ side })}
                   options={[
-                    { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}` },
-                    { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}` },
+                    { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}`, emoji: "🤵" },
+                    { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}`, emoji: "👰" },
                   ]}
                 />
                 <FieldError>{errors.side}</FieldError>
@@ -816,16 +757,16 @@ export function RsvpForm({
                   value={person.gender}
                   onChange={(gender) => patch({ gender })}
                   options={[
-                    { value: "male", label: "ชาย" },
-                    { value: "female", label: "หญิง" },
-                    { value: "other", label: "อื่น ๆ" },
+                    { value: "male", label: "ชาย", emoji: "👨" },
+                    { value: "female", label: "หญิง", emoji: "👩" },
+                    { value: "other", label: "อื่น ๆ", emoji: "🧑" },
                   ]}
                 />
                 <p className="mt-2 text-[13px] leading-normal text-muted-foreground">ใช้เลือกตัวในฉากงาน</p>
                 <FieldError>{errors.gender}</FieldError>
               </div>
               {declined ? null : (
-                <div className="flex flex-col gap-3 rounded-2xl bg-[#F7F1E4] p-3">
+                <div className="flex flex-col gap-3 rounded-xl bg-[#F6F1E8] p-3">
                   <Counter
                     label="ผู้ติดตาม (ผู้ใหญ่)"
                     hint="ไม่ต้องกรอกชื่อ"
@@ -864,9 +805,9 @@ export function RsvpForm({
                     <label
                       key={mode}
                       className={cn(
-                        "flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 text-center text-[14px] leading-tight transition-colors",
-                        "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-                        selected ? "border-2 border-[#5C3A26] bg-[#F7F1E4] font-semibold" : "border-[#D8C8AC] bg-card"
+                        "flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 text-center text-[14px] leading-tight transition-colors",
+                        "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2",
+                        selected ? "border-2 border-[#2B2621] bg-[#F6F1E8] font-semibold" : "border-[#E6DED0] bg-card"
                       )}
                     >
                       <input
@@ -887,8 +828,8 @@ export function RsvpForm({
               {person.attendance === "unsure" ? (
                 <label
                   className={cn(
-                    "mt-2.5 flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border px-3 text-[14px]",
-                    travel.mode === "unknown" ? "border-2 border-[#5C3A26] bg-[#F7F1E4] font-semibold" : "border-[#D8C8AC] bg-card"
+                    "mt-2.5 flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-3 text-[14px]",
+                    travel.mode === "unknown" ? "border-2 border-[#2B2621] bg-[#F6F1E8] font-semibold" : "border-[#E6DED0] bg-card"
                   )}
                 >
                   <input
@@ -913,8 +854,8 @@ export function RsvpForm({
                   value={travel.needsParking === null ? null : travel.needsParking ? "yes" : "no"}
                   onChange={(value) => patchTravel({ needsParking: value === "yes" })}
                   options={[
-                    { value: "yes", label: "ต้องการ" },
-                    { value: "no", label: "ไม่ต้องการ" },
+                    { value: "yes", label: "ต้องการ", emoji: "🅿️" },
+                    { value: "no", label: "ไม่ต้องการ", emoji: "🙅" },
                   ]}
                 />
                 <FieldError>{errors.parking}</FieldError>
@@ -927,7 +868,7 @@ export function RsvpForm({
                   const norm = normalizePlate(car.plate)
                   const error = errors.cars?.[car.id]
                   return (
-                    <div key={car.id} className="rounded-2xl border border-[#E6D5C3] bg-card p-3">
+                    <div key={car.id} className="rounded-xl border border-[#E6DED0] bg-card p-3">
                       <div className="flex items-center justify-between">
                         <p className="text-[15px] font-medium">รถคันที่ {index + 1}</p>
                         {travel.cars.length > 1 ? (
@@ -941,7 +882,7 @@ export function RsvpForm({
                           </button>
                         ) : null}
                       </div>
-                      <div className="mt-1 grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-2">
+                      <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
                         <div>
                           <Label htmlFor={`plate-${car.id}`}>ทะเบียน</Label>
                           <Input
@@ -951,29 +892,24 @@ export function RsvpForm({
                             placeholder="1กข 1234"
                             aria-invalid={error ? true : undefined}
                             aria-describedby={error ? `plate-error-${car.id}` : undefined}
-                            className="mt-1.5 h-12 scroll-mb-40 rounded-2xl bg-background px-3 text-base md:text-base"
+                            className="mt-1.5 h-12 scroll-mb-40 rounded-lg bg-background px-3 text-base md:text-base"
                             onChange={(event) => patchCar(car.id, { plate: event.target.value })}
+                            onFocus={() => setPlateDone((current) => ({ ...current, [car.id]: false }))}
+                            onBlur={() => setPlateDone((current) => ({ ...current, [car.id]: true }))}
                           />
                         </div>
                         <div>
                           <Label htmlFor={`province-${car.id}`}>จังหวัด</Label>
-                          <select
+                          <ProvinceCombobox
                             id={`province-${car.id}`}
                             value={car.province}
-                            className="mt-1.5 h-12 w-full rounded-2xl border border-input bg-background px-2.5 text-[15px]"
-                            onChange={(event) => patchCar(car.id, { province: event.target.value })}
-                          >
-                            {PROVINCES.map((province) => (
-                              <option key={province} value={province}>
-                                {province}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(province) => patchCar(car.id, { province })}
+                          />
                         </div>
                       </div>
                       {error ? (
                         <FieldError id={`plate-error-${car.id}`}>{error}</FieldError>
-                      ) : norm && !looksLikePlate(norm) ? (
+                      ) : plateDone[car.id] && norm && !looksLikePlate(norm) ? (
                         <p className="mt-2 text-[13px] text-muted-foreground">รูปแบบทะเบียนดูไม่คุ้น ตรวจอีกครั้ง (ป้ายพิเศษใส่ได้)</p>
                       ) : null}
                     </div>
@@ -982,7 +918,7 @@ export function RsvpForm({
                 {travel.cars.length < CAR_MAX ? (
                   <button
                     type="button"
-                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[#D8C8AC] text-sm font-medium"
+                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#E6DED0] text-sm font-medium"
                     onClick={() => setTravel((current) => ({ ...current, cars: [...current.cars, blankCar()] }))}
                   >
                     <Plus className="size-4" /> เพิ่มรถอีกคัน
@@ -995,7 +931,7 @@ export function RsvpForm({
               href={VENUE_MAP.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 flex items-start gap-2.5 rounded-2xl bg-[#F7F1E4] p-3 text-[13px] leading-normal"
+              className="mt-5 flex items-start gap-2.5 rounded-xl bg-[#F6F1E8] p-3 text-[13px] leading-normal"
             >
               <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <span>
@@ -1065,14 +1001,14 @@ export function RsvpForm({
               {declined ? null : (
                 <div
                   role="note"
-                  className="mt-4 flex items-start gap-3 rounded-2xl border-2 border-[#A3B18A] bg-[#F4F6EE] px-4 py-3"
+                  className="mt-4 flex items-start gap-3 rounded-xl border border-[#D9C7A6] bg-[#F6F1E8] px-4 py-3"
                 >
                   <span aria-hidden="true" className="text-2xl leading-none">
                     👔
                   </span>
                   <div>
-                    <p className="text-[15px] leading-normal font-semibold text-[#5C3A26]">{DRESS_CODE.title}</p>
-                    <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#5C3A26]">{DRESS_CODE.detail}</p>
+                    <p className="text-[15px] leading-normal font-semibold text-[#2B2621]">{DRESS_CODE.title}</p>
+                    <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#2B2621]">{DRESS_CODE.detail}</p>
                   </div>
                 </div>
               )}

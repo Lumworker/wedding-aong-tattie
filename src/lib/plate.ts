@@ -10,9 +10,12 @@ export function normalizePlate(input: string) {
     .replace(/[\s\-.]/g, "")
 }
 
-/** Typical shape: optional leading digit, 1–3 Thai consonants, 1–4 digits. Special plates may not match. */
+/**
+ * Typical shapes: optional leading digit, 1–3 Thai consonants, 1–4 digits ("1กข1234"),
+ * or the all-digit van/truck style ("70-1234" → "701234"). Special plates may not match.
+ */
 export function looksLikePlate(normalized: string) {
-  return /^[0-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/.test(normalized)
+  return /^[0-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/.test(normalized) || /^[0-9]{2}[0-9]{4}$/.test(normalized)
 }
 
 export const DEFAULT_PROVINCE = "กรุงเทพมหานคร"
