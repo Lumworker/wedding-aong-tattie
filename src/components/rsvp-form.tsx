@@ -561,7 +561,6 @@ export function RsvpForm({
       setKids(0)
       setTravel(NO_TRAVEL)
     }
-    window.setTimeout(() => onNavigate("about"), 250)
   }
 
   function checkAbout() {
@@ -691,7 +690,7 @@ export function RsvpForm({
               <Choice
                 legend="การเข้าร่วมงาน"
                 name="attendance-main"
-                stacked
+                leadFull
                 value={person.attendance}
                 onChange={chooseAttendance}
                 options={[
