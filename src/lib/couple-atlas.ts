@@ -113,3 +113,25 @@ export function coupleJumpOrigin(index: number) {
 export function coupleWaveOrigin(index: number) {
   return COUPLE_WAVE.gutter + index * (COUPLE_WAVE.frame + COUPLE_WAVE.gutter)
 }
+
+/**
+ * Letter reading on the dashboard balcony. Same sheet layout as the wave strips
+ * (four 256px frames, 4px pad and gutter, 1044×264). Faces and bodies are the idle
+ * portraits; only the arms and the letter move.
+ * Order: hold envelope, open flap, pull letter, read (heart). Plays once and rests on the last frame.
+ */
+export const COUPLE_READ = {
+  groom: "/sprites/groom-read.png?v=1",
+  bride: "/sprites/bride-read.png?v=1",
+  frames: 4,
+  frame: 256,
+  gutter: 4,
+  width: 1044,
+  height: 264,
+  /** Hold, open, pull. The last frame stays until the letter card closes. */
+  frameMs: [300, 400, 400],
+} as const
+
+export function coupleReadOrigin(index: number) {
+  return COUPLE_READ.gutter + index * (COUPLE_READ.frame + COUPLE_READ.gutter)
+}

@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { VenueScene } from "@/components/venue/venue-scene"
+import { DashboardView } from "@/components/dashboard/dashboard-view"
 import { ROUTES, withQuery } from "@/lib/routes"
 import { guestStore } from "@/lib/guest-store"
 
@@ -15,7 +15,7 @@ export default function DashboardPage() {
   if (!snapshot.phone || !snapshot.party || !snapshot.selfKey) return null
 
   return (
-    <VenueScene
+    <DashboardView
       guests={snapshot.guests}
       wishes={snapshot.wishes}
       phone={snapshot.phone}
@@ -33,6 +33,7 @@ export default function DashboardPage() {
         guestStore.clearPhone()
         router.push(withQuery(ROUTES.welcome, search))
       }}
+      onCancelled={() => router.replace(withQuery(ROUTES.welcome, search))}
     />
   )
 }
