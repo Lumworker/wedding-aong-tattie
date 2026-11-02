@@ -1,4 +1,4 @@
-import { partyKey } from "@/lib/guest-session"
+import { partyKey, publicGuestId } from "@/lib/guest-session"
 import type { Guest, Party, Wish } from "@/lib/types"
 
 /**
@@ -9,7 +9,7 @@ export function publicGuests(parties: Party[]): Guest[] {
   return parties.flatMap((party) => {
     const key = partyKey(party.phone)
     return party.guests.map((guest) => ({
-      id: guest.id,
+      id: publicGuestId(guest.id),
       name: guest.name,
       gender: guest.gender,
       ageGroup: guest.ageGroup,

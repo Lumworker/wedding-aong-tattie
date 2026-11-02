@@ -34,6 +34,11 @@ export function partyKey(phone: string) {
   return `p_${mac("party-key", phone).slice(0, 16)}`
 }
 
+/** Opaque guest id for public lists — imported rows use ids like `guest-<phone>`. */
+export function publicGuestId(id: string) {
+  return `g_${mac("guest-id", id).slice(0, 16)}`
+}
+
 function readCookie(request: Request, name: string) {
   const header = request.headers.get("cookie") ?? ""
   for (const part of header.split(";")) {
