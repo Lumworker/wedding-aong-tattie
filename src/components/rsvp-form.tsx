@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCoupleJumpPlayback } from "@/components/venue/character"
 import { COUPLE_PEEK } from "@/lib/couple-atlas"
-import { COUPLE, PARTY_MAX, VENUE_MAP } from "@/lib/event"
+import { COUPLE, DRESS_CODE, PARTY_MAX, VENUE_MAP } from "@/lib/event"
 import { newId } from "@/lib/id"
 import { attendanceLabel, stepIcon, travelIcon, travelLabel } from "@/lib/labels"
 import { formatThaiMobile, maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
@@ -1062,6 +1062,20 @@ export function RsvpForm({
                   />
                 )}
               </div>
+              {declined ? null : (
+                <div
+                  role="note"
+                  className="mt-4 flex items-start gap-3 rounded-2xl border-2 border-[#A3B18A] bg-[#F4F6EE] px-4 py-3"
+                >
+                  <span aria-hidden="true" className="text-2xl leading-none">
+                    👔
+                  </span>
+                  <div>
+                    <p className="text-[15px] leading-normal font-semibold text-[#5C3A26]">{DRESS_CODE.title}</p>
+                    <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#5C3A26]">{DRESS_CODE.detail}</p>
+                  </div>
+                </div>
+              )}
               {summary ? (
                 <p role="alert" className="mt-3 text-sm text-destructive">
                   {summary}
