@@ -478,15 +478,17 @@
 
 /* Loading run: 1556×264 strip. Frame 384×256 at x = 4 + i*388, y = 4. */
 .couple-run {
+  /* 8-frame cat run (bride + groom cats). Frames 384×224, pad 4, gutter 8.
+     Built by scripts/build-couple-run-cats.py: every frame same scale, feet on one ground line. */
   --run-scale: calc(280 / 384);
   display: block;
   width: calc(384px * var(--run-scale));
-  height: calc(256px * var(--run-scale));
-  background-image: url("/sprites/couple-run.png?v=1");
+  height: calc(224px * var(--run-scale));
+  background-image: url("/sprites/couple-run.png?v=2");
   background-repeat: no-repeat;
-  background-size: calc(1556px * var(--run-scale)) calc(264px * var(--run-scale));
-  image-rendering: pixelated;
-  animation: couple-run 0.64s steps(4) infinite;
+  background-size: calc(3136px * var(--run-scale)) calc(232px * var(--run-scale));
+  background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
+  animation: couple-run 0.64s steps(8) infinite;
 }
 
 @keyframes couple-run {
@@ -494,7 +496,7 @@
     background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
   to {
-    background-position: calc(-1556px * var(--run-scale)) calc(-4px * var(--run-scale));
+    background-position: calc(-3140px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
 }
 
