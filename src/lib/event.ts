@@ -1,6 +1,6 @@
 /**
- * Ceremony date is 5 ธันวาคม 2570.
- * Kept on purpose after the explicit date fix (not 25 December).
+ * Ceremony date is 20 พฤศจิกายน 2570.
+ * Changed on purpose to Saturday 20 November (not 5 or 25 December).
  * Every user-facing date string should read `COUPLE.dateThai`.
  */
 export const COUPLE = {
@@ -10,7 +10,7 @@ export const COUPLE = {
   bride: "Prachayaphorn Muangphrae",
   brideShort: "Prachayaphorn",
   brideNickname: "แทตตี้",
-  dateThai: "5 ธันวาคม 2570",
+  dateThai: "20 พฤศจิกายน 2570",
 } as const
 
 export const COUPLE_STORY = {
@@ -20,7 +20,7 @@ export const COUPLE_STORY = {
   bride:
     "แทตตี้เป็นคนอบอุ่น มองรายละเอียดที่คนอื่นข้าม และหัวเราะง่าย งานนี้หลายอย่างผ่านมือเธอ ทั้งโทนสี คำบนการ์ด และความรู้สึกของแขกที่เดินเข้ามา",
   together:
-    "ทั้งคู่เลือกวันที่ 5 ธันวาคม 2570 เพราะอยากให้คนที่รักมานั่งด้วยกันในวันที่มีแสงนวล ถ้าอยากรู้จักมากกว่าชื่อบนการ์ด ให้กลับไปแตะตัวบนแท่นได้เสมอ",
+    "ทั้งคู่เลือกวันที่ 20 พฤศจิกายน 2570 เพราะอยากให้คนที่รักมานั่งด้วยกันในวันที่มีแสงนวล ถ้าอยากรู้จักมากกว่าชื่อบนการ์ด ให้กลับไปแตะตัวบนแท่นได้เสมอ",
 } as const
 
 /** อาสนวิหารอัสสัมชัญ บางรัก — Assumption Cathedral, Bangkok. */
@@ -38,8 +38,8 @@ export const VENUE_MAP = {
 export const PARTY_MIN = 1
 export const PARTY_MAX = 10
 
-/** 5 ธันวาคม 2570 (B.E.) = 5 December 2027. All-day until the couple fixes a start time. */
-export const CEREMONY_DATE_ISO = "2027-12-05"
+/** 20 พฤศจิกายน 2570 (B.E.) = Saturday 20 November 2027. All-day until the couple fixes a start time. */
+export const CEREMONY_DATE_ISO = "2027-11-20"
 
 /** "HH:MM" Bangkok time, or null while not decided — calendar events stay all-day. */
 export const CEREMONY_START: string | null = null
