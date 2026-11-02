@@ -26,7 +26,7 @@ export function Choice<T extends string>({
             <label
               key={option.value}
               className={cn(
-                "flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-2xl border px-2 py-2.5 text-center transition-colors",
+                "flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-lg border px-2 py-2.5 text-center transition-colors",
                 "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
                 selected
                   ? "border-primary bg-primary text-primary-foreground"

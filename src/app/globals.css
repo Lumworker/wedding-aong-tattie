@@ -66,26 +66,28 @@
 }
 
 :root {
-  /* Wedding CI. Washes and the warm row are the labeled board; aqua and sky are sampled from the cool row. */
-  --wash: #f8ede1;
-  --wash-mid: #f4e6d6;
-  --wash-deep: #e6d5c3;
-  --cream: #fff8f1;
-  --nude: #e3d6cb;
-  --blush: #f3c7d6;
-  --blush-pale: #f8e8ec;
-  --mint: #d9e8d6;
-  --sage: #c1d3c3;
-  --aqua: #d1ebec;
-  --sky: #c8e6f1;
-  --ink: #2a2623;
-  --taupe: #4e463f;
-  /* Rose stays dark enough for text and primary hover (soft pink fails as text). */
-  --rose: #8f5e58;
-  /* Sage darkened along the CI hue so status text and dots stay readable on cream. */
-  --sage-deep: #3f6944;
-  /* Midpoint of soft pink and rose, for small marks that need more presence than the wash. */
-  --blush-deep: #c19297;
+  /* Formal CI: ivory paper, warm ink, champagne gold. One palette for every page. */
+  --wash: #faf7f1;
+  --wash-mid: #f4efe6;
+  --wash-deep: #e6ded0;
+  --cream: #fffdf9;
+  --nude: #e6ded0;
+  --blush: #f3ece2;
+  --blush-pale: #f6f1e8;
+  --mint: #e9ecdf;
+  --sage: #d9dccb;
+  --aqua: #e3ebe9;
+  --sky: #e2e8ec;
+  --ink: #2b2621;
+  --taupe: #4a433c;
+  /* Gold that still reads as text on ivory (≈5:1). */
+  --rose: #86663a;
+  --sage-deep: #4f6145;
+  /* Champagne gold for rules, icons and small marks. */
+  --blush-deep: #a8834f;
+  --gold: #a8834f;
+  --gold-deep: #86663a;
+  --muted-ink: #6f665c;
 
   --background: var(--wash);
   --foreground: var(--ink);
@@ -93,15 +95,15 @@
   --card-foreground: var(--ink);
   --popover: var(--cream);
   --popover-foreground: var(--ink);
-  --primary: var(--blush);
-  --primary-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--cream);
   --secondary: var(--blush-pale);
   --secondary-foreground: var(--ink);
   --muted: var(--nude);
-  --muted-foreground: var(--taupe);
+  --muted-foreground: var(--muted-ink);
   --accent: var(--blush-pale);
   --accent-foreground: var(--ink);
-  --destructive: #8f3d3a;
+  --destructive: #9f3a2e;
   --border: var(--wash-deep);
   --input: var(--nude);
   --ring: var(--rose);
@@ -110,7 +112,7 @@
   --chart-3: var(--sage);
   --chart-4: var(--aqua);
   --chart-5: var(--sky);
-  --radius: 1rem;
+  --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -505,10 +507,10 @@
   Tokens live on .welcome-palette so the rest of the site keeps its own CI.
 */
 .welcome-palette {
-  --wp-chocolate: #5c3a26;
-  --wp-chocolate-deep: #3f2719;
-  --wp-sage: #a3b18a;
-  --wp-cream: #f1e7d3;
+  --wp-chocolate: #2b2621;
+  --wp-chocolate-deep: #4a433c;
+  --wp-sage: #a8834f;
+  --wp-cream: #fffdf9;
   background: var(--wp-cream);
   color: var(--wp-chocolate);
 }
@@ -529,16 +531,32 @@
   image-rendering: pixelated;
   pointer-events: none;
   user-select: none;
+  /* Calm the plate so it reads as a backdrop, not a game screen. */
+  filter: saturate(0.5) brightness(1.07) contrast(0.9);
+}
+
+.welcome-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(250, 247, 241, 0.38), rgba(250, 247, 241, 0.06) 40%, rgba(250, 247, 241, 0.55) 100%);
 }
 
 .welcome-palette .welcome-card {
   background: var(--wp-cream);
   color: var(--wp-chocolate);
-  border: 1px solid color-mix(in srgb, var(--wp-chocolate) 55%, var(--wp-sage));
-  box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--wp-chocolate) 70%, transparent);
+  /* Printed-card frame: hairline gold rule inset from the edge. */
+  border: 1px solid #e6ded0;
+  box-shadow:
+    inset 0 0 0 7px var(--wp-cream),
+    inset 0 0 0 8px color-mix(in srgb, var(--wp-sage) 70%, transparent),
+    0 18px 44px -26px rgba(43, 38, 33, 0.45);
 }
 
-.welcome-palette .welcome-kicker,
+.welcome-palette .welcome-kicker {
+  color: var(--gold-deep);
+}
 .welcome-palette .welcome-title,
 .welcome-palette .welcome-amp,
 .welcome-palette .welcome-date,

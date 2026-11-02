@@ -252,7 +252,7 @@ export function BalconyScene({
   return (
     <div ref={boxRef} className="flex h-full w-full justify-center">
     <div
-      className="relative h-full overflow-hidden rounded-2xl border border-[#E6E0D6] bg-[#F8F6F1]"
+      className="relative h-full overflow-hidden rounded-2xl border border-[#E6DED0] bg-[#F8F6F1]"
       style={{
         width: frameWidth,
         backgroundImage: `repeating-linear-gradient(90deg, transparent 0 ${9 * scale}px, #ECE7DE ${9 * scale}px ${10 * scale}px, transparent ${10 * scale}px ${18 * scale}px)`,
@@ -269,7 +269,7 @@ export function BalconyScene({
           type="button"
           onClick={onCoupleTap}
           aria-label={`แตะ${COUPLE.groomNickname}กับ${COUPLE.brideNickname}เพื่อทักทาย`}
-          className="absolute flex cursor-pointer items-end rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2E2A27]"
+          className="absolute flex cursor-pointer items-end rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2B2621]"
           style={{ left: GROOM_LEFT, top: COUPLE_TOP, width: BRIDE_LEFT + CELL - GROOM_LEFT, height: CELL }}
         >
           <span className="absolute" style={{ left: 0, top: 0 }}>
@@ -301,7 +301,7 @@ export function BalconyScene({
 
         {anim.kind === "wave" ? (
           <div
-            className="absolute -translate-x-1/2 rounded-lg border-2 border-[#2E2A27] bg-white px-3 py-1 text-[13px] font-medium whitespace-nowrap text-[#2E2A27]"
+            className="absolute -translate-x-1/2 rounded-lg border-2 border-[#2B2621] bg-white px-3 py-1 text-[13px] font-medium whitespace-nowrap text-[#2B2621]"
             style={{ left: CENTER, top: COUPLE_TOP - 30 }}
           >
             ขอบคุณที่มานะ!
@@ -311,13 +311,13 @@ export function BalconyScene({
         {crowd.map((item) => (
           <div key={item.guest.id} className="absolute" style={{ left: item.x, top: FEET - (item.guest.isCompanion ? FOLLOWER_H : GUEST_GRID.height) }}>
             {!item.guest.isCompanion ? (
-              <div aria-hidden="true" className="absolute rounded-[50%] bg-[#E6E0D6]" style={{ left: 4, top: GUEST_GRID.height - 6, width: 50, height: 10 }} />
+              <div aria-hidden="true" className="absolute rounded-[50%] bg-[#E6DED0]" style={{ left: 4, top: GUEST_GRID.height - 6, width: 50, height: 10 }} />
             ) : null}
             <div className="relative">
               <GuestSprite guest={item.guest} />
             </div>
             {item.you ? (
-              <span className="absolute left-1/2 -translate-x-1/2 rounded bg-[#2E2A27] px-1.5 py-px text-[10px] font-semibold tracking-wider text-white" style={{ top: -18 }}>
+              <span className="absolute left-1/2 -translate-x-1/2 rounded bg-[#2B2621] px-1.5 py-px text-[10px] font-semibold tracking-wider text-white" style={{ top: -18 }}>
                 YOU
               </span>
             ) : null}
@@ -325,7 +325,7 @@ export function BalconyScene({
         ))}
 
         {declined ? (
-          <span className="absolute right-2.5 rounded-full border border-[#E6E0D6] bg-white px-2.5 py-0.5 text-[11px] text-[#2E2A27]" style={{ top: FLOOR + 22 }}>
+          <span className="absolute right-2.5 rounded-full border border-[#E6DED0] bg-white px-2.5 py-0.5 text-[11px] text-[#2B2621]" style={{ top: FLOOR + 22 }}>
             คุณส่งกำลังใจจากที่ไกล ๆ
           </span>
         ) : null}
@@ -353,25 +353,25 @@ export function BalconyScene({
         <div
           role="dialog"
           aria-label={`จดหมายจาก ${letter.from}`}
-          className="absolute inset-x-3 bottom-3 z-20 mx-auto flex max-h-[62%] max-w-md flex-col gap-1.5 overflow-y-auto rounded-lg border border-[#E6E0D6] bg-white px-4 pt-3 pb-3.5 shadow-[0_8px_20px_rgba(46,42,39,0.12)]"
+          className="absolute inset-x-3 bottom-3 z-20 mx-auto flex max-h-[62%] max-w-md flex-col gap-1.5 overflow-y-auto rounded-lg border border-[#E6DED0] bg-white px-4 pt-3 pb-3.5 shadow-[0_8px_20px_rgba(46,42,39,0.12)]"
         >
           <div className="flex items-center gap-2">
             <Envelope width={18} />
-            <span className="flex-1 text-xs text-[#6E6862]">{reader}กำลังอ่าน</span>
+            <span className="flex-1 text-xs text-[#6F665C]">{reader}กำลังอ่าน</span>
             <button
               ref={closeRef}
               type="button"
               onClick={onCloseLetter}
               aria-label="ปิดจดหมาย"
-              className="-my-2 -mr-2 flex size-11 items-center justify-center rounded-md text-[#2E2A27] hover:bg-[#F7F4EE]"
+              className="-my-2 -mr-2 flex size-11 items-center justify-center rounded-md text-[#2B2621] hover:bg-[#FAF7F1]"
             >
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
           </div>
-          <p className="text-sm font-semibold text-[#2E2A27]">จาก {letter.from}</p>
-          <p className="text-sm leading-relaxed break-words whitespace-pre-line text-[#2E2A27]">{letter.text}</p>
+          <p className="text-sm font-semibold text-[#2B2621]">จาก {letter.from}</p>
+          <p className="text-sm leading-relaxed break-words whitespace-pre-line text-[#2B2621]">{letter.text}</p>
         </div>
       ) : null}
     </div>

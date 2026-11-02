@@ -66,7 +66,7 @@ export function Tour({ steps, step, onNext, onSkip }: { steps: TourStep[]; step:
         role="dialog"
         aria-modal="true"
         aria-label={`วิธีใช้งาน ${step} จาก ${steps.length}`}
-        className="fixed rounded-xl bg-[#2E2A27] px-3.5 pt-3.5 pb-2.5 text-[#F7F4EE]"
+        className="fixed rounded-xl bg-[#2B2621] px-3.5 pt-3.5 pb-2.5 text-[#FAF7F1]"
         style={{
           left,
           width: TIP_W,
@@ -75,10 +75,10 @@ export function Tour({ steps, step, onNext, onSkip }: { steps: TourStep[]; step:
       >
         <span
           aria-hidden="true"
-          className="absolute size-3.5 rotate-45 bg-[#2E2A27]"
+          className="absolute size-3.5 rotate-45 bg-[#2B2621]"
           style={{ left: arrowLeft, ...(below ? { top: -7 } : { bottom: -7 }) }}
         />
-        <p className="text-[11px] tracking-wider text-[#F2D4DA]">
+        <p className="text-[11px] tracking-wider text-[#D9C7A6]">
           TIP {step}/{steps.length}
         </p>
         <p className="mt-1 text-base font-semibold">{current.title}</p>
@@ -87,7 +87,7 @@ export function Tour({ steps, step, onNext, onSkip }: { steps: TourStep[]; step:
           <button type="button" onClick={onSkip} className="min-h-9 px-1 text-[13px] underline underline-offset-2">
             ข้าม
           </button>
-          <button ref={nextRef} type="button" onClick={onNext} className="min-h-9 rounded-md bg-[#F7F4EE] px-4 text-sm font-semibold text-[#2E2A27]">
+          <button ref={nextRef} type="button" onClick={onNext} className="min-h-9 rounded-md bg-[#FAF7F1] px-4 text-sm font-semibold text-[#2B2621]">
             {last ? "เข้าใจแล้ว" : "ถัดไป"}
           </button>
         </div>

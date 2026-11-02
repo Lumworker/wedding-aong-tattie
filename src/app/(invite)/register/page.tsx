@@ -17,6 +17,12 @@ export default function RegisterPage() {
 
   if (!snapshot.ready) return null
 
+  // /welcome is the only way in: a bare /register without a phone goes back there.
+  if (!phone && !urlStep) {
+    router.replace(withQuery(ROUTES.welcome, search))
+    return null
+  }
+
   // Only bind saved party for the active phone — changing number never reuses old draft.
   const party = phone && snapshot.party?.phone === phone ? snapshot.party : null
 
@@ -52,7 +58,7 @@ export default function RegisterPage() {
         router.push(withQuery(ROUTES.dashboard, search))
       }}
       onLeave={() => {
-        router.push(withQuery(ROUTES.welcome, search))
+        router.push(withQuery(snapshot.party ? ROUTES.dashboard : ROUTES.welcome, search))
       }}
     />
   )
