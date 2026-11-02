@@ -478,21 +478,19 @@
 
 /* Loading run: 1556×264 strip. Frame 384×256 at x = 4 + i*388, y = 4. */
 .couple-run {
-  /* 18-frame cat run (bride + groom cats). 6 keyframes in gait order, heads locked in place,
-     two optical-flow in-betweens per step (loop seam included). Frames 384×224, pad 4, gutter 8.
-     Built by scripts/build-couple-run-cats.py. The up-and-down is the smooth couple-bob below,
-     not baked into the frames. */
+  /* 21-frame cat bound (bride + groom cats): frames sorted by leg reach so each cat gathers,
+     stretches into flight and lands, heads locked, two optical-flow in-betweens per step,
+     the lift baked in (up to 4px at full stretch). The two cats are half a cycle apart.
+     Frames 384×224, pad 4, gutter 8. Built by scripts/build-couple-run-cats.py. */
   --run-scale: calc(280 / 384);
   display: block;
   width: calc(384px * var(--run-scale));
   height: calc(224px * var(--run-scale));
-  background-image: url("/sprites/couple-run.webp?v=5");
+  background-image: url("/sprites/couple-run.webp?v=6");
   background-repeat: no-repeat;
-  background-size: calc(7056px * var(--run-scale)) calc(232px * var(--run-scale));
+  background-size: calc(8232px * var(--run-scale)) calc(232px * var(--run-scale));
   background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
-  animation:
-    couple-run 0.64s steps(18) infinite,
-    couple-bob 0.16s ease-in-out infinite alternate;
+  animation: couple-run 0.64s steps(21) infinite;
 }
 
 @keyframes couple-run {
@@ -500,16 +498,7 @@
     background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
   to {
-    background-position: calc(-7060px * var(--run-scale)) calc(-4px * var(--run-scale));
-  }
-}
-
-@keyframes couple-bob {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-2px);
+    background-position: calc(-8236px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
 }
 
