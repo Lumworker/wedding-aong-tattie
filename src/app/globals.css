@@ -482,7 +482,7 @@
   display: block;
   width: calc(384px * var(--run-scale));
   height: calc(288px * var(--run-scale));
-  background-image: url("/sprites/cats-gallop.png?v=2");
+  background-image: url("/sprites/cats-gallop.png?v=3");
   background-repeat: no-repeat;
   background-size: calc(3072px * var(--run-scale)) calc(288px * var(--run-scale));
   image-rendering: pixelated;
