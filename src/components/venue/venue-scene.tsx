@@ -100,7 +100,7 @@ function StatChip({ label, value, tone }: { label: string; value: number; tone: 
   return (
     <div className="min-w-0 flex-1 rounded-2xl border border-border bg-card px-3 py-2.5">
       <p className="text-[13px] text-muted-foreground">{label}</p>
-      <p className={`mt-0.5 font-display text-3xl leading-none ${tone === "sage" ? "text-sage-deep" : "text-rose"}`}>
+      <p className={`mt-0.5 font-display text-3xl leading-none ${tone === "sage" ? "text-sage-deep" : "text-rose-ink"}`}>
         {value}
       </p>
     </div>
@@ -150,10 +150,10 @@ export function VenueScene({
           <p className="text-sm text-muted-foreground">{VENUE_MAP.name}</p>
         </div>
         <div className="hidden lg:block">
-          <p className="text-[13px] font-medium tracking-[0.28em] text-rose uppercase">งานมงคลสมรส</p>
+          <p className="text-[13px] font-medium tracking-[0.28em] text-rose-ink uppercase">งานมงคลสมรส</p>
           <h1 className="mt-2 font-display text-4xl leading-snug text-ink">
             {COUPLE.groomNickname}
-            <span className="px-2 text-rose">&</span>
+            <span className="px-2 text-blueberry-deep">&</span>
             {COUPLE.brideNickname}
           </h1>
           <p className="mt-2 font-serif text-base text-ink">{COUPLE.dateThai}</p>

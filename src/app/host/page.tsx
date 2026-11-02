@@ -79,7 +79,7 @@ export default function HostPage() {
 
   return (
     <main className="mx-auto min-h-dvh max-w-3xl px-4 py-10">
-      <p className="text-[11px] font-medium tracking-[0.28em] text-rose uppercase">เจ้าภาพ</p>
+      <p className="text-[11px] font-medium tracking-[0.28em] text-rose-ink uppercase">เจ้าภาพ</p>
       <h1 className="mt-2 font-display text-4xl text-ink">รายชื่อตอบรับ</h1>
       <p className="mt-2 text-sm text-muted-foreground">ดูว่าใครมา ใครยังไม่แน่ใจ และส่งออก CSV</p>
 
@@ -97,7 +97,7 @@ export default function HostPage() {
             value={secret}
             onChange={(event) => setSecret(event.target.value)}
           />
-          {error ? <p className="text-sm text-rose">{error}</p> : null}
+          {error ? <p className="text-sm text-rose-ink">{error}</p> : null}
           <Button type="submit" className="h-10 rounded-full px-5">
             เข้าดูรายชื่อ
           </Button>

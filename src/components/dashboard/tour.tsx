@@ -59,14 +59,14 @@ export function Tour({ steps, step, onNext, onSkip }: { steps: TourStep[]; step:
     <div className="fixed inset-0 z-[60]">
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed rounded-[10px] border-2 border-white shadow-[0_0_0_9999px_rgba(46,42,39,0.55)] transition-all duration-200"
+        className="pointer-events-none fixed rounded-[10px] border-2 border-white shadow-[0_0_0_9999px_rgba(46,69,53,0.55)] transition-all duration-200"
         style={{ left: box.x - PAD, top: box.y - PAD, width: box.w + PAD * 2, height: box.h + PAD * 2 }}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={`วิธีใช้งาน ${step} จาก ${steps.length}`}
-        className="fixed rounded-xl bg-[#2E2A27] px-3.5 pt-3.5 pb-2.5 text-[#F7F4EE]"
+        className="fixed rounded-2xl bg-[#2E4535] px-3.5 pt-3.5 pb-2.5 text-[#F6F1E8]"
         style={{
           left,
           width: TIP_W,
@@ -75,10 +75,10 @@ export function Tour({ steps, step, onNext, onSkip }: { steps: TourStep[]; step:
       >
         <span
           aria-hidden="true"
-          className="absolute size-3.5 rotate-45 bg-[#2E2A27]"
+          className="absolute size-3.5 rotate-45 bg-[#2E4535]"
           style={{ left: arrowLeft, ...(below ? { top: -7 } : { bottom: -7 }) }}
         />
-        <p className="text-[11px] tracking-wider text-[#F2D4DA]">
+        <p className="text-[11px] tracking-wider text-[#F2D9D3]">
           TIP {step}/{steps.length}
         </p>
         <p className="mt-1 text-base font-semibold">{current.title}</p>
@@ -87,7 +87,7 @@ export function Tour({ steps, step, onNext, onSkip }: { steps: TourStep[]; step:
           <button type="button" onClick={onSkip} className="min-h-9 px-1 text-[13px] underline underline-offset-2">
             ข้าม
           </button>
-          <button ref={nextRef} type="button" onClick={onNext} className="min-h-9 rounded-md bg-[#F7F4EE] px-4 text-sm font-semibold text-[#2E2A27]">
+          <button ref={nextRef} type="button" onClick={onNext} className="min-h-9 rounded-full bg-[#F6F1E8] px-4 text-sm font-semibold text-[#2E4535]">
             {last ? "เข้าใจแล้ว" : "ถัดไป"}
           </button>
         </div>

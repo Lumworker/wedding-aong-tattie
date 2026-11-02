@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-thai-sans), "Noto Sans Thai", ui-sans-serif, sans-serif;
   --font-serif: var(--font-thai-serif), "Noto Serif Thai", ui-serif, serif;
-  --font-display: var(--font-cormorant), "Cormorant Garamond", ui-serif, serif;
+  --font-display: var(--font-fraunces), "Fraunces", ui-serif, serif;
   --font-heading: var(--font-thai-serif), "Noto Serif Thai", ui-serif, serif;
   --color-wash: var(--wash);
   --color-wash-deep: var(--wash-deep);
@@ -26,6 +26,13 @@
   --color-ink: var(--ink);
   --color-taupe: var(--taupe);
   --color-rose: var(--rose);
+  --color-rose-ink: var(--rose-ink);
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-blueberry: var(--blueberry);
+  --color-blueberry-deep: var(--blueberry-deep);
+  --color-spring: var(--spring);
+  --color-butter: var(--butter);
   --color-paper: var(--cream);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -66,26 +73,36 @@
 }
 
 :root {
-  /* Wedding CI. Washes and the warm row are the labeled board; aqua and sky are sampled from the cool row. */
-  --wash: #f8ede1;
-  --wash-mid: #f4e6d6;
-  --wash-deep: #e6d5c3;
-  --cream: #fff8f1;
-  --nude: #e3d6cb;
-  --blush: #f3c7d6;
-  --blush-pale: #f8e8ec;
-  --mint: #d9e8d6;
-  --sage: #c1d3c3;
-  --aqua: #d1ebec;
-  --sky: #c8e6f1;
-  --ink: #2a2623;
-  --taupe: #4e463f;
-  /* Rose stays dark enough for text and primary hover (soft pink fails as text). */
-  --rose: #8f5e58;
-  /* Sage darkened along the CI hue so status text and dots stay readable on cream. */
-  --sage-deep: #3f6944;
-  /* Midpoint of soft pink and rose, for small marks that need more presence than the wash. */
-  --blush-deep: #c19297;
+  /*
+    Wedding CI (Nov 2026): Forest, Blueberry, Rose, Spring, Sage, Butter.
+    Forest carries text and the primary button (cream on forest 9.2:1).
+    Blueberry is the wordmark and decoration; Rose is letters and hearts.
+    Pastels (sage, butter, rose, blueberry) never carry white text.
+  */
+  --forest: #2e4535;
+  --forest-deep: #22352a;
+  --blueberry: #8a9db5;
+  --blueberry-deep: #5f7290;
+  --spring: #7a9070;
+  --butter: #fff8e6;
+  --wash: #f6f1e8;
+  --wash-mid: #f3ede2;
+  --wash-deep: #e6dcc4;
+  --cream: #fffcf5;
+  --nude: #e6dcc4;
+  --blush: #f2d9d3;
+  --blush-pale: #f8ece8;
+  --mint: #e3e4d2;
+  --sage: #cccdb0;
+  --aqua: #dde3ec;
+  --sky: #c5d0de;
+  --ink: #2e4535;
+  --taupe: #5b6b5f;
+  /* Rose for marks; --rose-ink is the text-safe shade. */
+  --rose: #e0afa6;
+  --rose-ink: #8a5a52;
+  --sage-deep: #4f6648;
+  --blush-deep: #e0afa6;
 
   --background: var(--wash);
   --foreground: var(--ink);
@@ -93,18 +110,18 @@
   --card-foreground: var(--ink);
   --popover: var(--cream);
   --popover-foreground: var(--ink);
-  --primary: var(--blush);
-  --primary-foreground: var(--ink);
+  --primary: var(--forest);
+  --primary-foreground: var(--wash);
   --secondary: var(--blush-pale);
   --secondary-foreground: var(--ink);
   --muted: var(--nude);
   --muted-foreground: var(--taupe);
   --accent: var(--blush-pale);
   --accent-foreground: var(--ink);
-  --destructive: #8f3d3a;
+  --destructive: #9a3b2e;
   --border: var(--wash-deep);
   --input: var(--nude);
-  --ring: var(--rose);
+  --ring: var(--blueberry-deep);
   --chart-1: var(--blush);
   --chart-2: var(--mint);
   --chart-3: var(--sage);
@@ -164,12 +181,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: linear-gradient(180deg, var(--wash) 0%, var(--wash-mid) 48%, var(--wash-deep) 100%);
-    background-attachment: fixed;
   }
   ::selection {
-    background: var(--blush);
-    color: var(--ink);
+    background: var(--forest);
+    color: var(--wash);
   }
 }
 
@@ -503,16 +518,15 @@
 }
 
 /*
-  Welcome only. The landscape plate is sage, cream, and lavender — chocolate
-  stays on the card, type, and register button. Chocolate on cream is 8.19:1.
-  Sage on cream is 1.86:1, so sage is a card accent, not small type.
-  Tokens live on .welcome-palette so the rest of the site keeps its own CI.
+  Welcome. The plate is recolored to the CI (blueberry hills, forest pines).
+  Forest stays on the card, type, and register button (9.2:1 on cream).
+  The --wp-* names are kept so the welcome components need no rename.
 */
 .welcome-palette {
-  --wp-chocolate: #5c3a26;
-  --wp-chocolate-deep: #3f2719;
-  --wp-sage: #a3b18a;
-  --wp-cream: #f1e7d3;
+  --wp-chocolate: var(--forest);
+  --wp-chocolate-deep: var(--forest-deep);
+  --wp-sage: var(--spring);
+  --wp-cream: var(--wash);
   background: var(--wp-cream);
   color: var(--wp-chocolate);
 }
@@ -536,15 +550,15 @@
 }
 
 .welcome-palette .welcome-card {
-  background: var(--wp-cream);
+  background: var(--cream);
   color: var(--wp-chocolate);
-  border: 1px solid color-mix(in srgb, var(--wp-chocolate) 55%, var(--wp-sage));
-  box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--wp-chocolate) 70%, transparent);
+  border: 1px solid var(--wash-deep);
+  box-shadow: 0 18px 44px -24px color-mix(in srgb, var(--wp-chocolate) 60%, transparent);
 }
 
 .welcome-palette .welcome-kicker,
 .welcome-palette .welcome-title,
-.welcome-palette .welcome-amp,
+
 .welcome-palette .welcome-date,
 .welcome-palette .welcome-meta {
   color: var(--wp-chocolate);
@@ -585,7 +599,7 @@
 .welcome-couple {
   position: absolute;
   left: 50%;
-  bottom: max(19.5rem, 34%);
+  bottom: max(21.5rem, 37%);
   width: min(72vw, 320px);
   aspect-ratio: 240 / 140;
   transform: translateX(-50%);
@@ -641,4 +655,19 @@
   40% { transform: translateY(-4px); }
   70% { transform: translateY(1px); }
   100% { transform: translateY(0); }
+}
+
+/* Gingham: the CI pattern under the dashboard hero. */
+.gingham {
+  background-color: var(--butter);
+  background-image:
+    linear-gradient(90deg, color-mix(in srgb, var(--blueberry) 18%, transparent) 50%, transparent 50%),
+    linear-gradient(color-mix(in srgb, var(--blueberry) 18%, transparent) 50%, transparent 50%);
+  background-size: 12px 12px;
+}
+
+.font-display {
+  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-weight: 360;
+  letter-spacing: 0.02em;
 }

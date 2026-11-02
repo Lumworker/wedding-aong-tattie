@@ -15,7 +15,7 @@ function Chip({ children, onClick, label }: { children: React.ReactNode; onClick
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#D8C8AC] bg-[#F7F1E4] px-3 py-1 text-[13px] leading-tight text-ink"
+      className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#DCCFB4] bg-[#FFF8E6] px-3 py-1 text-[13px] leading-tight text-ink"
     >
       {children}
     </button>
@@ -62,7 +62,7 @@ export function PartyStatus({
   return (
     <div className="mb-3 flex flex-col gap-3">
       {declined ? (
-        <div className="rounded-2xl bg-[#F7F1E4] px-4 py-3 text-[14px] leading-relaxed text-ink">
+        <div className="rounded-2xl bg-[#FFF8E6] px-4 py-3 text-[14px] leading-relaxed text-ink">
           <p className="font-medium">ขอบคุณที่แจ้งให้รู้นะ</p>
           <p className="text-muted-foreground">
             ถึงไปไม่ได้ ก็ยังฝากคำอวยพรถึง{COUPLE.groomNickname}กับ{COUPLE.brideNickname}ได้
@@ -74,7 +74,7 @@ export function PartyStatus({
       ) : null}
 
       {main.attendance === "unsure" ? (
-        <div className="rounded-2xl border border-[#D8C8AC] bg-[#FFFCF8] px-4 py-3 text-[14px] leading-relaxed text-ink">
+        <div className="rounded-2xl border border-[#DCCFB4] bg-[#FFFCF5] px-4 py-3 text-[14px] leading-relaxed text-ink">
           <p>
             ยังไม่แน่ใจใช่ไหม ช่วยอัปเดตคำตอบเมื่อแน่ใจ
             {RSVP_DEADLINE_THAI ? ` ภายใน ${RSVP_DEADLINE_THAI}` : ""} จะได้เตรียมที่นั่งให้ครบ
@@ -174,7 +174,7 @@ export function WishNudge({ selfKey, hasWish, onWrite }: { selfKey: string; hasW
     <div
       role="dialog"
       aria-label="ฝากคำอวยพร"
-      className="fixed inset-x-3 bottom-[max(env(safe-area-inset-bottom),0.75rem)] z-50 mx-auto max-w-md rounded-[1.4rem] border border-[#E6D5C3] bg-[#FFFCF8] p-4 shadow-[0_24px_50px_-24px_rgba(90,62,48,0.55)] motion-safe:animate-in motion-safe:slide-in-from-bottom-4 lg:right-6 lg:left-auto"
+      className="fixed inset-x-3 bottom-[max(env(safe-area-inset-bottom),0.75rem)] z-50 mx-auto max-w-md rounded-[1.4rem] border border-[#E6DCC4] bg-[#FFFCF5] p-4 shadow-[0_24px_50px_-24px_rgba(46,69,53,0.55)] motion-safe:animate-in motion-safe:slide-in-from-bottom-4 lg:right-6 lg:left-auto"
     >
       <p className="font-serif text-lg text-ink">
         💌 ฝากคำอวยพรถึง{COUPLE.groomNickname}กับ{COUPLE.brideNickname}ไหม
