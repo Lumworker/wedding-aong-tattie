@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { attendanceLabel, sideLabel } from "@/lib/labels"
+import { attendanceLabel, sideLabel, travelLabel } from "@/lib/labels"
+import { normalizePlate } from "@/lib/plate"
 import { formatThaiMobile } from "@/lib/phone"
 import type { Party } from "@/lib/types"
 
@@ -15,6 +16,9 @@ type Summary = {
   declined: number
   withCompanions: number
   companions: number
+  children: number
+  carsAttending: number
+  carsUnsure: number
 }
 
 export default function HostPage() {
@@ -23,6 +27,7 @@ export default function HostPage() {
   const [loading, setLoading] = useState(true)
   const [parties, setParties] = useState<Party[] | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
+  const [query, setQuery] = useState("")
 
   async function load() {
     setLoading(true)
@@ -109,6 +114,9 @@ export default function HostPage() {
             <Stat label="คณะที่มีผู้ติดตาม" value={summary.withCompanions} />
             <Stat label="ผู้ติดตาม" value={summary.companions} />
             <Stat label="ทั้งหมด" value={summary.guests} />
+            <Stat label="เด็ก" value={summary.children} />
+            <Stat label="ที่จอด (มา)" value={summary.carsAttending} />
+            <Stat label="ที่จอด (ไม่แน่ใจ)" value={summary.carsUnsure} />
           </div>
           <a
             href="/api/host/export"
@@ -116,8 +124,20 @@ export default function HostPage() {
           >
             ดาวน์โหลด CSV
           </a>
+          <div className="max-w-sm">
+            <label className="block text-sm" htmlFor="host-search">
+              ค้นหาชื่อ เบอร์ หรือทะเบียนรถ (ใช้เช็กหน้างาน)
+            </label>
+            <Input
+              id="host-search"
+              value={query}
+              placeholder="เช่น 1กข 1234"
+              className="mt-1"
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
           <ul className="space-y-3">
-            {parties.map((party) => (
+            {parties.filter((party) => matches(party, query)).map((party) => (
               <li key={party.phone} className="rounded-2xl border border-border bg-card px-4 py-3">
                 <p className="font-medium">{formatThaiMobile(party.phone)}</p>
                 <PartyLine party={party} />
@@ -127,6 +147,18 @@ export default function HostPage() {
         </section>
       ) : null}
     </main>
+  )
+}
+
+function matches(party: Party, query: string) {
+  const q = query.trim()
+  if (!q) return true
+  const plate = normalizePlate(q)
+  const digits = q.replace(/\D/g, "")
+  return (
+    party.guests.some((guest) => guest.name.includes(q)) ||
+    (digits.length >= 3 && party.phone.includes(digits)) ||
+    (party.travel?.cars ?? []).some((car) => normalizePlate(car.plate).includes(plate))
   )
 }
 
@@ -141,6 +173,12 @@ function PartyLine({ party }: { party: Party }) {
       <span>{attendanceLabel(main.attendance)}</span>
       {main.side ? <span>{sideLabel(main.side)}</span> : null}
       <span>{companions > 0 ? `มีผู้ติดตาม ${companions}` : "ไม่มีผู้ติดตาม"}</span>
+      {party.travel?.mode ? <span>{travelLabel(party.travel.mode)}</span> : null}
+      {party.travel?.needsParking ? (
+        <span className="text-ink">
+          ที่จอด: {party.travel.cars.map((car) => `${car.plate} ${car.province}`).join(", ")}
+        </span>
+      ) : null}
     </p>
   )
 }

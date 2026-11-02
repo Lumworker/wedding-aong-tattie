@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react"
 import { PartySummary } from "@/components/guest-roster"
+import { PartyStatus, WishNudge } from "@/components/party-extras"
 import { Button } from "@/components/ui/button"
 import { EventTitle } from "@/components/event-title"
 import { VenueCanvas } from "@/components/venue/venue-canvas"
@@ -12,7 +13,7 @@ import { guestStore } from "@/lib/guest-store"
 import { newId } from "@/lib/id"
 import { attendanceLabel } from "@/lib/labels"
 import { formatThaiMobile } from "@/lib/phone"
-import type { Guest, Wish } from "@/lib/types"
+import type { Guest, Party, Wish } from "@/lib/types"
 
 const DIRECTIONS = `https://www.google.com/maps/dir/?api=1&destination=${VENUE_MAP.lat},${VENUE_MAP.lng}`
 
@@ -111,7 +112,9 @@ export function VenueScene({
   wishes,
   phone,
   selfKey,
+  party,
   onEdit,
+  onEditStep,
   onChangePhone,
 }: {
   guests: Guest[]
@@ -119,7 +122,10 @@ export function VenueScene({
   phone: string
   /** This party's key in the public `guests` / `wishes` lists. */
   selfKey: string
+  /** This guest's own party (with travel), from the session. */
+  party: Party
   onEdit: () => void
+  onEditStep: (step: "attend" | "review") => void
   onChangePhone: () => void
 }) {
   const isAdmin = useIsAdmin()
@@ -129,6 +135,12 @@ export function VenueScene({
   const inside = guests.filter((guest) => guest.attendance === "attending").length
   const unsure = guests.filter((guest) => guest.attendance === "unsure").length
   const declined = guests.filter((guest) => guest.attendance === "declined").length
+  const hasWish = wishes.some((wish) => wish.partyPhone === selfKey)
+
+  function writeWish() {
+    scrollToSection("wishes")
+    window.setTimeout(() => document.getElementById("wish-text")?.focus({ preventScroll: true }), 450)
+  }
 
   return (
     <div className="flex min-h-dvh flex-col lg:grid lg:h-dvh lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
@@ -183,6 +195,12 @@ export function VenueScene({
           <p className="mb-2 text-[13px] leading-normal text-muted-foreground">
             {COUPLE.dateThai} · {VENUE_MAP.name}
           </p>
+          <PartyStatus
+            party={party}
+            onEdit={() => onEditStep("review")}
+            onUpdateAnswer={() => onEditStep("attend")}
+            onWriteWish={writeWish}
+          />
           <PartySummary guests={mine} empty="ยังไม่มีรายชื่อในคณะนี้" hideHeadline />
           <Button type="button" className="mt-3 h-12 w-full rounded-full text-base" onClick={onEdit}>
             แก้ไขการตอบรับ
@@ -237,6 +255,7 @@ export function VenueScene({
           <MapSection />
         </div>
       </div>
+      <WishNudge selfKey={selfKey} hasWish={hasWish} onWrite={writeWish} />
     </div>
   )
 }

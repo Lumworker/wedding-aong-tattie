@@ -37,3 +37,18 @@ export const VENUE_MAP = {
 
 export const PARTY_MIN = 1
 export const PARTY_MAX = 10
+
+/** 5 ธันวาคม 2570 (B.E.) = 5 December 2027. All-day until the couple fixes a start time. */
+export const CEREMONY_DATE_ISO = "2027-12-05"
+
+/** "HH:MM" Bangkok time, or null while not decided — calendar events stay all-day. */
+export const CEREMONY_START: string | null = null
+
+/** Thai date string for "please confirm by", or null to just ask unsure guests to update. */
+export const RSVP_DEADLINE_THAI: string | null = null
+
+/** Shown right above the save button on the review step (guests who are coming). */
+export const DRESS_CODE = {
+  title: "การแต่งกาย: สุภาพเรียบร้อย",
+  detail: "งานจัดในโบสถ์ ขอความกรุณาแต่งกายสุภาพเรียบร้อยให้เหมาะกับสถานที่",
+} as const
