@@ -87,7 +87,7 @@ export function CoupleSprite({
   }
 
   const sheet = mode === "wave" ? COUPLE_WAVE : COUPLE_READ
-  const origin = mode === "wave" ? coupleWaveOrigin(frame) : coupleReadOrigin(frame)
+  const origin = mode === "wave" ? coupleWaveOrigin(frame, role) : coupleReadOrigin(frame)
   const scale = size / sheet.frame
   return (
     <div
