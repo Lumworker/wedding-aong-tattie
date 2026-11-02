@@ -40,32 +40,32 @@ for f in range(8):
 areas={k:[(np.array(c)[...,3]>0).sum() for c in v] for k,v in cats.items()}
 FW,FH,GROUND=384,224,214
 anchor={'W':104,'O':282}   # body centroid x per cat inside a frame
+
+# Best gait order per cat (scripts: smallest pose change between steps, frames 3 and 7 dropped — off-cycle).
+ORDER={'W':[0,1,2,4,5,6], 'O':[0,1,6,2,4,5]}
+PHASE={'W':0,'O':3}   # groom cat half a cycle behind: the two never step in lockstep
+N=len(ORDER['W'])
+def place(frame,k,f):
+    c=cats[k][f]
+    s=(np.median(areas[k])/areas[k][f])**0.5*0.86
+    c=c.resize((max(1,round(c.width*s)),max(1,round(c.height*s))),Image.LANCZOS)
+    a=np.array(c)[...,3]>40
+    cy,cx=ndimage.center_of_mass(a)
+    ys=np.where(a.any(1))[0]
+    frame.alpha_composite(c,(round(anchor[k]-cx),GROUND-(ys.max()+1)))
 frames=[]
-for f in range(8):
+for t in range(N):
     frame=Image.new('RGBA',(FW,FH),(0,0,0,0))
     for k in ('W','O'):
-        c=cats[k][f]
-        s=(np.median(areas[k])/areas[k][f])**0.5*0.86
-        c=c.resize((max(1,round(c.width*s)),max(1,round(c.height*s))),Image.LANCZOS)
-        a=np.array(c)[...,3]>40
-        cy,cx=ndimage.center_of_mass(a)
-        ys=np.where(a.any(1))[0]
-        x=round(anchor[k]-cx); y=GROUND-(ys.max()+1)
-        frame.alpha_composite(c,(x,y))
+        place(frame,k,ORDER[k][(t+PHASE[k])%N])
     frames.append(frame)
 PAD,GUT=4,8
-sheet=Image.new('RGBA',(PAD*2+FW*8+GUT*7, PAD*2+FH),(0,0,0,0))
+sheet=Image.new('RGBA',(PAD*2+FW*N+GUT*(N-1), PAD*2+FH),(0,0,0,0))
 for i,fr in enumerate(frames): sheet.alpha_composite(fr,(PAD+i*(FW+GUT),PAD))
 sheet.save('couple-run.png'); print(sheet.size)
-# previews
 bg=(241,231,211,255)
 gif=[Image.alpha_composite(Image.new('RGBA',(FW,FH),bg),fr).convert('P',palette=Image.ADAPTIVE) for fr in frames]
-gif[0].save('preview.gif',save_all=True,append_images=gif[1:],duration=80,loop=0,disposal=2)
-# onion-skin check: all frames overlaid at 25%
-on=Image.new('RGBA',(FW,FH),bg)
-for fr in frames:
-    a=np.array(fr); a[...,3]=(a[...,3]*0.22).astype('uint8'); on.alpha_composite(Image.fromarray(a))
-on.save('onion.png')
-strip=Image.new('RGBA',(FW*4,FH*2),bg)
-for i,fr in enumerate(frames): strip.alpha_composite(fr,((i%4)*FW,(i//4)*FH))
+gif[0].save('preview.gif',save_all=True,append_images=gif[1:],duration=107,loop=0,disposal=2)
+strip=Image.new('RGBA',(FW*3,FH*2),bg)
+for i,fr in enumerate(frames): strip.alpha_composite(fr,((i%3)*FW,(i//3)*FH))
 strip.save('strip.png')
