@@ -476,34 +476,51 @@
   animation: wd-ring 2.8s ease-in-out infinite;
 }
 
-/* Loading run: 1556×264 strip. Frame is 384×256 at x = 4 + i*(384+4), y = 4. */
-.couple-run {
+/* Loading: cats-gallop 3072×288 strip. 8 frames × 384×288, no gutter. Magenta keyed out. */
+.cats-gallop {
   --run-scale: calc(280 / 384);
   display: block;
   width: calc(384px * var(--run-scale));
-  height: calc(256px * var(--run-scale));
-  background-image: url("/sprites/couple-run.png");
+  height: calc(288px * var(--run-scale));
+  background-image: url("/sprites/cats-gallop.png?v=1");
   background-repeat: no-repeat;
-  background-size: calc(1556px * var(--run-scale)) calc(264px * var(--run-scale));
-  animation: couple-run 0.64s infinite;
+  background-size: calc(3072px * var(--run-scale)) calc(288px * var(--run-scale));
+  image-rendering: pixelated;
+  animation: cats-gallop 0.8s steps(1) infinite;
 }
 
-@keyframes couple-run {
+@keyframes cats-gallop {
   0%,
-  24% {
-    background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
+  12.49% {
+    background-position: 0 0;
+  }
+  12.5%,
+  24.99% {
+    background-position: calc(-384px * var(--run-scale)) 0;
   }
   25%,
-  49% {
-    background-position: calc(-392px * var(--run-scale)) calc(-4px * var(--run-scale));
+  37.49% {
+    background-position: calc(-768px * var(--run-scale)) 0;
+  }
+  37.5%,
+  49.99% {
+    background-position: calc(-1152px * var(--run-scale)) 0;
   }
   50%,
-  74% {
-    background-position: calc(-780px * var(--run-scale)) calc(-4px * var(--run-scale));
+  62.49% {
+    background-position: calc(-1536px * var(--run-scale)) 0;
+  }
+  62.5%,
+  74.99% {
+    background-position: calc(-1920px * var(--run-scale)) 0;
   }
   75%,
+  87.49% {
+    background-position: calc(-2304px * var(--run-scale)) 0;
+  }
+  87.5%,
   100% {
-    background-position: calc(-1168px * var(--run-scale)) calc(-4px * var(--run-scale));
+    background-position: calc(-2688px * var(--run-scale)) 0;
   }
 }
 
