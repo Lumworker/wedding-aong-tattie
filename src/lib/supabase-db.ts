@@ -1,7 +1,22 @@
 import { PARTY_MAX } from "@/lib/event"
 import { normalizeThaiMobile } from "@/lib/phone"
+import { isProvince, normalizePlate } from "@/lib/plate"
 import { createSupabaseAdmin } from "@/lib/supabase-admin"
-import type { AgeGroup, Attendance, FamilySide, Gender, Guest, Party, Wish } from "@/lib/types"
+import type { AgeGroup, Attendance, FamilySide, Gender, Guest, Party, Travel, TravelMode, Wish } from "@/lib/types"
+
+/** Another party already registered this plate + province. */
+export class PlateTakenError extends Error {
+  constructor(
+    readonly plateNorm: string,
+    readonly province: string
+  ) {
+    super("ทะเบียนนี้มีคนลงไว้แล้ว ถ้ามาคันเดียวกันไม่ต้องเพิ่มรถ หรือติดต่อบ่าวสาว")
+    this.name = "PlateTakenError"
+  }
+}
+
+const TRAVEL_MODES: TravelMode[] = ["drive", "taxi", "transit", "dropoff", "unknown"]
+const CAR_MAX = 3
 
 const WISH_KEEP = 200
 
@@ -16,10 +31,20 @@ type GuestRow = {
   position: number
 }
 
+type CarRow = {
+  id: string
+  plate_raw: string
+  province: string
+  position: number
+}
+
 type PartyRow = {
   phone: string
   updated_at: string
   guests: GuestRow[] | null
+  travel_mode?: TravelMode | null
+  needs_parking?: boolean | null
+  party_cars?: CarRow[] | null
 }
 
 type WishRow = {
@@ -33,6 +58,8 @@ type WishRow = {
 function fail(error: { message: string } | null, fallback: string) {
   if (!error) return
   const message = error.message ?? ""
+  const taken = /ทะเบียนซ้ำ:([^:]*):(.*)$/.exec(message)
+  if (taken) throw new PlateTakenError(taken[1], taken[2].trim())
   if (message.includes("เบอร์โทรไม่ถูกต้อง")) throw new Error("เบอร์โทรไม่ถูกต้อง")
   if (message.includes("จำนวนคนในกลุ่ม")) throw new Error("จำนวนคนในกลุ่มต้องอยู่ระหว่าง 1 ถึง 10")
   if (message.includes("ผู้ลงทะเบียนหลัก")) throw new Error("ต้องมีผู้ลงทะเบียนหลักหนึ่งคน")
@@ -51,11 +78,37 @@ function assertParty(party: Party): Party {
   if (party.guests.filter((guest) => !guest.isCompanion).length !== 1) {
     throw new Error("ต้องมีผู้ลงทะเบียนหลักหนึ่งคน")
   }
+  const main = party.guests.find((guest) => !guest.isCompanion)
   return {
     phone,
     updatedAt: party.updatedAt || new Date().toISOString(),
     guests: party.guests.map((guest) => ({ ...guest, partyPhone: phone })),
+    travel: cleanTravel(party.travel, main?.attendance),
   }
+}
+
+/** Server-side rules for travel: cars only when driving and asking for parking. */
+function cleanTravel(input: Travel | undefined, attendance: Attendance | undefined): Travel {
+  const none: Travel = { mode: null, needsParking: null, cars: [] }
+  if (!input || attendance === "declined") return none
+  const mode = TRAVEL_MODES.includes(input.mode as TravelMode) ? (input.mode as TravelMode) : null
+  const needsParking = mode === "drive" && typeof input.needsParking === "boolean" ? input.needsParking : null
+  if (!needsParking) return { mode, needsParking, cars: [] }
+
+  const cars = Array.isArray(input.cars) ? input.cars.slice(0, CAR_MAX) : []
+  if (cars.length < 1) throw new Error("กรุณากรอกทะเบียนรถอย่างน้อย 1 คัน")
+  const seen = new Set<string>()
+  const clean = cars.map((car, index) => {
+    const plate = typeof car.plate === "string" ? car.plate.trim() : ""
+    const norm = normalizePlate(plate)
+    if (norm.length < 2 || norm.length > 10) throw new Error(`ทะเบียนคันที่ ${index + 1} ไม่ถูกต้อง`)
+    if (!isProvince(car.province)) throw new Error(`กรุณาเลือกจังหวัดของคันที่ ${index + 1}`)
+    const key = `${norm}|${car.province}`
+    if (seen.has(key)) throw new Error("กรอกทะเบียนเดียวกันซ้ำในกลุ่ม")
+    seen.add(key)
+    return { id: car.id || `car_${index}`, plate, province: car.province }
+  })
+  return { mode, needsParking, cars: clean }
 }
 
 function toGuest(row: GuestRow, phone: string): Guest {
@@ -73,10 +126,16 @@ function toGuest(row: GuestRow, phone: string): Guest {
 
 function toParty(row: PartyRow): Party {
   const guests = [...(row.guests ?? [])].sort((left, right) => left.position - right.position)
+  const cars = [...(row.party_cars ?? [])].sort((left, right) => left.position - right.position)
   return {
     phone: row.phone,
     updatedAt: row.updated_at,
     guests: guests.map((guest) => toGuest(guest, row.phone)),
+    travel: {
+      mode: row.travel_mode ?? null,
+      needsParking: row.needs_parking ?? null,
+      cars: cars.map((car) => ({ id: car.id, plate: car.plate_raw, province: car.province })),
+    },
   }
 }
 
@@ -90,10 +149,51 @@ function toWish(row: WishRow): Wish {
   }
 }
 
-const PARTY_SELECT = "phone, updated_at, guests(id, name, gender, age_group, attendance, side, is_companion, position)"
+const GUEST_SELECT = "guests(id, name, gender, age_group, attendance, side, is_companion, position)"
+const PARTY_SELECT_V1 = `phone, updated_at, ${GUEST_SELECT}`
+const PARTY_SELECT_V2 = `${PARTY_SELECT_V1}, travel_mode, needs_parking, party_cars(id, plate_raw, province, position)`
+
+/**
+ * True once migration 20261102120000_travel_parking has run. Until then the app
+ * keeps working and saves parties without travel data.
+ */
+let travelSchema: { ok: boolean; at: number } | null = null
+async function hasTravelSchema() {
+  if (travelSchema && (travelSchema.ok || Date.now() - travelSchema.at < 60_000)) return travelSchema.ok
+  const supabase = createSupabaseAdmin()
+  const { error } = await supabase.from("party_cars").select("id").limit(1)
+  travelSchema = { ok: !error, at: Date.now() }
+  if (error) console.warn("travel schema missing — run supabase/migrations/20261102120000_travel_parking.sql")
+  return travelSchema.ok
+}
+
+async function partySelect() {
+  return (await hasTravelSchema()) ? PARTY_SELECT_V2 : PARTY_SELECT_V1
+}
 
 async function savePartyRow(party: Party) {
   const supabase = createSupabaseAdmin()
+  if (await hasTravelSchema()) {
+    const travel = party.travel ?? { mode: null, needsParking: null, cars: [] }
+    const { error } = await supabase.rpc("save_party_v2", {
+      p_phone: party.phone,
+      p_updated_at: party.updatedAt,
+      p_guests: party.guests,
+      p_travel: {
+        mode: travel.mode,
+        needsParking: travel.needsParking,
+        cars: travel.cars.map((car, position) => ({
+          id: car.id,
+          plate: car.plate,
+          plateNorm: normalizePlate(car.plate),
+          province: car.province,
+          position,
+        })),
+      },
+    })
+    fail(error, "บันทึกผู้ลงทะเบียนไม่สำเร็จ")
+    return
+  }
   const { error } = await supabase.rpc("save_party", {
     p_phone: party.phone,
     p_updated_at: party.updatedAt,
@@ -104,17 +204,21 @@ async function savePartyRow(party: Party) {
 
 export async function readAllParties(): Promise<Party[]> {
   const supabase = createSupabaseAdmin()
-  const { data, error } = await supabase.from("parties").select(PARTY_SELECT)
+  const { data, error } = await supabase.from("parties").select(await partySelect())
   fail(error, "อ่านข้อมูลผู้ลงทะเบียนไม่สำเร็จ")
-  return ((data ?? []) as PartyRow[]).map(toParty)
+  return ((data ?? []) as unknown as PartyRow[]).map(toParty)
 }
 
 export async function readParty(phone: string): Promise<Party | null> {
   const normalized = normalizeThaiMobile(phone) ?? phone
   const supabase = createSupabaseAdmin()
-  const { data, error } = await supabase.from("parties").select(PARTY_SELECT).eq("phone", normalized).maybeSingle()
+  const { data, error } = await supabase
+    .from("parties")
+    .select(await partySelect())
+    .eq("phone", normalized)
+    .maybeSingle()
   fail(error, "อ่านข้อมูลไม่สำเร็จ")
-  return data ? toParty(data as PartyRow) : null
+  return data ? toParty(data as unknown as PartyRow) : null
 }
 
 export async function writeParty(party: Party): Promise<void> {
