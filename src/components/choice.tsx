@@ -14,7 +14,7 @@ export function Choice<T extends string>({
   name: string
   value: T | null
   onChange: (value: T) => void
-  options: { value: T; label: string; hint?: string }[]
+  options: { value: T; label: string; hint?: string; emoji?: string }[]
   /** Full-width rows. Easier to tap when the labels are longer than a short word. */
   stacked?: boolean
   /** First option gets its own full row; the rest share the row below. */
@@ -53,7 +53,13 @@ export function Choice<T extends string>({
                 onChange={() => onChange(option.value)}
               />
               <span className={cn("flex items-center gap-1.5 text-[15px] leading-normal", selected ? "font-semibold" : "font-medium")}>
-                {selected ? <Check aria-hidden="true" className="size-4 text-[#86663A]" /> : null}
+                {option.emoji ? (
+                  <span aria-hidden="true" className="text-[1.15em] leading-none">
+                    {option.emoji}
+                  </span>
+                ) : selected ? (
+                  <Check aria-hidden="true" className="size-4 text-[#86663A]" />
+                ) : null}
                 {option.label}
               </span>
               {option.hint ? (

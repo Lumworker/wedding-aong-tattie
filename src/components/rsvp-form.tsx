@@ -694,9 +694,9 @@ export function RsvpForm({
                 value={person.attendance}
                 onChange={chooseAttendance}
                 options={[
-                  { value: "attending", label: "เข้าร่วม" },
-                  { value: "unsure", label: "ยังไม่แน่ใจ" },
-                  { value: "declined", label: "ไปไม่ได้" },
+                  { value: "attending", label: "เข้าร่วม", emoji: "🎉" },
+                  { value: "unsure", label: "ยังไม่แน่ใจ", emoji: "🤔" },
+                  { value: "declined", label: "ไปไม่ได้", emoji: "🙏" },
                 ]}
               />
               <FieldError>{errors.attendance}</FieldError>
@@ -744,8 +744,8 @@ export function RsvpForm({
                   value={person.side}
                   onChange={(side) => patch({ side })}
                   options={[
-                    { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}` },
-                    { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}` },
+                    { value: "groom", label: `ฝั่ง${COUPLE.groomNickname}`, emoji: "🤵" },
+                    { value: "bride", label: `ฝั่ง${COUPLE.brideNickname}`, emoji: "👰" },
                   ]}
                 />
                 <FieldError>{errors.side}</FieldError>
@@ -757,9 +757,9 @@ export function RsvpForm({
                   value={person.gender}
                   onChange={(gender) => patch({ gender })}
                   options={[
-                    { value: "male", label: "ชาย" },
-                    { value: "female", label: "หญิง" },
-                    { value: "other", label: "อื่น ๆ" },
+                    { value: "male", label: "ชาย", emoji: "👨" },
+                    { value: "female", label: "หญิง", emoji: "👩" },
+                    { value: "other", label: "อื่น ๆ", emoji: "🧑" },
                   ]}
                 />
                 <p className="mt-2 text-[13px] leading-normal text-muted-foreground">ใช้เลือกตัวในฉากงาน</p>
@@ -854,8 +854,8 @@ export function RsvpForm({
                   value={travel.needsParking === null ? null : travel.needsParking ? "yes" : "no"}
                   onChange={(value) => patchTravel({ needsParking: value === "yes" })}
                   options={[
-                    { value: "yes", label: "ต้องการ" },
-                    { value: "no", label: "ไม่ต้องการ" },
+                    { value: "yes", label: "ต้องการ", emoji: "🅿️" },
+                    { value: "no", label: "ไม่ต้องการ", emoji: "🙅" },
                   ]}
                 />
                 <FieldError>{errors.parking}</FieldError>
