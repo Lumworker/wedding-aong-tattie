@@ -12,7 +12,7 @@ export function CoupleRunSplash() {
         <div aria-hidden="true">
           <span className="couple-run" />
         </div>
-        <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">กำลังเปิดคำเชิญ</p>
+        <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">มะเหงกกับหนำใจกำลังเอาคำเชิญมาส่ง…</p>
       </div>
     </div>
   )
