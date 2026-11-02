@@ -62,19 +62,19 @@ export function PartyStatus({
   return (
     <div className="mb-3 flex flex-col gap-3">
       {declined ? (
-        <div className="rounded-2xl bg-[#F6F1E8] px-4 py-3 text-[14px] leading-relaxed text-ink">
+        <div className="rounded-xl bg-[#F6F1E8] px-4 py-3 text-[14px] leading-relaxed text-ink">
           <p className="font-medium">ขอบคุณที่แจ้งให้รู้นะ</p>
           <p className="text-muted-foreground">
             ถึงไปไม่ได้ ก็ยังฝากคำอวยพรถึง{COUPLE.groomNickname}กับ{COUPLE.brideNickname}ได้
           </p>
-          <Button type="button" className="mt-2 h-11 rounded-full px-5 text-[15px]" onClick={onWriteWish}>
+          <Button type="button" className="mt-2 h-11 rounded-lg px-5 text-[15px]" onClick={onWriteWish}>
             เขียนคำอวยพร
           </Button>
         </div>
       ) : null}
 
       {main.attendance === "unsure" ? (
-        <div className="rounded-2xl border border-[#E6DED0] bg-[#FFFFFF] px-4 py-3 text-[14px] leading-relaxed text-ink">
+        <div className="rounded-xl border border-[#E6DED0] bg-[#FFFFFF] px-4 py-3 text-[14px] leading-relaxed text-ink">
           <p>
             ยังไม่แน่ใจใช่ไหม ช่วยอัปเดตคำตอบเมื่อแน่ใจ
             {RSVP_DEADLINE_THAI ? ` ภายใน ${RSVP_DEADLINE_THAI}` : ""} จะได้เตรียมที่นั่งให้ครบ
@@ -183,7 +183,7 @@ export function WishNudge({ selfKey, hasWish, onWrite }: { selfKey: string; hasW
       <div className="mt-3 flex gap-2">
         <Button
           type="button"
-          className="h-11 flex-1 rounded-full text-[15px]"
+          className="h-11 flex-1 rounded-lg text-[15px]"
           onClick={() => {
             close()
             onWrite()
@@ -191,7 +191,7 @@ export function WishNudge({ selfKey, hasWish, onWrite }: { selfKey: string; hasW
         >
           เขียนคำอวยพร
         </Button>
-        <button type="button" className="h-11 rounded-full px-4 text-[14px] text-muted-foreground" onClick={close}>
+        <button type="button" className="h-11 rounded-lg px-4 text-[14px] text-muted-foreground" onClick={close}>
           ไว้ทีหลัง
         </button>
       </div>
