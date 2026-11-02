@@ -110,18 +110,21 @@ export function VenueScene({
   guests,
   wishes,
   phone,
+  selfKey,
   onEdit,
   onChangePhone,
 }: {
   guests: Guest[]
   wishes: Wish[]
   phone: string
+  /** This party's key in the public `guests` / `wishes` lists. */
+  selfKey: string
   onEdit: () => void
   onChangePhone: () => void
 }) {
   const isAdmin = useIsAdmin()
   const [editToken, setEditToken] = useState<{ id: string; at: number } | null>(null)
-  const mine = useMemo(() => guests.filter((guest) => guest.partyPhone === phone), [guests, phone])
+  const mine = useMemo(() => guests.filter((guest) => guest.partyPhone === selfKey), [guests, selfKey])
   const mainGuest = mine.find((guest) => !guest.isCompanion) ?? mine[0]
   const inside = guests.filter((guest) => guest.attendance === "attending").length
   const unsure = guests.filter((guest) => guest.attendance === "unsure").length
@@ -155,7 +158,7 @@ export function VenueScene({
         <h2 id="venue-title" className="sr-only">
           ฉากงานมงคลสมรสของ {COUPLE.groomNickname} และ {COUPLE.brideNickname}
         </h2>
-        <VenueCanvas guests={guests} phone={phone} wishes={wishes} showWishes />
+        <VenueCanvas guests={guests} phone={selfKey} wishes={wishes} showWishes />
         <p className="hd2d-hud pointer-events-none absolute bottom-3 left-3 z-10 px-3 py-1.5 font-serif text-sm">
           แตะอ๋องหรือแทตตี้เพื่ออ่านประวัติ
         </p>
@@ -212,7 +215,7 @@ export function VenueScene({
                 id: newId("wish"),
                 text,
                 from,
-                partyPhone: phone,
+                partyPhone: selfKey,
                 createdAt: new Date().toISOString(),
               })
             }}
@@ -222,7 +225,7 @@ export function VenueScene({
           />
           <WishBoard
             wishes={wishes}
-            phone={phone}
+            phone={selfKey}
             onEdit={(wish) => {
               setEditToken({ id: wish.id, at: Date.now() })
               scrollToSection("wishes")

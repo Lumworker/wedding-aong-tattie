@@ -1,14 +1,23 @@
 import { isThaiMobile } from "@/lib/phone"
-import type { Party, Wish } from "@/lib/types"
+import type { Guest, Party, Wish } from "@/lib/types"
+
+/** A server-verified session. `selfKey` is how this party appears in public lists. */
+export type Session = { phone: string; selfKey: string; party: Party | null }
+
+export type SessionStatus = "new" | "verified" | "need-name" | "wrong-name" | "locked"
 
 export type WeddingRepository = {
+  /** Last phone typed on this device — only used to prefill the phone field. */
   readSessionPhone(): string | null
   writeSessionPhone(phone: string): void
   clearSessionPhone(): void
+  readSession(): Promise<Session | null>
+  startSession(phone: string, name?: string): Promise<{ status: SessionStatus; session: Session | null }>
+  endSession(): Promise<void>
   readParty(phone: string): Promise<Party | null>
   writeParty(party: Party): Promise<void>
   deleteParty(phone: string): Promise<void>
-  readAllParties(): Promise<Party[]>
+  readAllGuests(): Promise<Guest[]>
   readWishes(): Promise<Wish[]>
   writeWish(wish: Wish): Promise<void>
   updateWish(wish: Wish): Promise<void>
@@ -88,6 +97,25 @@ export function createExcelWeddingRepository(): WeddingRepository {
       removeRaw(SESSION_KEY)
       setCookie(null)
     },
+    async readSession() {
+      const data = await api<{ session: Session | null }>("/api/session")
+      return data.session
+    },
+    async startSession(phone, name) {
+      const response = await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, name }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { status?: SessionStatus; session?: Session | null; error?: string }
+        | null
+      if (!payload?.status) throw new Error(payload?.error || `API ${response.status}`)
+      return { status: payload.status, session: payload.session ?? null }
+    },
+    async endSession() {
+      await api("/api/session", { method: "DELETE" })
+    },
     async readParty(phone) {
       try {
         const data = await api<{ party: Party }>(`/api/parties/${encodeURIComponent(phone)}`)
@@ -102,9 +130,9 @@ export function createExcelWeddingRepository(): WeddingRepository {
     async deleteParty(phone) {
       await api(`/api/parties/${encodeURIComponent(phone)}`, { method: "DELETE" })
     },
-    async readAllParties() {
-      const data = await api<{ parties: Party[] }>("/api/parties")
-      return data.parties ?? []
+    async readAllGuests() {
+      const data = await api<{ guests: Guest[] }>("/api/parties")
+      return data.guests ?? []
     },
     async readWishes() {
       const data = await api<{ wishes: Wish[] }>("/api/wishes")

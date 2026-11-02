@@ -106,16 +106,20 @@ function StepCard({ children }: { children: ReactNode }) {
   )
 }
 
+export type IdentifyResult = "saved" | "continue" | "need-name" | "wrong-name" | "locked"
+
 function PhoneStep({
   initialValue,
   onSubmit,
   onBack,
 }: {
   initialValue: string
-  onSubmit: (phone: string) => Promise<void>
+  onSubmit: (phone: string, name?: string) => Promise<IdentifyResult>
   onBack: () => void
 }) {
   const [value, setValue] = useState(initialValue)
+  const [name, setName] = useState("")
+  const [needName, setNeedName] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
@@ -127,10 +131,23 @@ function PhoneStep({
       setError("กรุณากรอกเบอร์มือถือไทย 10 หลัก ขึ้นต้นด้วย 06, 08 หรือ 09")
       return
     }
+    if (needName && !name.trim()) {
+      setError("กรุณากรอกชื่อที่ใช้ตอนลงทะเบียน")
+      return
+    }
     setPending(true)
     setError(null)
     try {
-      await onSubmit(phone)
+      const result = await onSubmit(phone, needName ? name : undefined)
+      if (result === "need-name") {
+        setNeedName(true)
+        window.setTimeout(() => document.getElementById("verify-name")?.focus(), 50)
+      } else if (result === "wrong-name") {
+        setError("ชื่อไม่ตรงกับที่ลงทะเบียนไว้ ลองพิมพ์ให้ตรงกับตอนลงทะเบียนอีกครั้ง")
+      } else if (result === "locked") {
+        setError("ลองหลายครั้งเกินไป รอ 15 นาทีแล้วลองใหม่ หรือติดต่อบ่าวสาวเพื่อแก้ไข")
+      }
+      setPending(false)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "เปิดข้อมูลไม่สำเร็จ")
       setPending(false)
@@ -144,7 +161,9 @@ function PhoneStep({
           เบอร์มือถือ
         </h1>
         <p id="phone-hint" className="mt-3 text-center text-sm leading-6 text-muted-foreground">
-          กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้
+          {needName
+            ? "เบอร์นี้ลงทะเบียนไว้แล้ว กรอกชื่อที่ใช้ตอนลงทะเบียนเพื่อเปิดคำตอบ"
+            : "กรอกเบอร์มือถือเพื่อตอบรับ หรือเปิดคำตอบที่บันทึกไว้"}
         </p>
         <Label htmlFor="phone" className="mt-4">
           เบอร์มือถือ
@@ -157,21 +176,43 @@ function PhoneStep({
           autoComplete="tel"
           placeholder="08X-XXX-XXXX"
           value={value}
-          aria-invalid={error ? true : undefined}
+          aria-invalid={error && !needName ? true : undefined}
           aria-describedby={error ? "phone-error phone-hint" : "phone-hint"}
           className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
           onChange={(event) => {
             setValue(maskPhoneInput(event.target.value))
+            setNeedName(false)
+            setName("")
             if (error) setError(null)
           }}
         />
+        {needName ? (
+          <>
+            <Label htmlFor="verify-name" className="mt-4">
+              ชื่อที่บ่าวสาวรู้จัก (ที่เคยลงไว้)
+            </Label>
+            <Input
+              id="verify-name"
+              value={name}
+              maxLength={40}
+              autoComplete="name"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "phone-error" : undefined}
+              className="mt-2 h-12 scroll-mb-40 rounded-2xl bg-card px-4 text-base leading-normal md:text-base"
+              onChange={(event) => {
+                setName(event.target.value)
+                if (error) setError(null)
+              }}
+            />
+          </>
+        ) : null}
         {error ? (
           <p id="phone-error" role="alert" className="mt-2 text-sm text-destructive">
             {error}
           </p>
         ) : null}
         <Button type="submit" disabled={pending} className="mt-6 h-12 w-full rounded-full text-base">
-          {pending ? "กำลังเปิด…" : "ต่อไป"}
+          {pending ? "กำลังเปิด…" : needName ? "เปิดคำตอบ" : "ต่อไป"}
         </Button>
         <button
           type="button"
@@ -241,6 +282,7 @@ function RegisterIntro({
 
 export function RsvpForm({
   phone,
+  lastPhone,
   party,
   startAtPhone,
   onIdentify,
@@ -248,10 +290,12 @@ export function RsvpForm({
   onLeave,
 }: {
   phone: string | null
+  /** Last phone typed on this device, prefilled when there is no session. */
+  lastPhone?: string | null
   party: Party | null
   /** Welcome CTA and a missing session both open the phone step before attendance. */
   startAtPhone: boolean
-  onIdentify: (phone: string) => Promise<"continue" | "saved">
+  onIdentify: (phone: string, name?: string) => Promise<IdentifyResult>
   onSubmit: (party: Party) => void | Promise<void>
   onLeave: () => void
 }) {
@@ -280,15 +324,16 @@ export function RsvpForm({
     setSummary(null)
   }
 
-  async function identify(nextPhone: string) {
-    const result = await onIdentify(nextPhone)
-    if (result === "saved") return
+  async function identify(nextPhone: string, name?: string): Promise<IdentifyResult> {
+    const result = await onIdentify(nextPhone, name)
+    if (result !== "continue") return result
     if (activePhone.current !== nextPhone) {
       activePhone.current = nextPhone
       resetDraft()
     }
     resumed.current = false
     setStage("attend")
+    return "continue"
   }
 
   function changeNumber() {
@@ -386,7 +431,7 @@ export function RsvpForm({
         {stage === "phone" ? (
           <PhoneStep
             key={phone ?? "new"}
-            initialValue={phone ? formatThaiMobile(phone) : ""}
+            initialValue={phone ? formatThaiMobile(phone) : lastPhone ? formatThaiMobile(lastPhone) : ""}
             onSubmit={identify}
             onBack={backFromPhone}
           />

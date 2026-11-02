@@ -160,6 +160,14 @@ export async function writeWish(wish: Wish): Promise<void> {
   fail(error, "บันทึกความคิดเห็นไม่สำเร็จ")
 }
 
+/** Phone of the party that wrote a wish, or null when it does not exist. */
+export async function readWishOwner(id: string): Promise<string | null> {
+  const supabase = createSupabaseAdmin()
+  const { data, error } = await supabase.from("wishes").select("party_phone").eq("id", id).maybeSingle()
+  fail(error, "อ่านความคิดเห็นไม่สำเร็จ")
+  return (data as { party_phone: string } | null)?.party_phone ?? null
+}
+
 export async function updateWish(wish: Wish): Promise<void> {
   const phone = normalizeThaiMobile(wish.partyPhone)
   if (!phone) throw new Error("เบอร์โทรไม่ถูกต้อง")

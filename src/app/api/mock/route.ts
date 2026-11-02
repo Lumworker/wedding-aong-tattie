@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
 import { errorMessage } from "@/lib/api-error"
 import { replaceWishes, upsertParties } from "@/lib/excel-db"
+import { isHost } from "@/lib/guest-session"
 import { buildMockParties, buildMockWishes } from "@/lib/mock-guests"
 
-/** Seed ~50 mock guests (+ sample wishes) for venue previews. */
-export async function POST() {
+/**
+ * Seed ~50 mock guests (+ sample wishes) for venue previews.
+ * This replaces every wish, so only a signed-in host may run it.
+ */
+export async function POST(request: Request) {
+  if (!isHost(request)) {
+    return NextResponse.json({ error: "เฉพาะเจ้าภาพที่ล็อกอิน /host แล้ว" }, { status: 401 })
+  }
   try {
     const parties = buildMockParties()
     const wishes = buildMockWishes(parties)
