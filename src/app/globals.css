@@ -482,7 +482,7 @@
   display: block;
   width: calc(384px * var(--run-scale));
   height: calc(256px * var(--run-scale));
-  background-image: url("/sprites/couple-run.png");
+  background-image: url("/sprites/couple-carry.png?v=1");
   background-repeat: no-repeat;
   background-size: calc(1556px * var(--run-scale)) calc(264px * var(--run-scale));
   animation: couple-run 0.64s infinite;
