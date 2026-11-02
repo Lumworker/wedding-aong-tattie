@@ -1,8 +1,8 @@
 # wedding-aong-tattie
 
-Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทตตี้) on **5 ธันวาคม 2570**.
+Thai-first wedding site for **Chonprakun Panusetgul** (อ๋อง) and **Prachayaphorn Muangphrae** (แทตตี้) on **วันเสาร์ที่ 20 พฤศจิกายน 2570**.
 
-The ceremony date is **5 ธันวาคม 2570** (`COUPLE.dateThai` in `src/lib/event.ts`). That date was set on purpose across the invite, story, and share text. Do not mix in 25 December.
+The ceremony date is **วันเสาร์ที่ 20 พฤศจิกายน 2570** (`COUPLE.dateThai` in `src/lib/event.ts`). That date was set on purpose across the invite, story, and share text. Do not mix in 5 or 25 December.
 
 Place it on disk at `~/wedding-aong-tattie`.
 
