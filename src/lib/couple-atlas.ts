@@ -32,6 +32,14 @@ export const COUPLE_WAVE = {
   /** Lower hand, held before the idle portrait so the raise does not cut off. */
   settleFrame: 0,
   settleMs: 230,
+  /**
+   * Sheet-pixel nudge added to viewBox x so the body stays locked near idle
+   * center (~128). Wave F0–F1 sit ~10px left of idle; F2–F3 drift right.
+   */
+  shiftX: {
+    groom: [-10, -10, 1, 2],
+    bride: [-10, -10, 0, 2],
+  },
 } as const
 
 export const COUPLE_JUMP = {
@@ -110,8 +118,9 @@ export function coupleJumpOrigin(index: number) {
   return index * (COUPLE_JUMP.frameW + COUPLE_JUMP.gutter)
 }
 
-export function coupleWaveOrigin(index: number) {
-  return COUPLE_WAVE.gutter + index * (COUPLE_WAVE.frame + COUPLE_WAVE.gutter)
+export function coupleWaveOrigin(index: number, role: "groom" | "bride" = "groom") {
+  const base = COUPLE_WAVE.gutter + index * (COUPLE_WAVE.frame + COUPLE_WAVE.gutter)
+  return base + COUPLE_WAVE.shiftX[role][index]
 }
 
 /**

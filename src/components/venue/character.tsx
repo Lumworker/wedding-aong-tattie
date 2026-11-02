@@ -257,6 +257,7 @@ function Nameplate({
 }
 
 function PixelCouple({
+  role,
   href,
   waveHref,
   waveFrame,
@@ -267,6 +268,7 @@ function PixelCouple({
   showName,
   size,
 }: {
+  role: "groom" | "bride"
   href: string
   waveHref?: string
   waveFrame: number | null
@@ -316,7 +318,7 @@ function PixelCouple({
           y={-size}
           width={size}
           height={size}
-          viewBox={`${coupleWaveOrigin(waveFrame)} ${COUPLE_WAVE.gutter} ${COUPLE_WAVE.frame} ${COUPLE_WAVE.frame}`}
+          viewBox={`${coupleWaveOrigin(waveFrame, role)} ${COUPLE_WAVE.gutter} ${COUPLE_WAVE.frame} ${COUPLE_WAVE.frame}`}
           overflow="hidden"
         >
           <image
@@ -455,6 +457,7 @@ export function Character({
   if (role === "groom") {
     return (
       <PixelCouple
+        role="groom"
         href={COUPLE_IDLE.groom}
         waveHref={COUPLE_WAVE.groom}
         waveFrame={waveFrame}
@@ -470,6 +473,7 @@ export function Character({
   if (role === "bride") {
     return (
       <PixelCouple
+        role="bride"
         href={COUPLE_IDLE.bride}
         waveHref={COUPLE_WAVE.bride}
         waveFrame={waveFrame}
