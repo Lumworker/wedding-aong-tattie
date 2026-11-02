@@ -70,12 +70,43 @@ def mid(a,b):
     al=np.where(al>0.5,1.0,al*1.4).clip(0,1)   # keep sprite edges crisp, no ghost halo
     return np.concatenate([rgb,al],-1)
 # per cat: 6 keyframes in gait order, plus one in-between after each (the loop seam too) = 12
+def head_lock(keys, k):
+    """Shift each keyframe so the head sits exactly where it does in the first one.
+    Head = top 45% of the cat, front 55% (cats face right). The source heads wander up to ~3px
+    at random; the run's up-and-down comes from a smooth CSS bob instead."""
+    ref=keys[0]; a=ref[...,3]>0.3; ys,xs=np.where(a)
+    y0,y1=ys.min(), ys.min()+int((ys.max()-ys.min())*0.45)
+    x0=xs.min()+int((xs.max()-xs.min())*0.45); x1=xs.max()
+    win=np.zeros((FH,FW),np.uint8); win[y0:y1+1,x0:x1+1]=1
+    tmpl=gray(ref).astype(np.float32)
+    out=[ref]
+    for b in keys[1:]:
+        warp_m=np.eye(2,3,dtype=np.float32)
+        try:
+            _,warp_m=cv2.findTransformECC(tmpl,gray(b).astype(np.float32),warp_m,cv2.MOTION_TRANSLATION,
+                (cv2.TERM_CRITERIA_EPS|cv2.TERM_CRITERIA_COUNT,200,1e-5),win,5)
+        except cv2.error:
+            pass
+        dx,dy=warp_m[0,2],warp_m[1,2]
+        pm=b.copy(); pm[...,:3]*=pm[...,3:]
+        sh=cv2.warpAffine(pm,np.float32([[1,0,-dx],[0,1,-dy]]),(FW,FH),flags=cv2.INTER_LINEAR,borderValue=0)
+        al=sh[...,3:]; rgb=np.where(al>1e-3,sh[...,:3]/np.maximum(al,1e-3),0)
+        out.append(np.concatenate([rgb,al],-1))
+        print(k,'head shift',round(float(dx),2),round(float(warp_m[1,2]),2))
+    return out
+def tween(a,b,t):
+    fab=DIS.calc(gray(a),gray(b),None); fba=DIS.calc(gray(b),gray(a),None)
+    m=(1-t)*warp(a,fab,t)+t*warp(b,fba,1-t)
+    al=m[...,3:]; rgb=np.where(al>1e-3,m[...,:3]/np.maximum(al,1e-3),0)
+    al=np.where(al>0.5,1.0,al*1.4).clip(0,1)
+    return np.concatenate([rgb,al],-1)
 SEQ={}
 for k in ('W','O'):
-    keys=[layer(k,f) for f in ORDER[k]]
+    keys=head_lock([layer(k,f) for f in ORDER[k]], k)
     seq=[]
     for i,a in enumerate(keys):
-        seq += [a, mid(a, keys[(i+1)%len(keys)])]
+        b=keys[(i+1)%len(keys)]
+        seq += [a, tween(a,b,1/3), tween(a,b,2/3)]
     SEQ[k]=seq
 N=len(SEQ['W']); PHASE={'W':0,'O':N//2}
 frames=[]
@@ -91,7 +122,11 @@ for i,fr in enumerate(frames): sheet.alpha_composite(fr,(PAD+i*(FW+GUT),PAD))
 sheet.save('couple-run.png'); print(sheet.size)
 bg=(241,231,211,255)
 gif=[Image.alpha_composite(Image.new('RGBA',(FW,FH),bg),fr).convert('P',palette=Image.ADAPTIVE) for fr in frames]
-gif[0].save('preview.gif',save_all=True,append_images=gif[1:],duration=53,loop=0,disposal=2)
-strip=Image.new('RGBA',(FW*4,FH*3),bg)
-for i,fr in enumerate(frames): strip.alpha_composite(fr,((i%4)*FW,(i//4)*FH))
+gif[0].save('preview.gif',save_all=True,append_images=gif[1:],duration=36,loop=0,disposal=2)
+strip=Image.new('RGBA',(FW*6,FH*3),bg)
+for i,fr in enumerate(frames): strip.alpha_composite(fr,((i%6)*FW,(i//6)*FH))
+on=Image.new('RGBA',(FW,FH),bg)
+for fr in frames[::3]:
+    a=np.array(fr); a[...,3]=(a[...,3]*0.2).astype('uint8'); on.alpha_composite(Image.fromarray(a))
+on.save('onion.png')
 strip.save('strip.png')
