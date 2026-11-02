@@ -476,25 +476,25 @@
   animation: wd-ring 2.8s ease-in-out infinite;
 }
 
-/* Loading: cats-gallop 3072×288 · 8×384×288 · steps(8) @ 100ms/frame. */
-.cats-gallop {
+/* Loading run: 1556×264 strip. Frame 384×256 at x = 4 + i*388, y = 4. */
+.couple-run {
   --run-scale: calc(280 / 384);
   display: block;
   width: calc(384px * var(--run-scale));
-  height: calc(288px * var(--run-scale));
-  background-image: url("/sprites/cats-gallop.png?v=3");
+  height: calc(256px * var(--run-scale));
+  background-image: url("/sprites/couple-run.png?v=1");
   background-repeat: no-repeat;
-  background-size: calc(3072px * var(--run-scale)) calc(288px * var(--run-scale));
+  background-size: calc(1556px * var(--run-scale)) calc(264px * var(--run-scale));
   image-rendering: pixelated;
-  animation: cats-gallop 0.8s steps(8) infinite;
+  animation: couple-run 0.64s steps(4) infinite;
 }
 
-@keyframes cats-gallop {
+@keyframes couple-run {
   from {
-    background-position: 0 0;
+    background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
   to {
-    background-position: calc(-3072px * var(--run-scale)) 0;
+    background-position: calc(-1556px * var(--run-scale)) calc(-4px * var(--run-scale));
   }
 }
 

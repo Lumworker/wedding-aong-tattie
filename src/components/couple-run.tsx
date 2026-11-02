@@ -1,6 +1,6 @@
 import { PetalField } from "@/components/petal-field"
 
-/** Shown while the invite shell is still loading. CSS cycles the cats-gallop strip. */
+/** Shown while the invite shell is still loading. CSS cycles the run strip; nothing here waits on data. */
 export function CoupleRunSplash() {
   return (
     <div
@@ -10,7 +10,7 @@ export function CoupleRunSplash() {
       <PetalField />
       <div className="relative z-10 flex flex-col items-center">
         <div aria-hidden="true">
-          <span className="cats-gallop" />
+          <span className="couple-run" />
         </div>
         <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">กำลังเปิดคำเชิญ</p>
       </div>
