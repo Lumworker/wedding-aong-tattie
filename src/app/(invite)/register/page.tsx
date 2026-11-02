@@ -30,10 +30,12 @@ export default function RegisterPage() {
   return (
     <RsvpForm
       phone={phone}
+      lastPhone={snapshot.lastPhone}
       party={party}
       startAtPhone={searchParams.get("step") === "phone" || !phone}
-      onIdentify={async (nextPhone) => {
-        const next = await guestStore.setPhone(nextPhone)
+      onIdentify={async (nextPhone, name) => {
+        const { status, snapshot: next } = await guestStore.setPhone(nextPhone, name)
+        if (status !== "new" && status !== "verified") return status
         if (next.party) {
           router.push(withQuery(ROUTES.dashboard, search))
           return "saved"

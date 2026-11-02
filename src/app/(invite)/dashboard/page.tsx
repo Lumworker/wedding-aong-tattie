@@ -12,13 +12,14 @@ export default function DashboardPage() {
   const searchParams = useSearchParams()
   const search = `?${searchParams.toString()}`
 
-  if (!snapshot.phone || !snapshot.party) return null
+  if (!snapshot.phone || !snapshot.party || !snapshot.selfKey) return null
 
   return (
     <VenueScene
       guests={snapshot.guests}
       wishes={snapshot.wishes}
       phone={snapshot.phone}
+      selfKey={snapshot.selfKey}
       onEdit={() => router.push(withQuery(ROUTES.register, search))}
       onChangePhone={() => {
         guestStore.clearPhone()

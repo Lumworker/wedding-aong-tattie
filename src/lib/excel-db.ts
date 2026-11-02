@@ -3,6 +3,7 @@ export {
   readAllParties,
   readParty,
   readWishes,
+  readWishOwner,
   replaceWishes,
   updateWish,
   upsertParties,

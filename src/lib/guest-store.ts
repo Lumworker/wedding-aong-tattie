@@ -1,9 +1,14 @@
-import { createExcelWeddingRepository, type WeddingRepository } from "@/lib/repository"
+import { createExcelWeddingRepository, type SessionStatus, type WeddingRepository } from "@/lib/repository"
 import type { Party, Wish } from "@/lib/types"
 
 export type GuestSnapshot = {
   ready: boolean
+  /** Server-verified phone (cookie session). Null until the guest proves it. */
   phone: string | null
+  /** This party's opaque key in `guests` / `wishes`. */
+  selfKey: string | null
+  /** Last phone typed on this device, for prefilling. */
+  lastPhone: string | null
   party: Party | null
   guests: Party["guests"]
   wishes: Wish[]
@@ -13,6 +18,8 @@ export type GuestSnapshot = {
 const EMPTY: GuestSnapshot = {
   ready: false,
   phone: null,
+  selfKey: null,
+  lastPhone: null,
   party: null,
   guests: [],
   wishes: [],
@@ -31,21 +38,29 @@ export function createGuestStore(repo: WeddingRepository = createExcelWeddingRep
   }
 
   async function load(): Promise<GuestSnapshot> {
-    const phone = repo.readSessionPhone()
+    const lastPhone = repo.readSessionPhone()
     try {
-      const [parties, wishes] = await Promise.all([repo.readAllParties(), repo.readWishes()])
+      const [session, guests, wishes] = await Promise.all([
+        repo.readSession(),
+        repo.readAllGuests(),
+        repo.readWishes(),
+      ])
       return {
         ready: true,
-        phone,
-        party: phone ? parties.find((party) => party.phone === phone) ?? null : null,
-        guests: parties.flatMap((party) => party.guests),
+        phone: session?.phone ?? null,
+        selfKey: session?.selfKey ?? null,
+        lastPhone,
+        party: session?.party ?? null,
+        guests,
         wishes,
         error: null,
       }
     } catch (error) {
       return {
         ready: true,
-        phone,
+        phone: null,
+        selfKey: null,
+        lastPhone,
         party: null,
         guests: [],
         wishes: [],
@@ -79,24 +94,27 @@ export function createGuestStore(repo: WeddingRepository = createExcelWeddingRep
     getServerSnapshot() {
       return EMPTY
     },
-    async setPhone(phone: string) {
+    /** Start a server session. A phone with a saved party needs the saved name too. */
+    async setPhone(phone: string, name?: string): Promise<{ status: SessionStatus; snapshot: GuestSnapshot }> {
+      const { status, session } = await repo.startSession(phone, name)
+      if (!session) return { status, snapshot }
       repo.writeSessionPhone(phone)
       const next = await load()
       emit(next)
-      return next
+      return { status, snapshot: next }
     },
     clearPhone() {
       repo.clearSessionPhone()
-      void refresh()
+      void repo.endSession().finally(() => void refresh())
     },
     async saveParty(party: Party) {
       await repo.writeParty(party)
-      repo.writeSessionPhone(party.phone)
       await refresh()
     },
     async deleteRegistration(phone: string) {
       await repo.deleteParty(phone)
       repo.clearSessionPhone()
+      await repo.endSession()
       await refresh()
     },
     async addWish(wish: Wish) {
