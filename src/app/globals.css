@@ -482,10 +482,33 @@
   display: block;
   width: calc(384px * var(--run-scale));
   height: calc(256px * var(--run-scale));
-  background-image: url("/sprites/cats-run.png?v=1");
+  background-image: url("/sprites/couple-run.png");
   background-repeat: no-repeat;
   background-size: calc(1556px * var(--run-scale)) calc(264px * var(--run-scale));
   animation: couple-run 0.64s infinite;
+}
+
+/* Loading splash: มะเหงก and หนำใจ. Eight 384×256 frames, 4px gutter (3108×264). */
+.cats-run {
+  --run-scale: calc(280 / 384);
+  display: block;
+  width: calc(384px * var(--run-scale));
+  height: calc(256px * var(--run-scale));
+  background-image: url("/sprites/cats-run.png?v=2");
+  background-repeat: no-repeat;
+  background-size: calc(3108px * var(--run-scale)) calc(264px * var(--run-scale));
+  background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
+  image-rendering: pixelated;
+  animation: cats-run 0.72s steps(8) infinite;
+}
+
+@keyframes cats-run {
+  from {
+    background-position: calc(-4px * var(--run-scale)) calc(-4px * var(--run-scale));
+  }
+  to {
+    background-position: calc(-3108px * var(--run-scale)) calc(-4px * var(--run-scale));
+  }
 }
 
 @keyframes couple-run {
@@ -631,6 +654,7 @@
   .wd-bird,
   .wd-ring,
   .couple-run,
+  .cats-run,
   .wd-shaft,
   .wd-mote,
   .is-walking .wd-bob,
