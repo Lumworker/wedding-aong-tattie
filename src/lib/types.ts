@@ -16,10 +16,29 @@ export type Guest = {
   isCompanion?: boolean
 }
 
+export type TravelMode = "drive" | "taxi" | "transit" | "dropoff" | "unknown"
+
+export type Car = {
+  id: string
+  /** As typed, e.g. "1กข 1234". */
+  plate: string
+  province: string
+}
+
+export type Travel = {
+  mode: TravelMode | null
+  /** Only meaningful when mode is "drive". */
+  needsParking: boolean | null
+  /** One to three cars when parking is needed, else empty. */
+  cars: Car[]
+}
+
 export type Party = {
   phone: string
   guests: Guest[]
   updatedAt: string
+  /** Missing on parties saved before the travel step existed. */
+  travel?: Travel
 }
 
 export type Wish = {

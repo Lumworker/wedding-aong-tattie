@@ -20,7 +20,10 @@ export default function DashboardPage() {
       wishes={snapshot.wishes}
       phone={snapshot.phone}
       selfKey={snapshot.selfKey}
-      onEdit={() => router.push(withQuery(ROUTES.register, search))}
+      onEdit={() => {
+        const base = withQuery(ROUTES.register, search)
+        router.push(`${base}${base.includes("?") ? "&" : "?"}step=review`)
+      }}
       onChangePhone={() => {
         guestStore.clearPhone()
         router.push(withQuery(ROUTES.welcome, search))

@@ -640,3 +640,10 @@
     animation: none !important;
   }
 }
+/* Stepper: the current step's icon hops once when the step opens. */
+@keyframes step-hop {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  70% { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { errorMessage } from "@/lib/api-error"
 import { readAllParties, writeParty } from "@/lib/excel-db"
+import { PlateTakenError } from "@/lib/supabase-db"
 import { canAccessParty } from "@/lib/guest-session"
 import { normalizeThaiMobile } from "@/lib/phone"
 import { publicGuests } from "@/lib/public-view"
@@ -38,6 +39,12 @@ export async function POST(request: Request) {
     await writeParty(party)
     return NextResponse.json({ party })
   } catch (error) {
+    if (error instanceof PlateTakenError) {
+      return NextResponse.json(
+        { error: error.message, code: "plate-taken", plate: error.plateNorm, province: error.province },
+        { status: 409 }
+      )
+    }
     console.error(error)
     return NextResponse.json(
       { error: errorMessage(error, "บันทึกผู้ลงทะเบียนไม่สำเร็จ") },

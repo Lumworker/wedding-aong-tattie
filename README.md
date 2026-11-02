@@ -27,9 +27,21 @@ Do this from `~/wedding-aong-tattie` (the folder that contains this README and `
 
 ## Guest flow
 
-1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. The couple illustration is a link to their story.
-2. **ตอบรับ** — only when that phone has no saved party. ชื่อที่บ่าวสาวรู้จัก, gender, and whether they are coming (1–10 people).
-3. **ฉากงาน** — a phone that already has a party skips the form and opens the venue. **แก้ไขการตอบรับ** still opens the form. Hover/tap อ๋อง or แทตตี้ for `/story`. Write a blessing in the side panel and toggle **แสดงคำอวยพร**. The map in the side panel is **อาสนวิหารอัสสัมชัญ** (Assumption Cathedral), Bang Rak.
+1. **เบอร์มือถือ** — Thai mobiles `06` / `08` / `09`, 10 digits. A phone that already has a party must also enter the name it was saved under (5 misses per 15 minutes locks that phone). Success sets a signed `guest_session` cookie.
+2. **Stepper** (`/register?step=…`, each step is a history entry so the device back button walks back):
+   1. `attend` ตอบรับ — attending / unsure / declined. Picking one moves on.
+   2. `about` เกี่ยวกับคุณ — ชื่อที่บ่าวสาวรู้จัก, side, gender, adult companions and children (party of 1–10).
+   3. `travel` การเดินทาง — skipped when declined. Drive / taxi / transit / dropped off (unsure may pick "ยังไม่รู้"). Driving asks about parking; parking asks for 1–3 plates + province. A plate + province can belong to one party only.
+   4. `review` ตรวจทาน — summary with "แก้" per row, then save.
+3. **ฉากงาน** — **แก้ไขการตอบรับ** opens `?step=review`. Hover/tap อ๋อง or แทตตี้ for `/story`. Blessings and the map live in the side panel.
+
+Stepper icons are 24×24 pixel sprites in `public/sprites/steps`, built by `scripts/build-step-icons.py`. Bump `STEP_ICON_VERSION` in `src/lib/labels.ts` when swapping art.
+
+## Database migrations
+
+Run new files in `supabase/migrations` in the Supabase SQL editor (in order) before or right after deploying.
+
+- `20261102120000_travel_parking.sql` — travel mode, parking and `party_cars` (unique plate + province). Until it runs, the site keeps working but saves parties without travel data.
 
 ## What is stored
 
@@ -53,6 +65,7 @@ Set these in the Vercel project (Production and Preview):
 |---|---|---|
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | yes | Full service-account JSON. `private_key` newlines may be escaped as `\n`. |
 | `GOOGLE_SHEETS_SPREADSHEET_ID` | no | Defaults to the project sheet `1EUooI-1h01gSsCjjBObjIIgMHcwLbzlt2yM4y97aC2c`. |
+| `GUEST_SESSION_SECRET` | no | Signs the guest session cookie. Falls back to `SUPABASE_SECRET_KEY`. |
 | `HOST_DASHBOARD_SECRET` | yes, for `/host` | Shared password for the host RSVP list. Leave unset to keep `/host` closed. |
 | `NEXT_PUBLIC_SITE_URL` | recommended | Absolute site URL for LINE/Facebook previews, e.g. `https://your-domain.vercel.app`. |
 

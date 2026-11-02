@@ -67,6 +67,19 @@ function setCookie(phone: string | null) {
     : `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
 }
 
+/** API failure with the server's `code` (e.g. "plate-taken") and payload kept for the UI. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly code?: string,
+    readonly data?: Record<string, unknown>
+  ) {
+    super(message)
+    this.name = "ApiError"
+  }
+}
+
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
@@ -76,8 +89,8 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
     },
   })
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { error?: string } | null
-    throw new Error(payload?.error || `API ${response.status}`)
+    const payload = (await response.json().catch(() => null)) as ({ error?: string; code?: string } & Record<string, unknown>) | null
+    throw new ApiError(payload?.error || `API ${response.status}`, response.status, payload?.code, payload ?? undefined)
   }
   return response.json() as Promise<T>
 }
