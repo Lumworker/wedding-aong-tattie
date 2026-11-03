@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 
 export function Ornament({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-3 text-rose/70", className)} aria-hidden="true">
+    <div className={cn("flex items-center gap-3 text-rose-ink/70", className)} aria-hidden="true">
       <span className="h-px flex-1 bg-rose/40" />
       <span className="text-xs">✦</span>
       <span className="h-px flex-1 bg-rose/40" />
@@ -21,7 +21,7 @@ export function EventTitle({
       <div>
         <h1 className="font-display text-[1.65rem] leading-snug text-ink">
           {COUPLE.groomNickname}
-          <span className="px-1.5 text-rose">&</span>
+          <span className="px-1.5 text-blueberry-deep">&</span>
           {COUPLE.brideNickname}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">{COUPLE.dateThai}</p>
@@ -31,7 +31,7 @@ export function EventTitle({
 
   return (
     <div className={variant === "hero" ? "text-center" : "text-left"}>
-      <p className="text-[13px] font-medium tracking-[0.22em] text-rose uppercase">งานมงคลสมรส</p>
+      <p className="text-[13px] font-medium tracking-[0.22em] text-rose-ink uppercase">งานมงคลสมรส</p>
       <h1
         className={cn(
           "font-display leading-tight text-ink",
@@ -39,15 +39,15 @@ export function EventTitle({
         )}
       >
         <span className="block">{COUPLE.groomShort}</span>
-        <span className="my-1 block font-serif text-3xl text-rose italic">&</span>
+        <span className="my-1 block font-serif text-3xl text-blueberry-deep italic">&</span>
         <span className="block">{COUPLE.brideShort}</span>
       </h1>
       {variant === "hero" ? (
-        <p className="mt-2 font-serif text-lg text-rose">
+        <p className="mt-2 font-serif text-lg text-rose-ink">
           {COUPLE.groomNickname} · {COUPLE.brideNickname}
         </p>
       ) : (
-        <p className="mt-2 font-serif text-base text-rose">
+        <p className="mt-2 font-serif text-base text-rose-ink">
           {COUPLE.groom} ({COUPLE.groomNickname}) · {COUPLE.bride} ({COUPLE.brideNickname})
         </p>
       )}

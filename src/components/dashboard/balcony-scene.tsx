@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react"
+import { useLayoutEffect, useMemo, useRef, useState, type Ref } from "react"
 import { motion } from "framer-motion"
 import { CoupleSprite, type CoupleMode } from "@/components/dashboard/couple-sprite"
 import { spriteForGuest } from "@/lib/appearance"
@@ -8,105 +8,48 @@ import { FOLLOWER_ATLAS, GUEST_GRID } from "@/lib/guest-atlas"
 import { COUPLE } from "@/lib/event"
 import type { Guest, Wish } from "@/lib/types"
 
-/** Logical stage. Everything inside is laid out in these units and scaled to fit. */
+/**
+ * Garden hero (CI Nov 2026). The couple is the hero in the middle on a rose halo,
+ * only your own party stands with them, and letters live in the scene:
+ * a pile at the bottom right, a count chip, and a note at the top edge while one of them reads.
+ * Everything is laid out in stage units and scaled to fit the box.
+ */
 export const STAGE_W = 362
-export const STAGE_H = 404
-const FLOOR = 200
-const CELL = 120
-const COUPLE_TOP = FLOOR - Math.round((253 * CELL) / 256)
+export const STAGE_H = 320
 const CENTER = STAGE_W / 2
+/** Top of the gingham floor band, in stage units. */
+const FLOOR = 228
+const CELL = 160
+const COUPLE_FEET = 270
+const COUPLE_TOP = COUPLE_FEET - Math.round((253 * CELL) / 256)
+/** Letter note sits at the top edge so it never covers a face. */
+const NOTE_TOP = 8
+/** Letter pile, bottom right; envelopes land below the bride's hem. */
+const PILE_TOP = 238
 const GROOM_LEFT = CENTER - Math.round((186 * CELL) / 256) - 2
 const BRIDE_LEFT = CENTER + 2 - Math.round((46 * CELL) / 256)
-const RAIL_TOP = FLOOR - 52
-const LETTER_Y = RAIL_TOP - 14
-const FEET = 400
-const GUEST_W = GUEST_GRID.cell
-const FOLLOWER_SCALE = 2
+/** Party stands in front, clear of the status card that overlaps the bottom ~20px. */
+const PARTY_FEET = 292
+/** Your guest sprite is drawn about 60% of the couple; followers about 60% of that. */
+const GUEST_H = 88
+const GUEST_SCALE = GUEST_H / GUEST_GRID.height
+const GUEST_W = GUEST_GRID.cell * GUEST_SCALE
+const FOLLOWER_H = 52
+const FOLLOWER_SCALE = FOLLOWER_H / FOLLOWER_ATLAS.frameH
 const FOLLOWER_W = FOLLOWER_ATLAS.frameW * FOLLOWER_SCALE
-const FOLLOWER_H = FOLLOWER_ATLAS.frameH * FOLLOWER_SCALE
 
-/** Railing slots for envelopes, clear of the couple in the middle. Newest takes slot 0. */
-const LETTER_SLOTS = [
-  { x: 12, r: -8 },
-  { x: 312, r: 5 },
-  { x: 38, r: 6 },
-  { x: 286, r: -6 },
-  { x: 64, r: -3 },
-  { x: 260, r: 4 },
-  { x: 90, r: 7 },
-  { x: 336, r: -4 },
-]
-export const MAX_RAIL_LETTERS = LETTER_SLOTS.length
-/** Flight time of a thrown letter; the parent lands it after this. */
-export const THROW_MS = 1200
+/** Flight time of a thrown letter; the parent starts the read after this. */
+export const THROW_MS = 1000
 
 export type Reader = "groom" | "bride"
 export type SceneAnim = { kind: "idle" } | { kind: "wave"; key: number } | { kind: "read"; who: Reader; key: number }
 
-type Placed = { guest: Guest; x: number; you: boolean }
-
-function Envelope({ width = 22 }: { width?: number }) {
+export function Envelope({ width = 22 }: { width?: number }) {
   return (
     <svg aria-hidden="true" width={width} height={Math.round(width * 0.68)} viewBox="0 0 22 15" className="block">
-      <rect x="0.75" y="0.75" width="20.5" height="13.5" rx="1.5" fill="#FFFFFF" stroke="#CDBFAE" strokeWidth="1.5" />
+      <rect x="0.75" y="0.75" width="20.5" height="13.5" rx="1.5" fill="#FFFCF5" stroke="#CDBFAE" strokeWidth="1.5" />
       <path d="M1.5 1.5 L11 8.5 L20.5 1.5" fill="none" stroke="#CDBFAE" strokeWidth="1.5" />
-      <circle cx="11" cy="8.6" r="2.4" fill="#E39AA8" />
-    </svg>
-  )
-}
-
-function Backdrop() {
-  const boards = []
-  for (let x = 9; x < STAGE_W; x += 18) boards.push(<rect key={x} x={x} y={0} width={1} height={FLOOR} fill="#ECE7DE" />)
-  const panels = []
-  for (let x = 12; x < STAGE_W - 40; x += 86)
-    panels.push(<rect key={x} x={x} y={FLOOR + 30} width={74} height={70} fill="none" stroke="#EDE8E0" strokeWidth={2} />)
-  const courses = []
-  for (let y = FLOOR + 24; y < STAGE_H; y += 12) courses.push(<rect key={y} x={0} y={y} width={STAGE_W} height={1} fill="#F3F0EA" />)
-  return (
-    <svg aria-hidden="true" width={STAGE_W} height={STAGE_H} viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} className="absolute inset-0">
-      <rect width={STAGE_W} height={FLOOR} fill="#F8F6F1" />
-      {boards}
-      <rect x={78} y={30} width={206} height={122} fill="#FFFFFF" stroke="#E2DBD0" strokeWidth={2} />
-      {[0, 1, 2, 3].map((i) => (
-        <g key={i}>
-          <rect x={86 + i * 49} y={38} width={44} height={106} fill="#E9EDEC" />
-          <rect x={86 + i * 49} y={88} width={44} height={2} fill="#FFFFFF" />
-        </g>
-      ))}
-      <rect x={0} y={FLOOR} width={STAGE_W} height={14} fill="#F1EEE8" />
-      <rect x={0} y={FLOOR + 12} width={STAGE_W} height={2} fill="#E2DBD0" />
-      <rect x={0} y={FLOOR + 14} width={STAGE_W} height={STAGE_H - FLOOR - 14} fill="#FFFFFF" />
-      {panels}
-      {courses}
-      <ellipse cx={18} cy={300} rx={44} ry={70} fill="#C9D6BD" />
-      <ellipse cx={40} cy={330} rx={34} ry={44} fill="#B7C8AA" />
-      <ellipse cx={346} cy={330} rx={34} ry={46} fill="#C9D6BD" />
-    </svg>
-  )
-}
-
-function Railing() {
-  const posts = []
-  for (let x = 4; x < STAGE_W; x += 15)
-    posts.push(
-      <g key={x}>
-        <rect x={x} y={6} width={5} height={46} rx={2} fill="#C49A72" />
-        <rect x={x + 1} y={6} width={2} height={46} fill="#D6B18C" />
-      </g>
-    )
-  return (
-    <svg
-      aria-hidden="true"
-      width={STAGE_W}
-      height={60}
-      viewBox={`0 0 ${STAGE_W} 60`}
-      className="pointer-events-none absolute left-0"
-      style={{ top: RAIL_TOP }}
-    >
-      {posts}
-      <rect x={0} y={0} width={STAGE_W} height={7} rx={2} fill="#A97D57" />
-      <rect x={0} y={48} width={STAGE_W} height={5} fill="#A97D57" />
+      <circle cx="11" cy="8.6" r="2.4" fill="#E0AFA6" />
     </svg>
   )
 }
@@ -133,9 +76,9 @@ function GuestSprite({ guest }: { guest: Guest }) {
       aria-hidden="true"
       style={{
         width: GUEST_W,
-        height: GUEST_GRID.height,
+        height: GUEST_H,
         backgroundImage: `url(${GUEST_GRID.href})`,
-        backgroundSize: `${GUEST_GRID.width}px ${GUEST_GRID.height}px`,
+        backgroundSize: `${GUEST_GRID.width * GUEST_SCALE}px ${GUEST_H}px`,
         backgroundPosition: `${-sprite.index * GUEST_W}px 0`,
         imageRendering: "pixelated",
       }}
@@ -143,57 +86,31 @@ function GuestSprite({ guest }: { guest: Guest }) {
   )
 }
 
-function widthOf(guest: Guest) {
-  return guest.isCompanion ? FOLLOWER_W : GUEST_W
-}
-
-/** Your party in the middle, other attending guests split left and right, all inside the stage. */
-function placeCrowd(guests: Guest[], selfKey: string, showSelf: boolean): Placed[] {
-  const attending = guests.filter((guest) => guest.attendance === "attending")
-  const mine = showSelf ? attending.filter((guest) => guest.partyPhone === selfKey) : []
+/**
+ * Only your own party: you at the left edge, then up to two followers tucked in
+ * just behind your right shoulder so the group stays clear of the groom.
+ * Followers come first in the list so they paint behind you.
+ */
+function placeParty(guests: Guest[], selfKey: string, left: number) {
+  const mine = guests.filter((guest) => guest.partyPhone === selfKey && guest.attendance === "attending")
   const me = mine.find((guest) => !guest.isCompanion)
-  const myGroup = [...(me ? [me] : []), ...mine.filter((guest) => guest.isCompanion).slice(0, 2)]
-  const others = attending.filter((guest) => guest.partyPhone !== selfKey)
-  const gap = 2
-  const groupGap = 8
-  const limit = STAGE_W - 8
-  const myWidth = myGroup.reduce((sum, guest) => sum + widthOf(guest), 0) + Math.max(0, myGroup.length - 1) * gap
-  const left: Guest[] = []
-  const right: Guest[] = []
-  let used = myWidth
-  for (const guest of others) {
-    const w = widthOf(guest) + groupGap
-    if (used + w > limit) break
-    if (left.length <= right.length) left.unshift(guest)
-    else right.push(guest)
-    used += w
-    if (left.length + right.length >= 6) break
-  }
-  const row: { guest: Guest; you: boolean; gapAfter: number }[] = [
-    ...left.map((guest) => ({ guest, you: false, gapAfter: groupGap })),
-    ...myGroup.map((guest, index) => ({ guest, you: guest === me, gapAfter: index === myGroup.length - 1 ? groupGap : gap })),
-    ...right.map((guest) => ({ guest, you: false, gapAfter: groupGap })),
-  ]
-  const total = row.reduce((sum, item, index) => sum + widthOf(item.guest) + (index < row.length - 1 ? item.gapAfter : 0), 0)
-  let x = Math.max(4, (STAGE_W - total) / 2)
-  return row.map((item) => {
-    const placed = { guest: item.guest, x, you: item.you }
-    x += widthOf(item.guest) + item.gapAfter
-    return placed
-  })
+  const followers = mine.filter((guest) => guest.isCompanion).slice(0, 2)
+  const firstFollower = me ? left + GUEST_W - 14 : left
+  const placed = followers.map((guest, index) => ({ guest, x: firstFollower + index * (FOLLOWER_W - 8), you: false, back: Boolean(me) }))
+  return me ? [...placed, { guest: me, x: left, you: true, back: false }] : placed
 }
 
-/** Fit the stage inside the box: never wider than the stage itself, extra height becomes wall. */
-function useStageFit(ref: React.RefObject<HTMLDivElement | null>) {
-  const [fit, setFit] = useState({ scale: 1, width: STAGE_W })
+function useStageScale(ref: React.RefObject<HTMLDivElement | null>) {
+  const [fit, setFit] = useState({ scale: 1, cropX: 0 })
   useLayoutEffect(() => {
     const node = ref.current
     if (!node) return
     const update = () => {
       const { width, height } = node.getBoundingClientRect()
       if (width <= 0 || height <= 0) return
-      const scale = Math.min(width / STAGE_W, height / STAGE_H)
-      setFit({ scale, width: Math.min(width, STAGE_W * scale) })
+      // Fill the height first; up to 18% of the stage width may be cropped at the sides.
+      const scale = Math.min(height / STAGE_H, width / (STAGE_W * 0.82))
+      setFit({ scale, cropX: Math.max(0, (STAGE_W * scale - width) / (2 * scale)) })
     }
     update()
     const observer = new ResizeObserver(update)
@@ -207,69 +124,71 @@ export function BalconyScene({
   guests,
   selfKey,
   declined,
-  letters,
+  letterCount,
   anim,
   letter,
   throwing,
   coupleRef,
+  lettersRef,
   onCoupleTap,
   onWaveDone,
-  onLetterTap,
-  onCloseLetter,
+  onOpenLetters,
+  onOpenLetter,
 }: {
   guests: Guest[]
   selfKey: string
   declined: boolean
-  /** Newest first, already capped to the rail. */
-  letters: Wish[]
+  letterCount: number
   anim: SceneAnim
-  /** The letter being read, shown on the card over the guests. */
+  /** The letter being read; shown in a note above the reader. */
   letter: Wish | null
   throwing: number | null
   coupleRef?: Ref<HTMLButtonElement>
+  lettersRef?: Ref<HTMLButtonElement>
   onCoupleTap: () => void
   onWaveDone: () => void
-  onLetterTap: (wish: Wish) => void
-  onCloseLetter: () => void
+  onOpenLetters: () => void
+  onOpenLetter: (wish: Wish) => void
 }) {
   const boxRef = useRef<HTMLDivElement>(null)
-  const { scale, width: frameWidth } = useStageFit(boxRef)
-  const crowd = useMemo(() => placeCrowd(guests, selfKey, !declined), [guests, selfKey, declined])
-  const you = crowd.find((item) => item.you)
-  const throwFrom = you ? { x: you.x + 20, y: FEET - 60 } : { x: STAGE_W - 30, y: FEET - 70 }
-  const throwTo = { x: LETTER_SLOTS[0].x, y: LETTER_Y }
+  const { scale, cropX } = useStageScale(boxRef)
+  const floorBand = (STAGE_H - FLOOR) * scale
+  const party = useMemo(() => (declined ? [] : placeParty(guests, selfKey, cropX + 12)), [guests, selfKey, declined, cropX])
+  const you = party.find((item) => item.you)
+  const throwFrom = you ? { x: you.x + 16, y: PARTY_FEET - 50 } : { x: CENTER - 12, y: STAGE_H - 10 }
+  const throwTo = { x: CENTER - 12, y: COUPLE_TOP + 70 }
 
   const groomMode: CoupleMode = anim.kind === "wave" ? "wave" : anim.kind === "read" && anim.who === "groom" ? "read" : "idle"
   const brideMode: CoupleMode = anim.kind === "wave" ? "wave" : anim.kind === "read" && anim.who === "bride" ? "read" : "idle"
   const playKey = anim.kind === "idle" ? 0 : anim.key
-  const reader = anim.kind === "read" ? (anim.who === "groom" ? COUPLE.groomNickname : COUPLE.brideNickname) : null
-
-  const closeRef = useRef<HTMLButtonElement>(null)
-  useEffect(() => {
-    if (letter) closeRef.current?.focus({ preventScroll: true })
-  }, [letter])
+  const reader = anim.kind === "read" ? anim.who : null
+  // The note takes the top strip, so the count chip steps aside while a letter is up.
+  const reading = Boolean(letter && reader)
 
   return (
-    <div ref={boxRef} className="flex h-full w-full justify-center">
-    <div
-      className="relative h-full overflow-hidden rounded-2xl border border-[#E6E0D6] bg-[#F8F6F1]"
-      style={{
-        width: frameWidth,
-        backgroundImage: `repeating-linear-gradient(90deg, transparent 0 ${9 * scale}px, #ECE7DE ${9 * scale}px ${10 * scale}px, transparent ${10 * scale}px ${18 * scale}px)`,
-      }}
-    >
+    <div ref={boxRef} className="relative h-full w-full overflow-hidden rounded-[20px] border border-[#E6DCC4] bg-[#FFF8E6]">
+      {/* Floor band runs the full width so wide boxes never show a seam. */}
+      <div
+        aria-hidden="true"
+        className="gingham absolute inset-x-0 bottom-0 border-t border-[#E6DCC4]"
+        style={{ height: floorBand }}
+      />
       <div
         className="absolute bottom-0 left-1/2 origin-bottom"
         style={{ width: STAGE_W, height: STAGE_H, transform: `translateX(-50%) scale(${scale})` }}
       >
-        <Backdrop />
+        <svg aria-hidden="true" width={STAGE_W} height={STAGE_H} viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} className="absolute inset-0 overflow-visible">
+          <circle cx={CENTER} cy={156} r={116} fill="#F2D9D3" />
+          <ellipse cx={cropX - 4} cy={204} rx={44} ry={56} fill="#7A9070" />
+          <ellipse cx={STAGE_W - cropX + 6} cy={210} rx={42} ry={48} fill="#8EA383" />
+        </svg>
 
         <button
           ref={coupleRef}
           type="button"
           onClick={onCoupleTap}
           aria-label={`แตะ${COUPLE.groomNickname}กับ${COUPLE.brideNickname}เพื่อทักทาย`}
-          className="absolute flex cursor-pointer items-end rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2E2A27]"
+          className="absolute cursor-pointer rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2E4535]"
           style={{ left: GROOM_LEFT, top: COUPLE_TOP, width: BRIDE_LEFT + CELL - GROOM_LEFT, height: CELL }}
         >
           <span className="absolute" style={{ left: 0, top: 0 }}>
@@ -280,101 +199,109 @@ export function BalconyScene({
           </span>
         </button>
 
-        <Railing />
-
-        {letters.map((wish, index) => {
-          const slot = LETTER_SLOTS[index]
-          if (!slot) return null
-          return (
-            <button
-              key={wish.id}
-              type="button"
-              onClick={() => onLetterTap(wish)}
-              aria-label={`อ่านจดหมายจาก ${wish.from}`}
-              className="absolute -m-1.5 cursor-pointer p-1.5"
-              style={{ left: slot.x, top: LETTER_Y, transform: `rotate(${slot.r}deg)` }}
-            >
-              <Envelope />
-            </button>
-          )
-        })}
-
-        {anim.kind === "wave" ? (
-          <div
-            className="absolute -translate-x-1/2 rounded-lg border-2 border-[#2E2A27] bg-white px-3 py-1 text-[13px] font-medium whitespace-nowrap text-[#2E2A27]"
-            style={{ left: CENTER, top: COUPLE_TOP - 30 }}
+        {letterCount > 0 ? (
+          <button
+            type="button"
+            onClick={onOpenLetters}
+            aria-label={`ดูจดหมายทั้งหมด ${letterCount} ฉบับ`}
+            className="absolute flex h-14 w-[110px] cursor-pointer items-end justify-center gap-1 pb-0.5"
+            style={{ left: STAGE_W - cropX - 14 - 110, top: PILE_TOP }}
           >
-            ขอบคุณที่มานะ!
-          </div>
+            {[-8, 5, -3].slice(0, Math.min(3, letterCount)).map((r, i) => (
+              <span key={i} style={{ transform: `rotate(${r}deg) translateY(${i === 1 ? -3 : 0}px)` }}>
+                <Envelope width={30} />
+              </span>
+            ))}
+          </button>
         ) : null}
 
-        {crowd.map((item) => (
-          <div key={item.guest.id} className="absolute" style={{ left: item.x, top: FEET - (item.guest.isCompanion ? FOLLOWER_H : GUEST_GRID.height) }}>
-            {!item.guest.isCompanion ? (
-              <div aria-hidden="true" className="absolute rounded-[50%] bg-[#E6E0D6]" style={{ left: 4, top: GUEST_GRID.height - 6, width: 50, height: 10 }} />
-            ) : null}
-            <div className="relative">
-              <GuestSprite guest={item.guest} />
-            </div>
+        {party.map((item) => (
+          <div
+            key={item.guest.id}
+            className="absolute"
+            style={{ left: item.x, top: PARTY_FEET - (item.back ? 6 : 0) - (item.guest.isCompanion ? FOLLOWER_H : GUEST_H) }}
+          >
+            <GuestSprite guest={item.guest} />
             {item.you ? (
-              <span className="absolute left-1/2 -translate-x-1/2 rounded bg-[#2E2A27] px-1.5 py-px text-[10px] font-semibold tracking-wider text-white" style={{ top: -18 }}>
-                YOU
+              <span className="absolute left-1/2 -translate-x-1/2 rounded bg-[#2E4535] px-1.5 py-px text-[10px] font-medium text-[#F6F1E8]" style={{ top: -18 }}>
+                คุณ
               </span>
             ) : null}
           </div>
         ))}
 
         {declined ? (
-          <span className="absolute right-2.5 rounded-full border border-[#E6E0D6] bg-white px-2.5 py-0.5 text-[11px] text-[#2E2A27]" style={{ top: FLOOR + 22 }}>
-            คุณส่งกำลังใจจากที่ไกล ๆ
+          <span
+            className="absolute rounded-full border border-[#E6DCC4] bg-[#FFFCF5] px-2.5 py-0.5 text-[11px] whitespace-nowrap text-[#2E4535]"
+            style={{ left: cropX + 10, top: PARTY_FEET - 26 }}
+          >
+            ส่งกำลังใจจากไกล ๆ
           </span>
+        ) : null}
+
+        {anim.kind === "wave" ? (
+          <div
+            className="absolute -translate-x-1/2 rounded-full border border-[#2E4535] bg-[#FFFCF5] px-3 py-1 text-[13px] whitespace-nowrap text-[#2E4535]"
+            style={{ left: CENTER, top: 12 }}
+          >
+            ขอบคุณที่มานะ!
+          </div>
+        ) : null}
+
+        {letter && reader ? (
+          <button
+            type="button"
+            onClick={() => onOpenLetter(letter)}
+            aria-label={`อ่านจดหมายจาก ${letter.from} ฉบับเต็ม`}
+            className="absolute z-10 max-w-[184px] cursor-pointer rounded-xl border-[1.5px] border-[#E0AFA6] bg-[#FFFCF5] px-2.5 py-2 text-left text-xs leading-snug text-[#2E4535] shadow-[0_6px_14px_-10px_rgba(46,69,53,0.6)]"
+            style={reader === "groom" ? { left: cropX + 10, top: NOTE_TOP } : { right: cropX + 10, top: NOTE_TOP }}
+          >
+            <span className="block text-[11px] font-medium">จาก {letter.from}</span>
+            <span className="line-clamp-2 break-words">{letter.text}</span>
+            <span
+              aria-hidden="true"
+              className="absolute -bottom-[7px] size-3 rotate-45 border-r-[1.5px] border-b-[1.5px] border-[#E0AFA6] bg-[#FFFCF5]"
+              style={reader === "groom" ? { left: GROOM_LEFT + 52 - 10 - cropX } : { right: STAGE_W - BRIDE_LEFT - 110 - cropX }}
+            />
+          </button>
         ) : null}
 
         {throwing !== null ? (
           <motion.div
             key={throwing}
-            className="pointer-events-none absolute z-10"
+            className="pointer-events-none absolute z-20"
             style={{ left: throwFrom.x, top: throwFrom.y }}
-            initial={{ x: 0, y: 0, rotate: 0, scale: 1 }}
+            initial={{ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }}
             animate={{
               x: [0, (throwTo.x - throwFrom.x) / 2, throwTo.x - throwFrom.x],
-              y: [0, throwTo.y - throwFrom.y - 70, throwTo.y - throwFrom.y],
-              rotate: [0, 220, 356],
-              scale: [1, 1.12, 1],
+              y: [0, throwTo.y - throwFrom.y - 60, throwTo.y - throwFrom.y],
+              rotate: [0, 220, 340],
+              scale: [1, 1.15, 0.9],
+              opacity: [1, 1, 0],
             }}
             transition={{ duration: THROW_MS / 1000, ease: [0.3, 0.6, 0.4, 1], times: [0, 0.55, 1] }}
           >
-            <Envelope width={24} />
+            <Envelope width={26} />
           </motion.div>
         ) : null}
       </div>
 
-      {letter && reader ? (
-        <div
-          role="dialog"
-          aria-label={`จดหมายจาก ${letter.from}`}
-          className="absolute inset-x-3 bottom-3 z-20 mx-auto flex max-h-[62%] max-w-md flex-col gap-1.5 overflow-y-auto rounded-lg border border-[#E6E0D6] bg-white px-4 pt-3 pb-3.5 shadow-[0_8px_20px_rgba(46,42,39,0.12)]"
-        >
-          <div className="flex items-center gap-2">
-            <Envelope width={18} />
-            <span className="flex-1 text-xs text-[#6E6862]">{reader}กำลังอ่าน</span>
-            <button
-              ref={closeRef}
-              type="button"
-              onClick={onCloseLetter}
-              aria-label="ปิดจดหมาย"
-              className="-my-2 -mr-2 flex size-11 items-center justify-center rounded-md text-[#2E2A27] hover:bg-[#F7F4EE]"
-            >
-              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
-          </div>
-          <p className="text-sm font-semibold text-[#2E2A27]">จาก {letter.from}</p>
-          <p className="text-sm leading-relaxed break-words whitespace-pre-line text-[#2E2A27]">{letter.text}</p>
-        </div>
-      ) : null}
-    </div>
+      <button
+        ref={lettersRef}
+        type="button"
+        onClick={onOpenLetters}
+        aria-hidden={reading || undefined}
+        tabIndex={reading ? -1 : undefined}
+        className={`absolute top-2 right-2 z-10 flex h-9 items-center gap-1.5 rounded-full bg-[#E0AFA6] px-3 text-xs text-[#2E4535] transition-opacity duration-200 hover:bg-[#D9A399] ${
+          reading ? "pointer-events-none opacity-0" : ""
+        }`}
+      >
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <rect x="3" y="5.5" width="18" height="13" rx="2" />
+          <path d="M3.5 6.5 12 13l8.5-6.5" />
+        </svg>
+        จดหมาย <span className="font-medium">{letterCount}</span>
+      </button>
     </div>
   )
 }

@@ -31,11 +31,11 @@ export function FormStepper({
       <ol className="relative flex items-start justify-between">
         <span
           aria-hidden="true"
-          className="absolute top-[21px] right-7 left-7 border-t-2 border-dashed border-[#D8C8AC]"
+          className="absolute top-[21px] right-7 left-7 border-t-2 border-dashed border-[#DCCFB4]"
         />
         <span
           aria-hidden="true"
-          className="absolute top-5 left-7 h-[3px] bg-[#5C3A26] transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          className="absolute top-5 left-7 h-[3px] bg-[#2E4535] transition-[width] duration-300 ease-out motion-reduce:transition-none"
           style={{ width: `calc((100% - 3.5rem) * ${progress})` }}
         />
         {steps.map((step, position) => {
@@ -43,12 +43,12 @@ export function FormStepper({
           const dot = (
             <span
               className={cn(
-                "relative grid place-items-center rounded-full bg-[#FFFCF8]",
+                "relative grid place-items-center rounded-full bg-[#FFFCF5]",
                 state === "now"
-                  ? "size-11 border-[3px] border-[#A3B18A]"
+                  ? "size-11 border-[3px] border-[#8A9DB5]"
                   : "mt-[5px] size-[34px] border-2",
-                state === "done" && "border-[#5C3A26] bg-[#F1E7D3]",
-                state === "todo" && "border-[#D8C8AC] bg-[#F1E7D3]"
+                state === "done" && "border-[#2E4535] bg-[#F6F1E8]",
+                state === "todo" && "border-[#DCCFB4] bg-[#F6F1E8]"
               )}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- tiny pixel sprite, scaled with CSS */}
@@ -67,7 +67,7 @@ export function FormStepper({
               {state === "done" ? (
                 <span
                   aria-hidden="true"
-                  className="absolute -top-1.5 -right-1.5 grid size-4 place-items-center rounded-full bg-[#5C3A26] text-[10px] leading-none text-[#F1E7D3]"
+                  className="absolute -top-1.5 -right-1.5 grid size-4 place-items-center rounded-full bg-[#2E4535] text-[10px] leading-none text-[#F6F1E8]"
                 >
                   ✓
                 </span>
@@ -77,7 +77,7 @@ export function FormStepper({
           const name = (
             <span
               className={cn(
-                "text-[12.5px] leading-tight text-[#5C3A26]",
+                "text-[12.5px] leading-tight text-[#2E4535]",
                 state === "now" ? "font-semibold" : "max-[359px]:sr-only"
               )}
             >
@@ -95,7 +95,7 @@ export function FormStepper({
               {state === "done" && onJump ? (
                 <button
                   type="button"
-                  className="flex flex-col items-center gap-1.5 rounded-xl focus-visible:ring-2 focus-visible:ring-[#A3B18A] focus-visible:outline-none"
+                  className="flex flex-col items-center gap-1.5 rounded-xl focus-visible:ring-2 focus-visible:ring-[#8A9DB5] focus-visible:outline-none"
                   aria-label={`ขั้นที่ ${position + 1} ${spoken}`}
                   onClick={() => onJump(step.key)}
                 >
@@ -112,7 +112,7 @@ export function FormStepper({
           )
         })}
       </ol>
-      <p className="mt-3 text-center text-[13px] leading-normal text-[#5C3A26]">
+      <p className="mt-3 text-center text-[13px] leading-normal text-[#2E4535]">
         ขั้น {index + 1} จาก {steps.length} · {label}
       </p>
     </nav>

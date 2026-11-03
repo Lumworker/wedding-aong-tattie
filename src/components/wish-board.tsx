@@ -46,12 +46,12 @@ function WishList({
         return (
           <li key={wish.id} className="rounded-2xl border border-blush bg-blush-pale px-4 py-3">
             <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 text-[15px] font-semibold break-words text-rose">{wish.from}</p>
+              <p className="min-w-0 text-[15px] font-semibold break-words text-rose-ink">{wish.from}</p>
               {mine ? (
                 <button
                   type="button"
                   onClick={() => onEdit(wish)}
-                  className="shrink-0 text-[13px] font-medium text-rose underline-offset-2 hover:underline"
+                  className="shrink-0 text-[13px] font-medium text-rose-ink underline-offset-2 hover:underline"
                 >
                   แก้ไข
                 </button>

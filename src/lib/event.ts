@@ -11,6 +11,9 @@ export const COUPLE = {
   brideShort: "Prachayaphorn",
   brideNickname: "แทตตี้",
   dateThai: "20 พฤศจิกายน 2570",
+  /** Latin wordmark names (Fraunces, blueberry). */
+  groomLatin: "Aong",
+  brideLatin: "Tattie",
 } as const
 
 export const COUPLE_STORY = {

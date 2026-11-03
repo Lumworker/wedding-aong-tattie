@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import type { ReactNode } from "react"
-import { Cormorant_Garamond, Noto_Sans_Thai, Noto_Serif_Thai } from "next/font/google"
+import { Fraunces, Noto_Sans_Thai, Noto_Serif_Thai } from "next/font/google"
 import { COUPLE, VENUE_MAP } from "@/lib/event"
 import "./globals.css"
 
@@ -27,11 +27,12 @@ const thaiSerif = Noto_Serif_Thai({
   display: "swap",
 })
 
-const display = Cormorant_Garamond({
+/** Wordmark face: soft-serif Fraunces (SOFT 100, opsz 144 set in CSS). */
+const display = Fraunces({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
   style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  axes: ["SOFT", "opsz"],
+  variable: "--font-fraunces",
   display: "swap",
 })
 
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#F8EDE1",
+  themeColor: "#F6F1E8",
   width: "device-width",
   initialScale: 1,
 }

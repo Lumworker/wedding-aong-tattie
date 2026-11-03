@@ -19,7 +19,7 @@ import {
   Shirt,
   TriangleAlert,
 } from "lucide-react"
-import { BalconyScene, MAX_RAIL_LETTERS, THROW_MS, type Reader, type SceneAnim } from "@/components/dashboard/balcony-scene"
+import { BalconyScene, THROW_MS, type Reader, type SceneAnim } from "@/components/dashboard/balcony-scene"
 import { Sheet } from "@/components/dashboard/sheet"
 import { Tour, type TourStep } from "@/components/dashboard/tour"
 import { googleCalendarUrl, icsDataUrl } from "@/lib/calendar"
@@ -31,10 +31,33 @@ import type { Guest, Party, Wish } from "@/lib/types"
 import { WISH_TEXT_MAX, clipWishText, wishGlyphCount } from "@/lib/wish"
 
 const DIRECTIONS = `https://www.google.com/maps/dir/?api=1&destination=${VENUE_MAP.lat},${VENUE_MAP.lng}`
-const TOUR_KEY = "webding-dashboard-tour-v2"
+/** The walkthrough comes back whenever this cookie has expired (10 hours). */
+const TOUR_COOKIE = "dash_tour_seen"
+const TOUR_TTL_S = 10 * 60 * 60
+/** How long a letter note stays up, and the gap between auto reads. */
+const READ_HOLD_MS = 4600
+const AUTO_READ_MS = 6500
+/** Inside this many days the primary button becomes directions. */
+const NAV_PRIMARY_DAYS = 7
+
+function tourSeen() {
+  try {
+    return document.cookie.split("; ").some((part) => part.startsWith(`${TOUR_COOKIE}=`))
+  } catch {
+    return true
+  }
+}
+
+function markTourSeen() {
+  try {
+    document.cookie = `${TOUR_COOKIE}=1; max-age=${TOUR_TTL_S}; path=/; SameSite=Lax`
+  } catch {
+    /* cookies blocked */
+  }
+}
 const PRESETS = ["ยินดีด้วยนะ!", "ขอให้รักกันนาน ๆ", "มีความสุขมาก ๆ นะ"]
 
-type SheetKey = "date" | "place" | "dress" | "story" | "manage" | "cancel" | "wish" | "letters" | null
+type SheetKey = "date" | "place" | "dress" | "story" | "manage" | "cancel" | "wish" | "letters" | "letter" | null
 
 function daysUntilWedding() {
   const target = new Date(`${CEREMONY_DATE_ISO}T00:00:00+07:00`).getTime()
@@ -53,15 +76,6 @@ function useIsAdmin() {
   )
 }
 
-function PixelHeart() {
-  const rows = [".XX.XX.", "XXXXXXX", "XXXXXXX", ".XXXXX.", "..XXX..", "...X..."]
-  return (
-    <svg aria-hidden="true" width="18" height="15" viewBox="0 0 7 6" shapeRendering="crispEdges">
-      {rows.flatMap((row, y) => [...row].map((c, x) => (c === "X" ? <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="#C2566E" /> : null)))}
-    </svg>
-  )
-}
-
 function SolidButton({
   children,
   onClick,
@@ -75,8 +89,8 @@ function SolidButton({
   tone?: "sumi" | "sakura"
   className?: string
 }) {
-  const cls = `flex min-h-[50px] items-center justify-center gap-2 rounded-md px-4 text-base font-semibold ${
-    tone === "sumi" ? "bg-[#2E2A27] text-[#F7F4EE] hover:bg-[#45403C]" : "bg-[#F2D4DA] text-[#2E2A27] hover:bg-[#EDC4CD]"
+  const cls = `flex min-h-[50px] items-center justify-center gap-2 rounded-full px-4 text-base font-medium ${
+    tone === "sumi" ? "bg-[#2E4535] text-[#F6F1E8] hover:bg-[#22352A]" : "bg-[#F2D9D3] text-[#2E4535] hover:bg-[#EBC9C1]"
   } ${className}`
   if (href)
     return (
@@ -96,8 +110,8 @@ function LineButton({ children, onClick, danger = false }: { children: ReactNode
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[46px] items-center justify-center gap-2 rounded-md border px-4 text-[15px] font-medium ${
-        danger ? "border-[#B03A2E] text-[#B03A2E] hover:bg-[#FBEDEB]" : "border-[#2E2A27] text-[#2E2A27] hover:bg-[#F7F4EE]"
+      className={`flex min-h-[46px] items-center justify-center gap-2 rounded-full border px-4 text-[15px] font-medium ${
+        danger ? "border-[#9A3B2E] text-[#9A3B2E] hover:bg-[#F8ECE8]" : "border-[#2E4535] text-[#2E4535] hover:bg-[#F6F1E8]"
       }`}
     >
       {children}
@@ -108,10 +122,10 @@ function LineButton({ children, onClick, danger = false }: { children: ReactNode
 function InfoRow({ icon, label, value }: { icon: ReactNode; label: string; value?: string }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="mt-0.5 text-[#B5677A]">{icon}</span>
+      <span className="mt-0.5 text-[#5F7290]">{icon}</span>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-[15px] text-[#2E2A27]">{label}</span>
-        {value ? <span className="text-[13px] leading-normal text-[#6E6862]">{value}</span> : null}
+        <span className="text-[15px] text-[#2E4535]">{label}</span>
+        {value ? <span className="text-[13px] leading-normal text-[#5B6B5F]">{value}</span> : null}
       </div>
     </div>
   )
@@ -146,14 +160,16 @@ export function DashboardView({
   const names = useMemo(() => party.guests.filter((guest) => !guest.isCompanion).map((guest) => guest.name).filter(Boolean), [party.guests])
   const partySize = party.guests.length
   const sorted = useMemo(() => [...wishes].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [wishes])
-  const railLetters = sorted.slice(0, MAX_RAIL_LETTERS)
 
   const [sheet, setSheet] = useState<SheetKey>(null)
   const [anim, setAnim] = useState<SceneAnim>({ kind: "idle" })
   const [letter, setLetter] = useState<Wish | null>(null)
   const [throwing, setThrowing] = useState<number | null>(null)
+  const [shown, setShown] = useState<Wish | null>(null)
   const pendingLetter = useRef<Wish | null>(null)
   const landTimer = useRef<number | undefined>(undefined)
+  const holdTimer = useRef<number | undefined>(undefined)
+  const autoIndex = useRef(0)
   const nextReader = useRef<Reader>("groom")
   const [tour, setTour] = useState(0)
   const [copied, setCopied] = useState(false)
@@ -168,46 +184,67 @@ export function DashboardView({
 
   const coupleRef = useRef<HTMLButtonElement>(null)
   const navRef = useRef<HTMLAnchorElement>(null)
+  const lettersRef = useRef<HTMLButtonElement>(null)
   const wishRef = useRef<HTMLButtonElement>(null)
   const tilesRef = useRef<HTMLDivElement>(null)
   const manageRef = useRef<HTMLButtonElement>(null)
+  const statusRef = useRef<HTMLDivElement>(null)
 
   const steps: TourStep[] = useMemo(
     () => [
-      { target: coupleRef, title: "ทักทายบ่าวสาว", text: `แตะ${COUPLE.groomNickname}กับ${COUPLE.brideNickname}บนระเบียงได้เลย` },
-      ...(declined ? [] : [{ target: navRef, title: "นำทางไปงาน", text: "เปิด Google Maps พาไปถึงโบสถ์" }]),
+      {
+        target: coupleRef,
+        title: `ทักทาย${COUPLE.groomNickname}กับ${COUPLE.brideNickname}`,
+        text: "แตะที่บ่าวสาว ทั้งคู่จะโบกมือทักคุณ",
+        icon: <Heart className="size-4" />,
+        radius: 16,
+        tapToContinue: true,
+      },
       {
         target: wishRef,
-        title: "อวยพรบ่าวสาว",
-        text: declined ? "ไม่ได้ไปงานก็ส่งจดหมายขึ้นไปได้" : "เขียนจดหมายแล้วปาขึ้นไปให้บ่าวสาวอ่าน",
+        title: "เขียนจดหมายถึงบ่าวสาว",
+        text: declined
+          ? "ไม่ได้ไปงานก็ส่งจดหมายได้ ทั้งคู่จะหยิบขึ้นมาอ่านในฉากนี้"
+          : "ส่งคำอวยพร แล้วจดหมายจะลอยไปหาบ่าวสาว ทั้งคู่จะหยิบขึ้นมาอ่านในฉากนี้",
+        icon: <Mail className="size-4" />,
+        radius: 999,
       },
-      { target: tilesRef, title: "ข้อมูลงาน", text: "กดดูวันเวลา สถานที่ การแต่งกาย และเรื่องของเรา" },
-      { target: manageRef, title: "แก้ไขหรือยกเลิก", text: "กด “จัดการ” เพื่อแก้ข้อมูลคณะ เปลี่ยนเบอร์ หรือยกเลิก" },
+      {
+        target: statusRef,
+        title: "แก้คำตอบได้ตลอด",
+        text: "กด “จัดการ” เพื่อแก้ข้อมูลคณะ เปลี่ยนเบอร์ หรือยกเลิกการลงทะเบียน",
+        icon: <Pencil className="size-4" />,
+        radius: 18,
+      },
     ],
     [declined]
   )
 
   useEffect(() => {
-    let seen = true
-    try {
-      seen = window.localStorage.getItem(TOUR_KEY) === "1"
-    } catch {
-      seen = true
-    }
-    if (seen) return
-    const timer = window.setTimeout(() => setTour(1), 700)
+    if (tourSeen()) return
+    const timer = window.setTimeout(() => startTour(), 700)
     return () => window.clearTimeout(timer)
   }, [])
 
-  useEffect(() => () => window.clearTimeout(landTimer.current), [])
+  useEffect(
+    () => () => {
+      window.clearTimeout(landTimer.current)
+      window.clearTimeout(holdTimer.current)
+    },
+    []
+  )
+
+  // A letter note would sit under the coach card, so the scene goes quiet first.
+  function startTour() {
+    window.clearTimeout(holdTimer.current)
+    setLetter(null)
+    setAnim({ kind: "idle" })
+    setTour(1)
+  }
 
   const endTour = useCallback(() => {
     setTour(0)
-    try {
-      window.localStorage.setItem(TOUR_KEY, "1")
-    } catch {
-      /* private mode */
-    }
+    markTourSeen()
   }, [])
 
   const closeSheet = useCallback(() => {
@@ -220,11 +257,35 @@ export function DashboardView({
     setSheet(key)
   }
 
-  function read(wish: Wish) {
+  const read = useCallback((wish: Wish) => {
     const who = nextReader.current
     nextReader.current = who === "groom" ? "bride" : "groom"
     setLetter(wish)
     setAnim({ kind: "read", who, key: Date.now() })
+    window.clearTimeout(holdTimer.current)
+    holdTimer.current = window.setTimeout(() => {
+      setLetter(null)
+      setAnim((current) => (current.kind === "read" ? { kind: "idle" } : current))
+    }, READ_HOLD_MS)
+  }, [])
+
+  // The couple keep reading letters on their own while nothing else is going on.
+  const idle = sheet === null && tour === 0 && throwing === null && anim.kind === "idle"
+  useEffect(() => {
+    if (!idle || sorted.length === 0) return
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return
+    const timer = window.setTimeout(() => {
+      if (document.hidden) return
+      const wish = sorted[autoIndex.current % sorted.length]
+      autoIndex.current += 1
+      read(wish)
+    }, autoIndex.current === 0 ? 1200 : AUTO_READ_MS)
+    return () => window.clearTimeout(timer)
+  }, [idle, sorted, read])
+
+  function openLetter(wish: Wish) {
+    setShown(wish)
+    open("letter")
   }
 
   function startWish(edit?: Wish) {
@@ -297,11 +358,11 @@ export function DashboardView({
 
   const statusIcon =
     attendance === "attending" ? (
-      <CircleCheck aria-hidden="true" className="size-7 shrink-0 text-[#B5677A]" />
+      <CircleCheck aria-hidden="true" className="size-6 shrink-0 text-[#4F6648]" />
     ) : attendance === "declined" ? (
-      <CircleX aria-hidden="true" className="size-7 shrink-0 text-[#6E6862]" />
+      <CircleX aria-hidden="true" className="size-6 shrink-0 text-[#5B6B5F]" />
     ) : (
-      <CircleDashed aria-hidden="true" className="size-7 shrink-0 text-[#6E6862]" />
+      <CircleDashed aria-hidden="true" className="size-6 shrink-0 text-[#5B6B5F]" />
     )
   const statusTitle = attendance === "attending" ? "ไปร่วมงาน" : attendance === "declined" ? "ไม่ไปร่วมงาน" : "ยังไม่แน่ใจ"
   const others = Math.max(0, partySize - 1)
@@ -315,136 +376,124 @@ export function DashboardView({
           : "แตะ “จัดการ” เพื่ออัปเดตคำตอบ"
 
   const calendarDetails = `${COUPLE.dateThai} · ${VENUE_MAP.name} ${VENUE_MAP.address}`
+  const days = daysUntilWedding()
+  const navPrimary = !declined && days <= NAV_PRIMARY_DAYS
   const tileClass =
-    "flex h-[78px] flex-col items-center justify-center gap-1.5 rounded-md border border-[#E6E0D6] bg-white text-[13px] font-medium text-[#2E2A27] hover:bg-[#FBFAF7]"
+    "flex h-[60px] flex-col items-center justify-center gap-1 rounded-[14px] border border-[#E6DCC4] bg-[#FFFCF5] text-xs text-[#2E4535] hover:bg-[#FFF8E6]"
 
   return (
-    <div className="flex h-dvh flex-col bg-[#F7F4EE] font-sans text-[#2E2A27] lg:grid lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
-      <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-[#E6E0D6] pr-1.5 pl-4 lg:col-start-1 lg:row-start-1 lg:h-auto lg:border-r lg:py-4">
-        <div className="flex items-center gap-2">
-          <PixelHeart />
-          <h1 className="font-serif text-[19px] font-semibold">
-            {COUPLE.groomNickname} &amp; {COUPLE.brideNickname}
-          </h1>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <span className="flex items-center gap-1.5 rounded-full bg-[#EFEAE1] px-2.5 py-1.5 text-[13px] font-medium">
-            <CalendarDays aria-hidden="true" className="size-[15px]" />
-            อีก {daysUntilWedding()} วัน
+    <div className="flex h-dvh flex-col bg-[#F6F1E8] font-sans text-[#2E4535] lg:grid lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
+      <header className="flex h-16 shrink-0 items-center justify-between pr-1.5 pl-4 lg:col-start-1 lg:row-start-1 lg:h-auto lg:border-r lg:border-[#E6DCC4] lg:py-4">
+        <h1 className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/script-rose.webp?v=1" alt="" width={103} height={56} className="-ml-1 h-14 w-auto" draggable={false} />
+          <span className="sr-only">
+            {COUPLE.groomNickname} และ {COUPLE.brideNickname}
           </span>
+        </h1>
+        <div className="flex items-center gap-0.5">
+          <span className="rounded-full border border-[#E6DCC4] bg-[#FFF8E6] px-2.5 py-1 text-xs">อีก {days} วัน</span>
           <button
             type="button"
             onClick={() => {
               setSheet(null)
-              setTour(1)
+              startTour()
             }}
             aria-label="วิธีใช้งาน"
             title="วิธีใช้งาน"
-            className="flex size-11 items-center justify-center rounded-md hover:bg-[#EFEAE1]"
+            className="flex size-11 items-center justify-center rounded-full hover:bg-[#FFF8E6]"
           >
-            <span className="flex size-[26px] items-center justify-center rounded-full border border-[#2E2A27] text-[13px] font-semibold">?</span>
+            <span className="flex size-[26px] items-center justify-center rounded-full border border-[#2E4535] text-[13px]">?</span>
           </button>
         </div>
       </header>
 
       <section
-        aria-label="ฉากระเบียงของบ่าวสาว"
-        className="mx-3.5 mt-2 min-h-[220px] flex-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:m-4 lg:min-h-0"
+        aria-label="ฉากบ่าวสาว"
+        className="mx-3.5 max-h-[440px] min-h-[240px] flex-1 lg:col-start-2 lg:max-h-none lg:row-span-2 lg:row-start-1 lg:m-4 lg:min-h-0"
       >
         <BalconyScene
           guests={guests}
           selfKey={selfKey}
           declined={declined}
-          letters={railLetters}
+          letterCount={wishes.length}
           anim={anim}
           letter={letter}
           throwing={throwing}
           coupleRef={coupleRef}
+          lettersRef={lettersRef}
           onCoupleTap={() => {
+            window.clearTimeout(holdTimer.current)
             setLetter(null)
             setAnim({ kind: "wave", key: Date.now() })
           }}
           onWaveDone={() => setAnim((current) => (current.kind === "wave" ? { kind: "idle" } : current))}
-          onLetterTap={read}
-          onCloseLetter={() => {
-            setLetter(null)
-            setAnim({ kind: "idle" })
-          }}
+          onOpenLetters={() => open("letters")}
+          onOpenLetter={openLetter}
         />
       </section>
 
-      <div className="shrink-0 lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:border-[#E6E0D6] lg:pb-6">
-        <div className="mx-3.5 mt-2.5 flex h-16 items-center gap-2.5 rounded-lg border border-[#E6E0D6] bg-white px-3">
+      <div className="shrink-0 pb-[max(env(safe-area-inset-bottom),0.875rem)] lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:border-[#E6DCC4] lg:pb-6">
+        <div ref={statusRef} className="relative z-10 mx-6 -mt-5 flex items-center gap-2.5 rounded-[18px] border border-[#E6DCC4] bg-[#FFFCF5] py-2.5 pr-2.5 pl-3.5 lg:mx-3.5 lg:mt-2">
           {statusIcon}
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="font-serif text-lg leading-tight font-semibold">{statusTitle}</span>
-            <span className="truncate text-xs text-[#6E6862]">{statusSub}</span>
+            <span className="text-[15px] leading-tight font-medium">{statusTitle}</span>
+            <span className="truncate text-xs text-[#5B6B5F]">{statusSub}</span>
           </div>
           <button
             ref={manageRef}
             type="button"
             onClick={() => open("manage")}
-            className="flex min-h-11 items-center gap-1.5 rounded-md border border-[#2E2A27] px-3.5 text-sm font-medium hover:bg-[#F7F4EE]"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[#2E4535] px-4 text-[13px] hover:bg-[#F6F1E8]"
           >
-            <Pencil aria-hidden="true" className="size-4" />
             จัดการ
           </button>
         </div>
 
-        <div className={`mx-3.5 mt-3 grid gap-2.5 ${declined ? "grid-cols-1" : "grid-cols-2"}`}>
-          {declined ? null : (
+        <div className={`mx-3.5 mt-3.5 grid gap-2.5 ${navPrimary ? "grid-cols-2" : "grid-cols-1"}`}>
+          {navPrimary ? (
             <a
               ref={navRef}
               href={DIRECTIONS}
               target="_blank"
               rel="noopener noreferrer"
-              className="grid h-16 grid-cols-[auto_1fr] items-center gap-x-2.5 rounded-lg bg-[#2E2A27] px-3.5 text-[#F7F4EE] hover:bg-[#45403C]"
+              className="flex h-[52px] items-center justify-center gap-2 rounded-full bg-[#2E4535] text-[15px] font-medium text-[#F6F1E8] hover:bg-[#22352A]"
             >
-              <Navigation aria-hidden="true" className="row-span-2 size-6" />
-              <span className="self-end text-base leading-tight font-semibold">นำทางไปงาน</span>
-              <span className="self-start text-xs leading-tight opacity-85">Google Maps</span>
+              <Navigation aria-hidden="true" className="size-5" />
+              นำทางไปงาน
             </a>
-          )}
+          ) : null}
           <button
             ref={wishRef}
             type="button"
             onClick={() => startWish()}
-            className="grid h-16 grid-cols-[auto_1fr] items-center gap-x-2.5 rounded-lg bg-[#F2D4DA] px-3.5 text-left text-[#2E2A27] hover:bg-[#EDC4CD]"
+            className={`flex h-[52px] items-center justify-center gap-2 rounded-full text-[15px] font-medium ${
+              navPrimary ? "border border-[#2E4535] bg-[#FFFCF5] text-[#2E4535] hover:bg-[#FFF8E6]" : "bg-[#2E4535] text-[#F6F1E8] hover:bg-[#22352A]"
+            }`}
           >
-            <Heart aria-hidden="true" className="row-span-2 size-6" />
-            <span className="self-end text-base leading-tight font-semibold">{declined ? "อวยพรบ่าวสาว" : "อวยพร"}</span>
-            <span className="self-start text-xs leading-tight opacity-85">ปาจดหมายขึ้นไป</span>
+            {navPrimary ? <Heart aria-hidden="true" className="size-5" /> : null}
+            {navPrimary ? "เขียนจดหมาย" : "เขียนจดหมายถึงบ่าวสาว"}
           </button>
         </div>
 
-        <div ref={tilesRef} className="mx-3.5 mt-3 grid grid-cols-4 gap-2">
+        <div ref={tilesRef} className="mx-3.5 mt-2.5 grid grid-cols-4 gap-1.5">
           <button type="button" className={tileClass} onClick={() => open("date")}>
-            <CalendarDays aria-hidden="true" className="size-6 text-[#B5677A]" />
+            <CalendarDays aria-hidden="true" className="size-5" />
             วันงาน
           </button>
           <button type="button" className={tileClass} onClick={() => open("place")}>
-            <MapPin aria-hidden="true" className="size-6 text-[#B5677A]" />
+            <MapPin aria-hidden="true" className="size-5" />
             สถานที่
           </button>
           <button type="button" className={tileClass} onClick={() => open("dress")}>
-            <Shirt aria-hidden="true" className="size-6 text-[#B5677A]" />
+            <Shirt aria-hidden="true" className="size-5" />
             แต่งกาย
           </button>
           <button type="button" className={tileClass} onClick={() => open("story")}>
-            <BookHeart aria-hidden="true" className="size-6 text-[#B5677A]" />
+            <BookHeart aria-hidden="true" className="size-5" />
             เรื่องของเรา
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => open("letters")}
-          className="mx-3.5 mt-3 mb-[max(env(safe-area-inset-bottom),0.875rem)] flex h-12 w-[calc(100%-1.75rem)] items-center gap-2.5 rounded-md border border-dashed border-[#C98A98] px-3.5 text-sm hover:bg-white"
-        >
-          <Mail aria-hidden="true" className="size-[19px] text-[#B5677A]" />
-          <span className="flex-1 text-left">จดหมายถึงบ่าวสาว · {wishes.length}</span>
-          <ChevronRight aria-hidden="true" className="size-[18px] text-[#6E6862]" />
-        </button>
       </div>
 
       {/* ---------- sheets ---------- */}
@@ -463,7 +512,7 @@ export function DashboardView({
           <a
             href={icsDataUrl(calendarDetails)}
             download="wedding-aong-tattie.ics"
-            className="flex min-h-[50px] items-center justify-center rounded-md border border-[#2E2A27] text-[15px] font-medium hover:bg-[#F7F4EE]"
+            className="flex min-h-[50px] items-center justify-center rounded-full border border-[#2E4535] text-[15px] font-medium hover:bg-[#F6F1E8]"
           >
             iPhone / Outlook
           </a>
@@ -471,7 +520,7 @@ export function DashboardView({
       </Sheet>
 
       <Sheet open={sheet === "place"} title="สถานที่" onClose={closeSheet}>
-        <div className="overflow-hidden rounded-lg border border-[#E6E0D6]">
+        <div className="overflow-hidden rounded-2xl border border-[#E6DCC4]">
           <iframe
             title={`แผนที่${VENUE_MAP.name}`}
             src={VENUE_MAP.embed}
@@ -482,9 +531,9 @@ export function DashboardView({
         </div>
         <div>
           <p className="text-[17px] font-semibold">
-            {VENUE_MAP.name} <span className="font-normal text-[#6E6862]">· {VENUE_MAP.nameEn}</span>
+            {VENUE_MAP.name} <span className="font-normal text-[#5B6B5F]">· {VENUE_MAP.nameEn}</span>
           </p>
-          <p className="text-[13px] leading-normal text-[#6E6862]">{VENUE_MAP.address}</p>
+          <p className="text-[13px] leading-normal text-[#5B6B5F]">{VENUE_MAP.address}</p>
         </div>
         <div className="grid grid-cols-[1fr_50px] gap-2">
           <SolidButton href={DIRECTIONS}>
@@ -496,12 +545,12 @@ export function DashboardView({
             onClick={copyAddress}
             aria-label={copied ? "คัดลอกที่อยู่แล้ว" : "คัดลอกที่อยู่"}
             title="คัดลอกที่อยู่"
-            className="flex h-[50px] items-center justify-center rounded-md border border-[#2E2A27] hover:bg-[#F7F4EE]"
+            className="flex h-[50px] items-center justify-center rounded-full border border-[#2E4535] hover:bg-[#F6F1E8]"
           >
-            {copied ? <CircleCheck aria-hidden="true" className="size-[19px] text-[#B5677A]" /> : <Copy aria-hidden="true" className="size-[19px]" />}
+            {copied ? <CircleCheck aria-hidden="true" className="size-[19px] text-[#5F7290]" /> : <Copy aria-hidden="true" className="size-[19px]" />}
           </button>
         </div>
-        <p role="status" className="-mt-1.5 h-4 text-xs text-[#6E6862]">
+        <p role="status" className="-mt-1.5 h-4 text-xs text-[#5B6B5F]">
           {copied ? "คัดลอกที่อยู่แล้ว" : ""}
         </p>
       </Sheet>
@@ -514,17 +563,17 @@ export function DashboardView({
         <p className="text-[15px] leading-relaxed">{COUPLE_STORY.lead}</p>
         <div>
           <p className="font-serif text-base font-semibold">{COUPLE.groomNickname}</p>
-          <p className="text-sm leading-relaxed text-[#45403C]">{COUPLE_STORY.groom}</p>
+          <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.groom}</p>
         </div>
         <div>
           <p className="font-serif text-base font-semibold">{COUPLE.brideNickname}</p>
-          <p className="text-sm leading-relaxed text-[#45403C]">{COUPLE_STORY.bride}</p>
+          <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.bride}</p>
         </div>
-        <p className="text-sm leading-relaxed text-[#45403C]">{COUPLE_STORY.together}</p>
+        <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.together}</p>
       </Sheet>
 
       <Sheet open={sheet === "manage"} title="จัดการการลงทะเบียน" onClose={closeSheet}>
-        <p className="-mt-2 text-[13px] text-[#6E6862]">
+        <p className="-mt-2 text-[13px] text-[#5B6B5F]">
           {formatThaiMobile(phone)} · {mine.length || partySize} ท่าน
         </p>
         <div className="flex flex-col">
@@ -537,18 +586,18 @@ export function DashboardView({
               key={item.label}
               type="button"
               onClick={item.onClick}
-              className={`flex min-h-[54px] items-center gap-3 border-t border-[#E6E0D6] px-1 text-left text-[15px] hover:bg-[#FBFAF7] ${
-                item.danger ? "text-[#B03A2E]" : "text-[#2E2A27]"
+              className={`flex min-h-[54px] items-center gap-3 border-t border-[#E6DCC4] px-1 text-left text-[15px] hover:bg-[#FFF8E6] ${
+                item.danger ? "text-[#9A3B2E]" : "text-[#2E4535]"
               }`}
             >
               {item.icon}
               <span className="flex-1">{item.label}</span>
-              <ChevronRight aria-hidden="true" className="size-[18px] text-[#6E6862]" />
+              <ChevronRight aria-hidden="true" className="size-[18px] text-[#5B6B5F]" />
             </button>
           ))}
         </div>
         {isAdmin ? (
-          <p className="text-xs text-[#6E6862]">
+          <p className="text-xs text-[#5B6B5F]">
             แอดมิน · เข้าร่วม {guests.filter((g) => g.attendance === "attending").length} · ยังไม่แน่ใจ{" "}
             {guests.filter((g) => g.attendance === "unsure").length} · ไปไม่ได้ {guests.filter((g) => g.attendance === "declined").length}
           </p>
@@ -557,7 +606,7 @@ export function DashboardView({
 
       <Sheet open={sheet === "cancel"} title="ยกเลิกการลงทะเบียน?" onClose={closeSheet} tone="danger">
         <div className="flex gap-2.5">
-          <TriangleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[#B03A2E]" />
+          <TriangleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[#9A3B2E]" />
           <p className="text-sm leading-relaxed">
             ข้อมูลคณะทั้ง {partySize} ท่านจะถูกลบ ถ้าแค่ไปไม่ได้ เลือก “ไม่ไปร่วมงาน” แทนได้ ยังอวยพรได้เหมือนเดิม
           </p>
@@ -572,20 +621,20 @@ export function DashboardView({
           {busy ? "กำลังยกเลิก…" : "ยืนยันยกเลิก"}
         </LineButton>
         {error ? (
-          <p role="alert" className="text-sm text-[#B03A2E]">
+          <p role="alert" className="text-sm text-[#9A3B2E]">
             {error}
           </p>
         ) : null}
       </Sheet>
 
-      <Sheet open={sheet === "wish"} title={editingId ? "แก้ไขจดหมาย" : "อวยพรบ่าวสาว"} onClose={closeSheet}>
+      <Sheet open={sheet === "wish"} title={editingId ? "แก้ไขจดหมาย" : "เขียนจดหมายถึงบ่าวสาว"} onClose={closeSheet}>
         <div className="flex flex-wrap gap-1.5">
           {PRESETS.map((preset) => (
             <button
               key={preset}
               type="button"
               onClick={() => setText((current) => clipWishText(current ? `${current} ${preset}` : preset))}
-              className="min-h-9 rounded-full border border-[#C98A98] px-3 text-[13px] hover:bg-[#FBEFF2]"
+              className="min-h-9 rounded-full border border-[#E0AFA6] px-3 text-[13px] hover:bg-[#F8ECE8]"
             >
               {preset}
             </button>
@@ -600,16 +649,16 @@ export function DashboardView({
           onChange={(event) => setText(clipWishText(event.target.value))}
           placeholder={`เขียนจดหมายถึง${COUPLE.groomNickname}กับ${COUPLE.brideNickname}…`}
           rows={4}
-          className="w-full resize-none rounded-md border border-[#2E2A27] bg-white p-3 text-base leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-[#B5677A]"
+          className="w-full resize-none rounded-2xl border border-[#CCCDB0] bg-white p-3 text-base leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-[#8A9DB5]"
         />
-        <div className="-mt-2 flex items-center justify-between gap-2 text-xs text-[#6E6862]">
+        <div className="-mt-2 flex items-center justify-between gap-2 text-xs text-[#5B6B5F]">
           {names.length > 1 ? (
             <label className="flex items-center gap-1.5">
               ลงชื่อ
               <select
                 value={from}
                 onChange={(event) => setFrom(event.target.value)}
-                className="min-h-9 rounded-md border border-[#E6E0D6] bg-white px-2 text-[13px] text-[#2E2A27]"
+                className="min-h-9 rounded-md border border-[#E6DCC4] bg-white px-2 text-[13px] text-[#2E4535]"
               >
                 {names.map((name) => (
                   <option key={name} value={name}>
@@ -627,24 +676,37 @@ export function DashboardView({
         </div>
         <SolidButton onClick={submitWish} className={!text.trim() || busy ? "pointer-events-none opacity-50" : ""}>
           <Send aria-hidden="true" className="size-[19px]" />
-          {busy ? "กำลังส่ง…" : editingId ? "บันทึกการแก้ไข" : "ปาจดหมายขึ้นไป"}
+          {busy ? "กำลังส่ง…" : editingId ? "บันทึกการแก้ไข" : "ส่งจดหมายขึ้นไป"}
         </SolidButton>
         {error ? (
-          <p role="alert" className="text-sm text-[#B03A2E]">
+          <p role="alert" className="text-sm text-[#9A3B2E]">
             {error}
           </p>
         ) : null}
       </Sheet>
 
+      <Sheet open={sheet === "letter"} title={shown ? `จดหมายจาก ${shown.from}` : "จดหมาย"} onClose={closeSheet}>
+        <p className="text-base leading-relaxed break-words whitespace-pre-line">{shown?.text}</p>
+        {shown && shown.partyPhone === selfKey ? (
+          <LineButton onClick={() => startWish(shown)}>
+            <Pencil aria-hidden="true" className="size-[18px]" />
+            แก้ไขจดหมายของคุณ
+          </LineButton>
+        ) : null}
+        <SolidButton tone="sakura" onClick={() => open("letters")}>
+          ดูจดหมายทั้งหมด · {wishes.length}
+        </SolidButton>
+      </Sheet>
+
       <Sheet open={sheet === "letters"} title="จดหมายถึงบ่าวสาว" onClose={closeSheet}>
-        {sorted.length === 0 ? <p className="text-sm text-[#6E6862]">ยังไม่มีจดหมาย เป็นคนแรกเลยไหม</p> : null}
+        {sorted.length === 0 ? <p className="text-sm text-[#5B6B5F]">ยังไม่มีจดหมาย เป็นคนแรกเลยไหม</p> : null}
         <ul className="flex flex-col gap-2">
           {sorted.map((wish) => (
-            <li key={wish.id} className="rounded-md border border-[#E6E0D6] bg-white px-3.5 py-3">
+            <li key={wish.id} className="rounded-2xl border border-[#E6DCC4] bg-white px-3.5 py-3">
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-sm font-semibold">{wish.from}</p>
                 {wish.partyPhone === selfKey ? (
-                  <button type="button" onClick={() => startWish(wish)} className="min-h-9 px-1 text-[13px] text-[#B5677A] underline underline-offset-2">
+                  <button type="button" onClick={() => startWish(wish)} className="min-h-9 px-1 text-[13px] text-[#5F7290] underline underline-offset-2">
                     แก้ไข
                   </button>
                 ) : null}

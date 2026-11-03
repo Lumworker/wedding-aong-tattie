@@ -30,12 +30,12 @@ export default function StoryPage() {
         <Ornament className="my-8" />
         <article className="rounded-[1.6rem] border border-border bg-card/90 p-5">
           <h2 className="font-serif text-2xl text-ink">{COUPLE.groomNickname}</h2>
-          <p className="mt-1 text-sm text-rose">{COUPLE.groom}</p>
+          <p className="mt-1 text-sm text-rose-ink">{COUPLE.groom}</p>
           <p className="mt-3 text-sm leading-7">{COUPLE_STORY.groom}</p>
         </article>
         <article className="mt-4 rounded-[1.6rem] border border-border bg-card/90 p-5">
           <h2 className="font-serif text-2xl text-ink">{COUPLE.brideNickname}</h2>
-          <p className="mt-1 text-sm text-rose">{COUPLE.bride}</p>
+          <p className="mt-1 text-sm text-rose-ink">{COUPLE.bride}</p>
           <p className="mt-3 text-sm leading-7">{COUPLE_STORY.bride}</p>
         </article>
         <p className="mt-6 font-serif text-lg leading-8 text-ink">{COUPLE_STORY.together}</p>

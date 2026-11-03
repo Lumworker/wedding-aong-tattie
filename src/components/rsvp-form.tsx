@@ -216,7 +216,7 @@ function StepActions({
   onPrimary?: () => void
 }) {
   return (
-    <div className="sticky bottom-0 z-20 -mx-5 mt-5 bg-[#FFFCF8] px-5 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:static sm:mx-0 sm:px-0 sm:pb-0">
+    <div className="sticky bottom-0 z-20 -mx-5 mt-5 bg-[#FFFCF5] px-5 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:static sm:mx-0 sm:px-0 sm:pb-0">
       <Button
         type={submit ? "submit" : "button"}
         disabled={pending}
@@ -251,7 +251,7 @@ function StepCard({ children }: { children: ReactNode }) {
     <div className="flex flex-1 flex-col justify-center">
       <div className="relative mx-auto mt-[5.75rem] w-full max-w-md sm:mt-32">
         <CouplePeek />
-        <div className="relative z-10 rounded-[1.75rem] border border-[#E6D5C3] bg-[#FFFCF8] px-5 pt-6 pb-4 shadow-[0_24px_50px_-32px_rgba(90,62,48,0.45)] sm:px-7 sm:pt-8 sm:pb-6">
+        <div className="relative z-10 rounded-[1.75rem] border border-[#E6DCC4] bg-[#FFFCF5] px-5 pt-6 pb-4 shadow-[0_24px_50px_-32px_rgba(46,69,53,0.45)] sm:px-7 sm:pt-8 sm:pb-6">
           {children}
         </div>
       </div>
@@ -414,7 +414,7 @@ function RegisterIntro({
         {editing ? <p className="mb-3 text-center text-sm text-muted-foreground">แก้คำตอบที่บันทึกไว้</p> : null}
         <Button
           type="button"
-          className="h-14 w-full rounded-full bg-blush text-lg text-secondary-foreground shadow-none hover:bg-rose hover:text-paper focus-visible:border-rose/40 focus-visible:ring-rose/40"
+          className="h-14 w-full rounded-full bg-primary text-lg text-primary-foreground shadow-none hover:bg-forest-deep hover:text-cream focus-visible:ring-blueberry/50"
           onPointerEnter={() => setLoop(true)}
           onPointerLeave={() => setLoop(false)}
           onClick={enter}
@@ -435,7 +435,7 @@ function RegisterIntro({
 
 function ReviewRow({ label, value, onEdit }: { label: string; value: ReactNode; onEdit: () => void }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-[#E6D5C3] py-3 last:border-b-0">
+    <div className="flex items-start justify-between gap-3 border-b border-[#E6DCC4] py-3 last:border-b-0">
       <div className="min-w-0">
         <p className="text-[13px] leading-normal text-muted-foreground">{label}</p>
         <div className="mt-0.5 text-[15px] leading-normal text-ink">{value}</div>
@@ -825,7 +825,7 @@ export function RsvpForm({
                 <FieldError>{errors.gender}</FieldError>
               </div>
               {declined ? null : (
-                <div className="flex flex-col gap-3 rounded-2xl bg-[#F7F1E4] p-3">
+                <div className="flex flex-col gap-3 rounded-2xl bg-[#FFF8E6] p-3">
                   <Counter
                     label="ผู้ติดตาม (ผู้ใหญ่)"
                     hint="ไม่ต้องกรอกชื่อ"
@@ -866,7 +866,7 @@ export function RsvpForm({
                       className={cn(
                         "flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 text-center text-[14px] leading-tight transition-colors",
                         "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-                        selected ? "border-2 border-[#5C3A26] bg-[#F7F1E4] font-semibold" : "border-[#D8C8AC] bg-card"
+                        selected ? "border-2 border-[#2E4535] bg-[#FFF8E6] font-semibold" : "border-[#DCCFB4] bg-card"
                       )}
                     >
                       <input
@@ -888,7 +888,7 @@ export function RsvpForm({
                 <label
                   className={cn(
                     "mt-2.5 flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border px-3 text-[14px]",
-                    travel.mode === "unknown" ? "border-2 border-[#5C3A26] bg-[#F7F1E4] font-semibold" : "border-[#D8C8AC] bg-card"
+                    travel.mode === "unknown" ? "border-2 border-[#2E4535] bg-[#FFF8E6] font-semibold" : "border-[#DCCFB4] bg-card"
                   )}
                 >
                   <input
@@ -927,7 +927,7 @@ export function RsvpForm({
                   const norm = normalizePlate(car.plate)
                   const error = errors.cars?.[car.id]
                   return (
-                    <div key={car.id} className="rounded-2xl border border-[#E6D5C3] bg-card p-3">
+                    <div key={car.id} className="rounded-2xl border border-[#E6DCC4] bg-card p-3">
                       <div className="flex items-center justify-between">
                         <p className="text-[15px] font-medium">รถคันที่ {index + 1}</p>
                         {travel.cars.length > 1 ? (
@@ -982,7 +982,7 @@ export function RsvpForm({
                 {travel.cars.length < CAR_MAX ? (
                   <button
                     type="button"
-                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[#D8C8AC] text-sm font-medium"
+                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[#DCCFB4] text-sm font-medium"
                     onClick={() => setTravel((current) => ({ ...current, cars: [...current.cars, blankCar()] }))}
                   >
                     <Plus className="size-4" /> เพิ่มรถอีกคัน
@@ -995,7 +995,7 @@ export function RsvpForm({
               href={VENUE_MAP.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 flex items-start gap-2.5 rounded-2xl bg-[#F7F1E4] p-3 text-[13px] leading-normal"
+              className="mt-5 flex items-start gap-2.5 rounded-2xl bg-[#FFF8E6] p-3 text-[13px] leading-normal"
             >
               <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <span>
@@ -1065,14 +1065,14 @@ export function RsvpForm({
               {declined ? null : (
                 <div
                   role="note"
-                  className="mt-4 flex items-start gap-3 rounded-2xl border-2 border-[#A3B18A] bg-[#F4F6EE] px-4 py-3"
+                  className="mt-4 flex items-start gap-3 rounded-2xl border-2 border-[#8A9DB5] bg-[#EEF1F6] px-4 py-3"
                 >
                   <span aria-hidden="true" className="text-2xl leading-none">
                     👔
                   </span>
                   <div>
-                    <p className="text-[15px] leading-normal font-semibold text-[#5C3A26]">{DRESS_CODE.title}</p>
-                    <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#5C3A26]">{DRESS_CODE.detail}</p>
+                    <p className="text-[15px] leading-normal font-semibold text-[#2E4535]">{DRESS_CODE.title}</p>
+                    <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#2E4535]">{DRESS_CODE.detail}</p>
                   </div>
                 </div>
               )}

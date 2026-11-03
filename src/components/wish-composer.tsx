@@ -169,7 +169,7 @@ export function WishComposer({
             id="wish-count"
             className={cn(
               "text-[13px] tabular-nums text-muted-foreground",
-              remaining <= 20 && "font-medium text-rose"
+              remaining <= 20 && "font-medium text-rose-ink"
             )}
           >
             <span className="sr-only">ความยาวข้อความ </span>
