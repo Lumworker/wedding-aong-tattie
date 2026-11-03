@@ -36,8 +36,6 @@ const TOUR_TTL_S = 10 * 60 * 60
 /** How long a letter note stays up, and the gap between auto reads. */
 const READ_HOLD_MS = 4600
 const AUTO_READ_MS = 6500
-/** Inside this many days the primary button becomes directions. */
-const NAV_PRIMARY_DAYS = 7
 
 function tourSeen() {
   try {
@@ -183,7 +181,6 @@ export function DashboardView({
   const count = wishGlyphCount(text)
 
   const coupleRef = useRef<HTMLButtonElement>(null)
-  const navRef = useRef<HTMLAnchorElement>(null)
   const lettersRef = useRef<HTMLButtonElement>(null)
   const wishRef = useRef<HTMLButtonElement>(null)
   const tilesRef = useRef<HTMLDivElement>(null)
@@ -369,7 +366,6 @@ export function DashboardView({
 
   const calendarDetails = `${COUPLE.dateThai} · ${VENUE_MAP.name} ${VENUE_MAP.address}`
   const days = daysUntilWedding()
-  const navPrimary = !declined && days <= NAV_PRIMARY_DAYS
   const tileClass =
     "flex h-[60px] flex-col items-center justify-center gap-1 rounded-[14px] border border-[#E6DCC4] bg-[#FFFCF5] text-xs text-[#2E4535] hover:bg-[#FFF8E6]"
 
@@ -443,31 +439,14 @@ export function DashboardView({
           </button>
         </div>
 
-        <div className={`mx-3.5 mt-3.5 grid gap-2.5 ${navPrimary ? "grid-cols-2" : "grid-cols-1"}`}>
-          {navPrimary ? (
-            <a
-              ref={navRef}
-              href={DIRECTIONS}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-[52px] items-center justify-center gap-2 rounded-full bg-[#2E4535] text-[15px] font-medium text-[#F6F1E8] hover:bg-[#22352A]"
-            >
-              <Navigation aria-hidden="true" className="size-5" />
-              นำทางไปงาน
-            </a>
-          ) : null}
-          <button
-            ref={wishRef}
-            type="button"
-            onClick={() => startWish()}
-            className={`flex h-[52px] items-center justify-center gap-2 rounded-full text-[15px] font-medium ${
-              navPrimary ? "border border-[#2E4535] bg-[#FFFCF5] text-[#2E4535] hover:bg-[#FFF8E6]" : "bg-[#2E4535] text-[#F6F1E8] hover:bg-[#22352A]"
-            }`}
-          >
-            {navPrimary ? <Heart aria-hidden="true" className="size-5" /> : null}
-            {navPrimary ? "เขียนจดหมาย" : "เขียนจดหมายถึงบ่าวสาว"}
-          </button>
-        </div>
+        <button
+          ref={wishRef}
+          type="button"
+          onClick={() => startWish()}
+          className="mx-3.5 mt-3.5 flex h-[52px] w-[calc(100%-1.75rem)] items-center justify-center rounded-full bg-[#2E4535] text-[15px] font-medium text-[#F6F1E8] hover:bg-[#22352A]"
+        >
+          เขียนจดหมายถึงบ่าวสาว
+        </button>
 
         <div ref={tilesRef} className="mx-3.5 mt-2.5 grid grid-cols-4 gap-1.5">
           <button type="button" className={tileClass} onClick={() => open("date")}>

@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, Minus, Plus, Shirt, X } from "lucide-react"
-import { Envelope, FollowerCell, Garden, GuestCell, shortDateThai } from "@/components/register/garden"
+import { Envelope, FollowerCell, Garden, GenderIcon, GuestCell, shortDateThai } from "@/components/register/garden"
 import { spriteForGuest } from "@/lib/appearance"
-import { COUPLE_IDLE } from "@/lib/couple-atlas"
+import { COUPLE_PEEK } from "@/lib/couple-atlas"
 import { CEREMONY_DATE_ISO, COUPLE, PARTY_MAX, VENUE_MAP } from "@/lib/event"
 import { newId } from "@/lib/id"
 import { travelIcon, travelLabel } from "@/lib/labels"
@@ -560,9 +560,9 @@ export function RegisterFlow({
             <div role="alertdialog" aria-modal="true" aria-labelledby="returning-title" className="flex w-full max-w-sm flex-col gap-3 rounded-[22px] bg-[#FFFCF5] px-[18px] pt-5 pb-2.5">
               <div aria-hidden="true" className="flex h-16 items-end justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={COUPLE_IDLE.groom} alt="" className="h-[60px] w-auto [image-rendering:pixelated]" />
+                <img src={COUPLE_PEEK.groom} alt="" className="h-[60px] w-auto [image-rendering:pixelated]" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={COUPLE_IDLE.bride} alt="" className="h-[62px] w-auto [image-rendering:pixelated]" />
+                <img src={COUPLE_PEEK.bride} alt="" className="h-[62px] w-auto [image-rendering:pixelated]" />
               </div>
               <div className="text-center">
                 <h2 id="returning-title" className="text-xl font-semibold">
@@ -711,7 +711,6 @@ export function RegisterFlow({
               value={form.name}
               maxLength={NAME_MAX}
               autoComplete="name"
-              placeholder="เช่น ชื่อเล่น"
               aria-invalid={errors.name ? true : undefined}
               aria-describedby={errors.name ? "who-name-error" : undefined}
               onChange={(event) => patch({ name: event.target.value })}
@@ -730,10 +729,10 @@ export function RegisterFlow({
                   key={gender}
                   selected={form.gender === gender}
                   onClick={() => patch({ gender: form.gender === gender ? null : gender })}
-                  className="h-14"
+                  className="h-14 gap-1"
                 >
                   {form.gender === gender ? <CheckBadge /> : null}
-                  <GuestCell index={gender === "male" ? 0 : 6} height={40} />
+                  <GenderIcon gender={gender} box={40} />
                   {gender === "male" ? "ชาย" : "หญิง"}
                 </Pick>
               ))}
@@ -744,10 +743,10 @@ export function RegisterFlow({
             <legend className="mb-1.5 text-[13px] text-[#5B6B5F]">รู้จักฝั่งไหน</legend>
             <div className="grid grid-cols-2 gap-2">
               {(["groom", "bride"] as const).map((side) => (
-                <Pick key={side} selected={form.side === side} onClick={() => patch({ side })} className="h-14">
+                <Pick key={side} selected={form.side === side} onClick={() => patch({ side })} className="h-14 gap-1">
                   {form.side === side ? <CheckBadge /> : null}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={COUPLE_IDLE[side]} alt="" className="size-[34px] [image-rendering:pixelated]" />
+                  <img src={COUPLE_PEEK[side]} alt="" className="size-[34px] object-contain [image-rendering:pixelated]" />
                   ฝั่ง{sideNick(side)}
                 </Pick>
               ))}
@@ -781,12 +780,6 @@ export function RegisterFlow({
                   onChange={(count) => patch({ count, kids: Math.min(form.kids, count - 1) })}
                 />
               </div>
-              {form.kids > 0 ? (
-                <div className="mt-1 flex items-center justify-between border-t border-[#E6DCC4] pt-1">
-                  <p className="text-[13px] text-[#5B6B5F]">ในนั้นเป็นเด็ก</p>
-                  <Stepper label="จำนวนเด็ก" value={form.kids} min={1} max={form.count - 1} onChange={(kids) => patch({ kids })} small />
-                </div>
-              ) : null}
             </div>
           )}
 
@@ -794,20 +787,19 @@ export function RegisterFlow({
             <label htmlFor="who-story" className="mb-1.5 block text-[13px] text-[#5B6B5F]">
               เล่าเรื่องคุณกับ<b className="font-semibold text-[#2E4535]">{nick}</b>หน่อย <span className="text-xs">(ไม่บังคับ)</span>
             </label>
-            <span className="relative block rounded-2xl border-[1.5px] border-[#E0AFA6] bg-[#FFFCF5] px-3.5 pt-2.5 pb-6 focus-within:border-[#8A9DB5]">
+            <span className="relative block rounded-2xl border-[1.5px] border-[#E0AFA6] bg-[#FFFCF5] px-3.5 pt-2.5 pb-[22px] focus-within:border-[#8A9DB5]">
               <textarea
                 id="who-story"
                 value={form.story}
-                rows={3}
                 placeholder="รู้จักกันได้ยังไง · ความทรงจำที่ยังจำได้ · เรื่องที่อยากเล่าให้บ่าวสาวฟัง"
                 onChange={(event) => patch({ story: Array.from(event.target.value).slice(0, STORY_MAX).join("") })}
-                className="block max-h-[9.5rem] min-h-[4.5rem] w-full resize-none bg-transparent text-[15px] leading-normal text-[#2E4535] outline-none [field-sizing:content]"
+                className="block h-[66px] w-full resize-none bg-transparent text-[15px] leading-normal text-[#2E4535] outline-none"
               />
-              <span aria-live="polite" className="absolute right-3 bottom-1 font-display text-xs text-[#5B6B5F]">
+              <span aria-live="polite" className="absolute right-3 bottom-[5px] font-display text-xs text-[#5B6B5F]">
                 {storyCount}/{STORY_MAX}
               </span>
             </span>
-            <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+            <div className="mt-2 flex gap-1.5 overflow-hidden">
               {prompts.map((prompt) => (
                 <button
                   key={prompt}
@@ -817,7 +809,7 @@ export function RegisterFlow({
                     patch({ story: Array.from(next).slice(0, STORY_MAX).join("") })
                     window.setTimeout(() => document.getElementById("who-story")?.focus(), 0)
                   }}
-                  className="h-8 shrink-0 rounded-full border border-[#E0AFA6] bg-[#FFFCF5] px-2.5 text-xs hover:bg-[#F8ECE8]"
+                  className="h-8 shrink-0 rounded-full border border-[#E0AFA6] bg-[#FFFCF5] px-2.5 text-xs whitespace-nowrap hover:bg-[#F8ECE8]"
                 >
                   {prompt}
                 </button>
@@ -846,7 +838,7 @@ export function RegisterFlow({
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#F6F1E8] text-[#2E4535]">
       <TopBar step={3} of={3} label="ข้อสุดท้าย" onBack={() => onNavigate("who")} />
-      <div className="flex flex-col gap-4 px-5 pt-2">
+      <div className="flex flex-col gap-4 px-5 pt-2 pb-24">
         <Title>มายังไง</Title>
         <fieldset>
           <legend className="sr-only">วิธีมาร่วมงาน</legend>
@@ -891,11 +883,6 @@ export function RegisterFlow({
 
         {drive && travel.needsParking ? (
           <div className="flex flex-col gap-3">
-            <datalist id="province-list">
-              {PROVINCES.map((province) => (
-                <option key={province} value={province} />
-              ))}
-            </datalist>
             {travel.cars.map((car, index) => {
               const error = errors[`car-${car.id}`]
               const norm = normalizePlate(car.plate)
@@ -914,16 +901,7 @@ export function RegisterFlow({
                         className={`${inputClass} px-3.5`}
                       />
                     </label>
-                    <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-[13px] text-[#5B6B5F]">
-                      จังหวัด
-                      <input
-                        list="province-list"
-                        value={car.province}
-                        placeholder="กรุงเทพฯ"
-                        onChange={(event) => patchCar(car.id, { province: event.target.value })}
-                        className={`${inputClass} px-3.5`}
-                      />
-                    </label>
+                    <ProvinceInput id={`province-${car.id}`} value={car.province} onChange={(province) => patchCar(car.id, { province })} />
                     {travel.cars.length > 1 ? (
                       <button
                         type="button"
@@ -1027,6 +1005,76 @@ function Stepper({
       >
         <Plus aria-hidden="true" className="size-5" />
       </button>
+    </div>
+  )
+}
+
+/** Board W5: province field with a small suggestion list under it (empty = กรุงเทพฯ). */
+function ProvinceInput({ id, value, onChange }: { id: string; value: string; onChange: (next: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(0)
+  const query = value.trim()
+  const matches = query && !isProvince(query) ? PROVINCES.filter((province) => province.includes(query)).slice(0, 4) : []
+  const show = open && matches.length > 0
+  const pick = (province: string) => {
+    onChange(province)
+    setOpen(false)
+  }
+  return (
+    <div className="relative flex min-w-0 flex-1 flex-col gap-1.5 text-[13px] text-[#5B6B5F]">
+      <label htmlFor={id}>จังหวัด</label>
+      <input
+        id={id}
+        role="combobox"
+        aria-expanded={show}
+        aria-controls={`${id}-list`}
+        aria-autocomplete="list"
+        autoComplete="off"
+        value={value}
+        placeholder="กรุงเทพฯ"
+        onFocus={() => setOpen(true)}
+        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onChange={(event) => {
+          onChange(event.target.value)
+          setActive(0)
+          setOpen(true)
+        }}
+        onKeyDown={(event) => {
+          if (!show) return
+          if (event.key === "ArrowDown") {
+            event.preventDefault()
+            setActive((current) => (current + 1) % matches.length)
+          } else if (event.key === "ArrowUp") {
+            event.preventDefault()
+            setActive((current) => (current - 1 + matches.length) % matches.length)
+          } else if (event.key === "Enter") {
+            event.preventDefault()
+            pick(matches[active])
+          } else if (event.key === "Escape") setOpen(false)
+        }}
+        className={`${inputClass} px-3.5 ${show ? "border-2 border-[#8A9DB5]" : ""}`}
+      />
+      {show ? (
+        <div
+          id={`${id}-list`}
+          role="listbox"
+          className="absolute top-[88px] right-0 z-30 flex w-44 flex-col overflow-hidden rounded-2xl border border-[#CFC6B4] bg-[#FFFCF5] shadow-[0_16px_28px_-18px_rgba(46,69,53,0.5)]"
+        >
+          {matches.map((province, index) => (
+            <button
+              key={province}
+              type="button"
+              role="option"
+              aria-selected={index === active}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => pick(province)}
+              className={`h-11 px-3.5 text-left text-base text-[#2E4535] ${index === active ? "bg-[#EDF0F5] font-semibold" : "bg-transparent"}`}
+            >
+              {province}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
