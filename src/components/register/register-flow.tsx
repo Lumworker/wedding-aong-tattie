@@ -152,9 +152,24 @@ function Title({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   )
 }
 
-function BottomAction({ children, onClick, pending }: { children: ReactNode; onClick: () => void; pending?: boolean }) {
+function BottomAction({
+  children,
+  onClick,
+  pending,
+  bare = false,
+}: {
+  children: ReactNode
+  onClick: () => void
+  pending?: boolean
+  /** No fade behind the button (W7 keeps its gingham floor visible). */
+  bare?: boolean
+}) {
   return (
-    <div className="sticky bottom-0 z-20 mt-auto bg-gradient-to-t from-[#F6F1E8] from-70% to-transparent px-3.5 pt-5 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
+    <div
+      className={`sticky bottom-0 z-20 mt-auto px-3.5 pt-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] ${
+        bare ? "" : "bg-gradient-to-t from-[#F6F1E8] from-70% to-transparent"
+      }`}
+    >
       <button
         type="button"
         disabled={pending}
@@ -642,12 +657,14 @@ export function RegisterFlow({
           )}
           <FieldError>{errors.summary}</FieldError>
         </div>
-        <div aria-hidden="true" className="pointer-events-none relative mt-6 h-[120px] shrink-0">
-          <div className="gingham absolute inset-x-0 bottom-0 h-[76px] border-t border-[#E6DCC4]" />
-          <span className="absolute bottom-[86px] left-5 rounded-full border border-[#E6DCC4] bg-[#FFFCF5] px-2.5 py-0.5 text-[11px]">ส่งกำลังใจจากไกล ๆ</span>
-          <Envelope width={22} className="absolute right-7 bottom-[84px] rotate-[8deg]" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[150px]">
+          <div className="gingham absolute inset-x-0 bottom-0 h-[92px] border-t border-[#E6DCC4]" />
+          <span className="absolute bottom-[100px] left-5 rounded-full border border-[#E6DCC4] bg-[#FFFCF5] px-2.5 py-0.5 text-[11px]">ส่งกำลังใจจากไกล ๆ</span>
+          <Envelope width={22} className="absolute right-7 bottom-[98px] rotate-[8deg]" />
         </div>
+        <div aria-hidden="true" className="h-[150px] shrink-0" />
         <BottomAction
+          bare
           pending={pending}
           onClick={() => {
             if (!form.name.trim()) {
