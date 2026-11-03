@@ -36,10 +36,13 @@ def main() -> None:
     date_num = ImageFont.truetype(FONT_LATIN, 36)
     place = ImageFont.truetype(FONT, 28)
 
-    for sprite, x in (("groom.png", 78), ("bride.png", 978)):
+    # Fit each sprite to a fixed height so newer, larger atlases never spill off the card.
+    for sprite, center_x in (("groom.png", 210), ("bride.png", 990)):
         art = Image.open(ROOT / "public/sprites" / sprite).convert("RGBA")
-        art = art.resize((int(art.size[0] * 1.35), int(art.size[1] * 1.35)), Image.Resampling.NEAREST)
-        image.paste(art, (x, 168), art)
+        art = art.crop(art.getbbox())
+        scale = 300 / art.size[1]
+        art = art.resize((round(art.size[0] * scale), 300), Image.Resampling.NEAREST)
+        image.paste(art, (round(center_x - art.size[0] / 2), 175), art)
 
     draw.text((600, 168), "งานมงคลสมรส", font=small, fill=(176, 69, 88), anchor="mm")
     names_latin = ImageFont.truetype(FONT_LATIN, 72)
@@ -53,7 +56,7 @@ def main() -> None:
     draw_centered(
         draw,
         382,
-        [("5 ", date_num), ("ธันวาคม ", date_thai), ("2570", date_num)],
+        [("วันเสาร์ที่ ", date_thai), ("20 ", date_num), ("พฤศจิกายน ", date_thai), ("2570", date_num)],
         (42, 38, 35),
     )
     draw.text((600, 468), "อาสนวิหารอัสสัมชัญ  บางรัก", font=place, fill=(90, 78, 70), anchor="mm")

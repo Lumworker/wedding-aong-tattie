@@ -46,13 +46,13 @@ export const metadata: Metadata = {
     locale: "th_TH",
     type: "website",
     siteName: "อ๋อง & แทตตี้",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: shareTitle }],
+    images: [{ url: "/og.png?v=2", width: 1200, height: 630, alt: shareTitle }],
   },
   twitter: {
     card: "summary_large_image",
     title: shareTitle,
     description: shareDescription,
-    images: ["/og.png"],
+    images: ["/og.png?v=2"],
   },
 }
 
