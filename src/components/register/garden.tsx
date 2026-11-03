@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react"
 import { CoupleSprite, type CoupleMode } from "@/components/dashboard/couple-sprite"
 import { COUPLE } from "@/lib/event"
-import { FOLLOWER_ATLAS, GUEST_GRID } from "@/lib/guest-atlas"
+import { FOLLOWER_ATLAS, GUEST_ATLAS, GUEST_GRID } from "@/lib/guest-atlas"
 
 /**
  * Small garden box from the v2.3 boards (W1 welcome, W2–W4 headers, W6 sheet):
@@ -172,5 +172,36 @@ export function FollowerCell({ index, height, className = "" }: { index: number;
         imageRendering: "pixelated",
       }}
     />
+  )
+}
+
+/**
+ * Board W4 gender icons: guests.png cells trimmed to the figure, fitted in a square box.
+ * Male = cell 1 (16,10 → 144×297), female = cell 7 (13,5 → 151×302), same crops as the canvas assets.
+ */
+const GENDER_CROP = {
+  male: { cell: 1, x: 16, y: 10, w: 144, h: 297 },
+  female: { cell: 7, x: 13, y: 5, w: 151, h: 302 },
+} as const
+
+export function GenderIcon({ gender, box }: { gender: "male" | "female"; box: number }) {
+  const crop = GENDER_CROP[gender]
+  const scale = box / crop.h
+  const col = crop.cell % GUEST_ATLAS.cols
+  const row = Math.floor(crop.cell / GUEST_ATLAS.cols)
+  return (
+    <span aria-hidden="true" className="flex shrink-0 items-center justify-center" style={{ width: box, height: box }}>
+      <span
+        style={{
+          width: crop.w * scale,
+          height: box,
+          backgroundImage: `url(${GUEST_ATLAS.href})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: `${GUEST_ATLAS.width * scale}px ${GUEST_ATLAS.height * scale}px`,
+          backgroundPosition: `${-(col * GUEST_ATLAS.frameW + crop.x) * scale}px ${-(row * GUEST_ATLAS.frameH + crop.y) * scale}px`,
+          imageRendering: "pixelated",
+        }}
+      />
+    </span>
   )
 }
