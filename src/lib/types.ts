@@ -39,6 +39,8 @@ export type Party = {
   updatedAt: string
   /** Missing on parties saved before the travel step existed. */
   travel?: Travel
+  /** "เล่าเรื่องคุณกับบ่าวสาว" — private to the party and the hosts, up to STORY_MAX glyphs. */
+  story?: string
 }
 
 export type Wish = {

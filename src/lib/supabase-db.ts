@@ -19,6 +19,8 @@ const TRAVEL_MODES: TravelMode[] = ["drive", "taxi", "transit", "dropoff", "unkn
 const CAR_MAX = 3
 
 const WISH_KEEP = 200
+/** Matches parties_story_len in migration 20261103090000_party_story. */
+export const STORY_MAX = 1000
 
 type GuestRow = {
   id: string
@@ -45,6 +47,7 @@ type PartyRow = {
   travel_mode?: TravelMode | null
   needs_parking?: boolean | null
   party_cars?: CarRow[] | null
+  story?: string | null
 }
 
 type WishRow = {
@@ -84,7 +87,15 @@ function assertParty(party: Party): Party {
     updatedAt: party.updatedAt || new Date().toISOString(),
     guests: party.guests.map((guest) => ({ ...guest, partyPhone: phone })),
     travel: cleanTravel(party.travel, main?.attendance),
+    story: cleanStory(party.story),
   }
+}
+
+function cleanStory(input: unknown): string | undefined {
+  if (typeof input !== "string") return undefined
+  const glyphs = Array.from(input.trim())
+  if (!glyphs.length) return ""
+  return glyphs.slice(0, STORY_MAX).join("")
 }
 
 /** Server-side rules for travel: cars only when driving and asking for parking. */
@@ -136,6 +147,7 @@ function toParty(row: PartyRow): Party {
       needsParking: row.needs_parking ?? null,
       cars: cars.map((car) => ({ id: car.id, plate: car.plate_raw, province: car.province })),
     },
+    ...(typeof row.story === "string" ? { story: row.story } : {}),
   }
 }
 
@@ -167,8 +179,30 @@ async function hasTravelSchema() {
   return travelSchema.ok
 }
 
+/** True once migration 20261103090000_party_story has run; until then stories are not saved. */
+let storySchema: { ok: boolean; at: number } | null = null
+async function hasStorySchema() {
+  if (storySchema && (storySchema.ok || Date.now() - storySchema.at < 60_000)) return storySchema.ok
+  const supabase = createSupabaseAdmin()
+  const { error } = await supabase.from("parties").select("story").limit(1)
+  storySchema = { ok: !error, at: Date.now() }
+  if (error) console.warn("story column missing — run supabase/migrations/20261103090000_party_story.sql")
+  return storySchema.ok
+}
+
 async function partySelect() {
-  return (await hasTravelSchema()) ? PARTY_SELECT_V2 : PARTY_SELECT_V1
+  const base = (await hasTravelSchema()) ? PARTY_SELECT_V2 : PARTY_SELECT_V1
+  return (await hasStorySchema()) ? `${base}, story` : base
+}
+
+async function saveStory(party: Party) {
+  if (party.story === undefined || !(await hasStorySchema())) return
+  const supabase = createSupabaseAdmin()
+  const { error } = await supabase
+    .from("parties")
+    .update({ story: party.story || null })
+    .eq("phone", party.phone)
+  fail(error, "บันทึกเรื่องเล่าไม่สำเร็จ")
 }
 
 async function savePartyRow(party: Party) {
@@ -222,7 +256,9 @@ export async function readParty(phone: string): Promise<Party | null> {
 }
 
 export async function writeParty(party: Party): Promise<void> {
-  await savePartyRow(assertParty(party))
+  const clean = assertParty(party)
+  await savePartyRow(clean)
+  await saveStory(clean)
 }
 
 export async function deleteParty(phone: string): Promise<void> {
