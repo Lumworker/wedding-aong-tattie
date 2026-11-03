@@ -128,6 +128,7 @@ export function BalconyScene({
   anim,
   letter,
   throwing,
+  showHint = false,
   coupleRef,
   lettersRef,
   onCoupleTap,
@@ -135,6 +136,8 @@ export function BalconyScene({
   onOpenLetters,
   onOpenLetter,
 }: {
+  /** "แตะบ่าวสาวเพื่อทักทาย" chip at the top left until the guest has waved once. */
+  showHint?: boolean
   guests: Guest[]
   selfKey: string
   declined: boolean
@@ -285,6 +288,15 @@ export function BalconyScene({
           </motion.div>
         ) : null}
       </div>
+
+      {showHint && !reading && anim.kind === "idle" ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-3.5 left-2.5 z-10 rounded-full border border-[#CFC6B4] bg-[#FFFCF5]/90 px-2.5 py-1 text-[11px] whitespace-nowrap text-[#2E4535]"
+        >
+          แตะบ่าวสาวเพื่อทักทาย
+        </span>
+      ) : null}
 
       <button
         ref={lettersRef}

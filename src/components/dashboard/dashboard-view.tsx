@@ -6,7 +6,6 @@ import {
   CalendarDays,
   ChevronRight,
   CircleCheck,
-  CircleDashed,
   CircleX,
   Copy,
   Heart,
@@ -172,6 +171,7 @@ export function DashboardView({
   const autoIndex = useRef(0)
   const nextReader = useRef<Reader>("groom")
   const [tour, setTour] = useState(0)
+  const [waved, setWaved] = useState(false)
   const [copied, setCopied] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -356,21 +356,13 @@ export function DashboardView({
     }
   }
 
-  const statusIcon =
-    attendance === "attending" ? (
-      <CircleCheck aria-hidden="true" className="size-6 shrink-0 text-[#4F6648]" />
-    ) : attendance === "declined" ? (
-      <CircleX aria-hidden="true" className="size-6 shrink-0 text-[#5B6B5F]" />
-    ) : (
-      <CircleDashed aria-hidden="true" className="size-6 shrink-0 text-[#5B6B5F]" />
-    )
-  const statusTitle = attendance === "attending" ? "ไปร่วมงาน" : attendance === "declined" ? "ไม่ไปร่วมงาน" : "ยังไม่แน่ใจ"
+  const statusTitle = attendance === "attending" ? `ไปร่วมงาน · ${partySize} ท่าน` : attendance === "declined" ? "ไม่ไปร่วมงาน" : "ยังไม่แน่ใจ"
   const others = Math.max(0, partySize - 1)
   const statusSub =
     attendance === "attending"
-      ? `${partySize} ท่าน · ${mainGuest?.name ?? ""}${others ? ` +${others}` : ""}`
+      ? `คุณ${mainGuest?.name ?? ""}${others ? ` +${others}` : ""} · ยืนยันแล้ว`
       : attendance === "declined"
-        ? "ยังอวยพรบ่าวสาวได้นะ"
+        ? "ยังส่งจดหมายถึงบ่าวสาวได้นะ"
         : RSVP_DEADLINE_THAI
           ? `ยืนยันได้ถึง ${RSVP_DEADLINE_THAI}`
           : "แตะ “จัดการ” เพื่ออัปเดตคำตอบ"
@@ -420,11 +412,13 @@ export function DashboardView({
           anim={anim}
           letter={letter}
           throwing={throwing}
+          showHint={!waved && tour === 0}
           coupleRef={coupleRef}
           lettersRef={lettersRef}
           onCoupleTap={() => {
             window.clearTimeout(holdTimer.current)
             setLetter(null)
+            setWaved(true)
             setAnim({ kind: "wave", key: Date.now() })
           }}
           onWaveDone={() => setAnim((current) => (current.kind === "wave" ? { kind: "idle" } : current))}
@@ -435,7 +429,6 @@ export function DashboardView({
 
       <div className="shrink-0 pb-[max(env(safe-area-inset-bottom),0.875rem)] lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:border-[#E6DCC4] lg:pb-6">
         <div ref={statusRef} className="relative z-10 mx-6 -mt-5 flex items-center gap-2.5 rounded-[18px] border border-[#E6DCC4] bg-[#FFFCF5] py-2.5 pr-2.5 pl-3.5 lg:mx-3.5 lg:mt-2">
-          {statusIcon}
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-[15px] leading-tight font-medium">{statusTitle}</span>
             <span className="truncate text-xs text-[#5B6B5F]">{statusSub}</span>
@@ -491,7 +484,7 @@ export function DashboardView({
           </button>
           <button type="button" className={tileClass} onClick={() => open("story")}>
             <BookHeart aria-hidden="true" className="size-5" />
-            เรื่องของเรา
+            เรื่องเรา
           </button>
         </div>
       </div>
