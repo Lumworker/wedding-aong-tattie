@@ -4,6 +4,8 @@ export const ROUTES = {
   register: "/register",
   dashboard: "/dashboard",
   story: "/story",
+  aboutAong: "/about/aong",
+  aboutTattie: "/about/tattie",
 } as const
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES]

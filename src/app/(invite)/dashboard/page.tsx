@@ -34,6 +34,8 @@ export default function DashboardPage() {
         router.push(withQuery(ROUTES.welcome, search))
       }}
       onCancelled={() => router.replace(withQuery(ROUTES.welcome, search))}
+      composeOnOpen={searchParams.get("compose") === "wish"}
+      onComposeOpened={() => router.replace(withQuery(ROUTES.dashboard, search), { scroll: false })}
     />
   )
 }

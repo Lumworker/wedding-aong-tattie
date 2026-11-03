@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
+import Link from "next/link"
 import {
   BookHeart,
   CalendarDays,
@@ -25,6 +26,7 @@ import { googleCalendarUrl, icsDataUrl } from "@/lib/calendar"
 import { CEREMONY_DATE_ISO, CEREMONY_START, COUPLE, COUPLE_STORY, DRESS_CODE, RSVP_DEADLINE_THAI, VENUE_MAP } from "@/lib/event"
 import { guestStore } from "@/lib/guest-store"
 import { newId } from "@/lib/id"
+import { ROUTES, withQuery } from "@/lib/routes"
 import { formatThaiMobile } from "@/lib/phone"
 import type { Guest, Party, Wish } from "@/lib/types"
 import { WISH_TEXT_MAX, clipWishText, wishGlyphCount } from "@/lib/wish"
@@ -138,6 +140,8 @@ export function DashboardView({
   onEditStep,
   onChangePhone,
   onCancelled,
+  composeOnOpen = false,
+  onComposeOpened,
 }: {
   guests: Guest[]
   wishes: Wish[]
@@ -148,6 +152,9 @@ export function DashboardView({
   onEditStep: (step: "attend" | "review") => void
   onChangePhone: () => void
   onCancelled: () => void
+  /** Open the letter composer right away (deep link from the about pages). */
+  composeOnOpen?: boolean
+  onComposeOpened?: () => void
 }) {
   const isAdmin = useIsAdmin()
   const mine = useMemo(() => guests.filter((guest) => guest.partyPhone === selfKey), [guests, selfKey])
@@ -158,7 +165,7 @@ export function DashboardView({
   const partySize = party.guests.length
   const sorted = useMemo(() => [...wishes].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [wishes])
 
-  const [sheet, setSheet] = useState<SheetKey>(null)
+  const [sheet, setSheet] = useState<SheetKey>(composeOnOpen ? "wish" : null)
   const [anim, setAnim] = useState<SceneAnim>({ kind: "idle" })
   const [letter, setLetter] = useState<Wish | null>(null)
   const [throwing, setThrowing] = useState<number | null>(null)
@@ -291,6 +298,13 @@ export function DashboardView({
     setText(edit ? clipWishText(edit.text) : "")
     open("wish")
   }
+
+  // The composer opened from the first render (see `sheet` above); now drop ?compose from the URL.
+  useEffect(() => {
+    if (composeOnOpen) onComposeOpened?.()
+    // only on arrival
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function submitWish() {
     const nextText = clipWishText(text.trim())
@@ -463,7 +477,7 @@ export function DashboardView({
           </button>
           <button type="button" className={tileClass} onClick={() => open("story")}>
             <BookHeart aria-hidden="true" className="size-5" />
-            เรื่องเรา
+            บ่าวสาว
           </button>
         </div>
       </div>
@@ -531,17 +545,35 @@ export function DashboardView({
         <InfoRow icon={<Shirt aria-hidden="true" className="size-[18px]" />} label={DRESS_CODE.title.replace("การแต่งกาย: ", "")} value={DRESS_CODE.detail} />
       </Sheet>
 
-      <Sheet open={sheet === "story"} title="เรื่องของเรา" onClose={closeSheet}>
-        <p className="text-[15px] leading-relaxed">{COUPLE_STORY.lead}</p>
-        <div>
-          <p className="font-serif text-base font-semibold">{COUPLE.groomNickname}</p>
-          <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.groom}</p>
+      <Sheet open={sheet === "story"} title="เกี่ยวกับบ่าวสาว" onClose={closeSheet}>
+        <p className="-mt-2 text-[13px] text-[#5B6B5F]">แตะเพื่อไปทำความรู้จักทีละคน</p>
+        <div className="grid grid-cols-2 gap-2.5">
+          <Link
+            href={withQuery(ROUTES.aboutAong)}
+            className="relative flex h-[236px] flex-col items-center justify-end overflow-hidden rounded-[20px] bg-[#1F2E25] pb-3.5"
+            style={{
+              backgroundImage: "linear-gradient(rgba(138,157,181,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(138,157,181,.18) 1px,transparent 1px)",
+              backgroundSize: "16px 16px",
+            }}
+          >
+            <span aria-hidden="true" className="absolute top-2.5 left-3 font-mono text-[11px] text-[#8A9DB5]">&lt;groom /&gt;</span>
+            <span aria-hidden="true" className="absolute top-9 left-1/2 size-32 -translate-x-1/2 rounded-full border-[1.5px] border-dashed border-[#8A9DB5]" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/sprites/groom.png?v=6" alt="" width={150} height={150} className="relative -mb-1.5 size-[150px]" style={{ imageRendering: "pixelated" }} draggable={false} />
+            <span className="relative font-serif text-[22px] font-semibold text-[#FFF8E6]">{COUPLE.groomLatin}</span>
+            <span className="relative text-[13px] text-[#CCCDB0]">{COUPLE.groomNickname} · เจ้าบ่าว</span>
+          </Link>
+          <Link href={withQuery(ROUTES.aboutTattie)} className="relative flex h-[236px] flex-col items-center justify-end overflow-hidden rounded-[20px] bg-[#F2D9D3] pb-3.5">
+            <span aria-hidden="true" className="absolute top-3.5 left-3.5 h-11 w-[60px] -rotate-8 bg-[#FFFCF5] shadow-[0_1px_2px_rgba(46,69,53,.18)]" />
+            <span aria-hidden="true" className="absolute top-[22px] right-3 h-10 w-[52px] rotate-7 bg-[#FFF8E6] shadow-[0_1px_2px_rgba(46,69,53,.18)]" />
+            <span aria-hidden="true" className="absolute top-9 left-1/2 size-32 -translate-x-1/2 rounded-full bg-[#FFFCF5]" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/sprites/bride.png?v=6" alt="" width={150} height={150} className="relative -mb-1.5 size-[150px]" style={{ imageRendering: "pixelated" }} draggable={false} />
+            <span className="relative font-serif text-[22px] font-semibold text-[#A8665A] italic">{COUPLE.brideLatin}</span>
+            <span className="relative text-[13px] text-[#2E4535]">{COUPLE.brideNickname} · เจ้าสาว</span>
+          </Link>
         </div>
-        <div>
-          <p className="font-serif text-base font-semibold">{COUPLE.brideNickname}</p>
-          <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.bride}</p>
-        </div>
-        <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.together}</p>
+        <p className="text-sm leading-relaxed text-[#22352A]">{COUPLE_STORY.lead}</p>
       </Sheet>
 
       <Sheet open={sheet === "manage"} title="จัดการการลงทะเบียน" onClose={closeSheet}>
