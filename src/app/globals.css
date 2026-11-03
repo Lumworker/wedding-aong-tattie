@@ -671,3 +671,31 @@
   font-weight: 360;
   letter-spacing: 0.02em;
 }
+
+/* Dashboard coach marks (v2.4) */
+@keyframes tour-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.tour-in {
+  animation: tour-in 0.25s ease-out;
+}
+@keyframes tour-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(224, 175, 166, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(224, 175, 166, 0);
+  }
+}
+.tour-pulse {
+  animation: tour-pulse 1.2s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-in,
+  .tour-pulse {
+    animation: none;
+  }
+}

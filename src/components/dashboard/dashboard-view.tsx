@@ -10,6 +10,7 @@ import {
   CircleX,
   Copy,
   Heart,
+  Mail,
   MapPin,
   Navigation,
   Pencil,
@@ -187,25 +188,41 @@ export function DashboardView({
   const wishRef = useRef<HTMLButtonElement>(null)
   const tilesRef = useRef<HTMLDivElement>(null)
   const manageRef = useRef<HTMLButtonElement>(null)
+  const statusRef = useRef<HTMLDivElement>(null)
 
   const steps: TourStep[] = useMemo(
     () => [
-      { target: coupleRef, title: "ทักทายบ่าวสาว", text: `แตะ${COUPLE.groomNickname}กับ${COUPLE.brideNickname}ได้เลย` },
-      { target: lettersRef, title: "จดหมายถึงบ่าวสาว", text: "บ่าวสาวผลัดกันอ่านจดหมายจากแขก แตะเพื่อดูทั้งหมด" },
+      {
+        target: coupleRef,
+        title: `ทักทาย${COUPLE.groomNickname}กับ${COUPLE.brideNickname}`,
+        text: "แตะที่บ่าวสาว ทั้งคู่จะโบกมือทักคุณ",
+        icon: <Heart className="size-4" />,
+        radius: 16,
+        tapToContinue: true,
+      },
       {
         target: wishRef,
-        title: "เขียนจดหมาย",
-        text: declined ? "ไม่ได้ไปงานก็ส่งจดหมายขึ้นไปได้" : "ส่งแล้วจดหมายลอยขึ้นไป บ่าวสาวจะอ่านของคุณก่อน",
+        title: "เขียนจดหมายถึงบ่าวสาว",
+        text: declined
+          ? "ไม่ได้ไปงานก็ส่งจดหมายได้ ทั้งคู่จะหยิบขึ้นมาอ่านในฉากนี้"
+          : "ส่งคำอวยพร แล้วจดหมายจะลอยไปหาบ่าวสาว ทั้งคู่จะหยิบขึ้นมาอ่านในฉากนี้",
+        icon: <Mail className="size-4" />,
+        radius: 999,
       },
-      { target: tilesRef, title: "ข้อมูลงาน", text: "วันเวลา สถานที่และนำทาง การแต่งกาย เรื่องของเรา" },
-      { target: manageRef, title: "แก้ไขหรือยกเลิก", text: "กด “จัดการ” เพื่อแก้ข้อมูลคณะ เปลี่ยนเบอร์ หรือยกเลิก" },
+      {
+        target: statusRef,
+        title: "แก้คำตอบได้ตลอด",
+        text: "กด “จัดการ” เพื่อแก้ข้อมูลคณะ เปลี่ยนเบอร์ หรือยกเลิกการลงทะเบียน",
+        icon: <Pencil className="size-4" />,
+        radius: 18,
+      },
     ],
     [declined]
   )
 
   useEffect(() => {
     if (tourSeen()) return
-    const timer = window.setTimeout(() => setTour(1), 700)
+    const timer = window.setTimeout(() => startTour(), 700)
     return () => window.clearTimeout(timer)
   }, [])
 
@@ -216,6 +233,14 @@ export function DashboardView({
     },
     []
   )
+
+  // A letter note would sit under the coach card, so the scene goes quiet first.
+  function startTour() {
+    window.clearTimeout(holdTimer.current)
+    setLetter(null)
+    setAnim({ kind: "idle" })
+    setTour(1)
+  }
 
   const endTour = useCallback(() => {
     setTour(0)
@@ -358,10 +383,10 @@ export function DashboardView({
 
   return (
     <div className="flex h-dvh flex-col bg-[#F6F1E8] font-sans text-[#2E4535] lg:grid lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
-      <header className="flex h-[52px] shrink-0 items-center justify-between pr-1.5 pl-4 lg:col-start-1 lg:row-start-1 lg:h-auto lg:border-r lg:border-[#E6DCC4] lg:py-4">
+      <header className="flex h-16 shrink-0 items-center justify-between pr-1.5 pl-4 lg:col-start-1 lg:row-start-1 lg:h-auto lg:border-r lg:border-[#E6DCC4] lg:py-4">
         <h1 className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/script-blueberry.webp?v=1" alt="" width={74} height={40} className="h-10 w-auto" draggable={false} />
+          <img src="/brand/script-rose.webp?v=1" alt="" width={103} height={56} className="-ml-1 h-14 w-auto" draggable={false} />
           <span className="sr-only">
             {COUPLE.groomNickname} และ {COUPLE.brideNickname}
           </span>
@@ -372,7 +397,7 @@ export function DashboardView({
             type="button"
             onClick={() => {
               setSheet(null)
-              setTour(1)
+              startTour()
             }}
             aria-label="วิธีใช้งาน"
             title="วิธีใช้งาน"
@@ -385,7 +410,7 @@ export function DashboardView({
 
       <section
         aria-label="ฉากบ่าวสาว"
-        className="mx-3.5 min-h-[240px] flex-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:m-4 lg:min-h-0"
+        className="mx-3.5 max-h-[440px] min-h-[240px] flex-1 lg:col-start-2 lg:max-h-none lg:row-span-2 lg:row-start-1 lg:m-4 lg:min-h-0"
       >
         <BalconyScene
           guests={guests}
@@ -409,7 +434,7 @@ export function DashboardView({
       </section>
 
       <div className="shrink-0 pb-[max(env(safe-area-inset-bottom),0.875rem)] lg:col-start-1 lg:row-start-2 lg:overflow-y-auto lg:border-r lg:border-[#E6DCC4] lg:pb-6">
-        <div className="relative z-10 mx-6 -mt-5 flex items-center gap-2.5 rounded-[18px] border border-[#E6DCC4] bg-[#FFFCF5] py-2.5 pr-2.5 pl-3.5 lg:mx-3.5 lg:mt-2">
+        <div ref={statusRef} className="relative z-10 mx-6 -mt-5 flex items-center gap-2.5 rounded-[18px] border border-[#E6DCC4] bg-[#FFFCF5] py-2.5 pr-2.5 pl-3.5 lg:mx-3.5 lg:mt-2">
           {statusIcon}
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-[15px] leading-tight font-medium">{statusTitle}</span>

@@ -11,7 +11,7 @@ import type { Guest, Wish } from "@/lib/types"
 /**
  * Garden hero (CI Nov 2026). The couple is the hero in the middle on a rose halo,
  * only your own party stands with them, and letters live in the scene:
- * a pile at their feet, a count chip, and a note bubble while one of them reads.
+ * a pile at the bottom right, a count chip, and a note at the top edge while one of them reads.
  * Everything is laid out in stage units and scaled to fit the box.
  */
 export const STAGE_W = 362
@@ -22,14 +22,19 @@ const FLOOR = 228
 const CELL = 160
 const COUPLE_FEET = 270
 const COUPLE_TOP = COUPLE_FEET - Math.round((253 * CELL) / 256)
+/** Letter note sits at the top edge so it never covers a face. */
+const NOTE_TOP = 8
+/** Letter pile, bottom right; envelopes land below the bride's hem. */
+const PILE_TOP = 238
 const GROOM_LEFT = CENTER - Math.round((186 * CELL) / 256) - 2
 const BRIDE_LEFT = CENTER + 2 - Math.round((46 * CELL) / 256)
-const PARTY_FEET = 304
-/** Your guest sprite is drawn about 40% of the couple; followers about 60% of that. */
-const GUEST_H = 64
+/** Party stands in front, clear of the status card that overlaps the bottom ~20px. */
+const PARTY_FEET = 292
+/** Your guest sprite is drawn about 60% of the couple; followers about 60% of that. */
+const GUEST_H = 88
 const GUEST_SCALE = GUEST_H / GUEST_GRID.height
 const GUEST_W = GUEST_GRID.cell * GUEST_SCALE
-const FOLLOWER_H = 38
+const FOLLOWER_H = 52
 const FOLLOWER_SCALE = FOLLOWER_H / FOLLOWER_ATLAS.frameH
 const FOLLOWER_W = FOLLOWER_ATLAS.frameW * FOLLOWER_SCALE
 
@@ -81,17 +86,18 @@ function GuestSprite({ guest }: { guest: Guest }) {
   )
 }
 
-/** Only your own party: you, then up to two followers, from the left edge. */
+/**
+ * Only your own party: you at the left edge, then up to two followers tucked in
+ * just behind your right shoulder so the group stays clear of the groom.
+ * Followers come first in the list so they paint behind you.
+ */
 function placeParty(guests: Guest[], selfKey: string, left: number) {
   const mine = guests.filter((guest) => guest.partyPhone === selfKey && guest.attendance === "attending")
   const me = mine.find((guest) => !guest.isCompanion)
-  const group = [...(me ? [me] : []), ...mine.filter((guest) => guest.isCompanion).slice(0, 2)]
-  let x = left
-  return group.map((guest) => {
-    const placed = { guest, x, you: guest === me }
-    x += (guest.isCompanion ? FOLLOWER_W : GUEST_W) + 2
-    return placed
-  })
+  const followers = mine.filter((guest) => guest.isCompanion).slice(0, 2)
+  const firstFollower = me ? left + GUEST_W - 14 : left
+  const placed = followers.map((guest, index) => ({ guest, x: firstFollower + index * (FOLLOWER_W - 8), you: false, back: Boolean(me) }))
+  return me ? [...placed, { guest: me, x: left, you: true, back: false }] : placed
 }
 
 function useStageScale(ref: React.RefObject<HTMLDivElement | null>) {
@@ -156,6 +162,8 @@ export function BalconyScene({
   const brideMode: CoupleMode = anim.kind === "wave" ? "wave" : anim.kind === "read" && anim.who === "bride" ? "read" : "idle"
   const playKey = anim.kind === "idle" ? 0 : anim.key
   const reader = anim.kind === "read" ? anim.who : null
+  // The note takes the top strip, so the count chip steps aside while a letter is up.
+  const reading = Boolean(letter && reader)
 
   return (
     <div ref={boxRef} className="relative h-full w-full overflow-hidden rounded-[20px] border border-[#E6DCC4] bg-[#FFF8E6]">
@@ -196,12 +204,12 @@ export function BalconyScene({
             type="button"
             onClick={onOpenLetters}
             aria-label={`ดูจดหมายทั้งหมด ${letterCount} ฉบับ`}
-            className="absolute flex h-11 w-[84px] cursor-pointer items-end justify-center gap-0.5 pb-1.5"
-            style={{ left: CENTER - 42, top: COUPLE_FEET - 8 }}
+            className="absolute flex h-14 w-[110px] cursor-pointer items-end justify-center gap-1 pb-0.5"
+            style={{ left: STAGE_W - cropX - 14 - 110, top: PILE_TOP }}
           >
             {[-8, 5, -3].slice(0, Math.min(3, letterCount)).map((r, i) => (
               <span key={i} style={{ transform: `rotate(${r}deg) translateY(${i === 1 ? -3 : 0}px)` }}>
-                <Envelope />
+                <Envelope width={30} />
               </span>
             ))}
           </button>
@@ -211,7 +219,7 @@ export function BalconyScene({
           <div
             key={item.guest.id}
             className="absolute"
-            style={{ left: item.x, top: PARTY_FEET - (item.guest.isCompanion ? FOLLOWER_H : GUEST_H) }}
+            style={{ left: item.x, top: PARTY_FEET - (item.back ? 6 : 0) - (item.guest.isCompanion ? FOLLOWER_H : GUEST_H) }}
           >
             <GuestSprite guest={item.guest} />
             {item.you ? (
@@ -246,7 +254,7 @@ export function BalconyScene({
             onClick={() => onOpenLetter(letter)}
             aria-label={`อ่านจดหมายจาก ${letter.from} ฉบับเต็ม`}
             className="absolute z-10 max-w-[184px] cursor-pointer rounded-xl border-[1.5px] border-[#E0AFA6] bg-[#FFFCF5] px-2.5 py-2 text-left text-xs leading-snug text-[#2E4535] shadow-[0_6px_14px_-10px_rgba(46,69,53,0.6)]"
-            style={reader === "groom" ? { left: cropX + 10, top: 48 } : { right: cropX + 10, top: 48 }}
+            style={reader === "groom" ? { left: cropX + 10, top: NOTE_TOP } : { right: cropX + 10, top: NOTE_TOP }}
           >
             <span className="block text-[11px] font-medium">จาก {letter.from}</span>
             <span className="line-clamp-2 break-words">{letter.text}</span>
@@ -282,7 +290,11 @@ export function BalconyScene({
         ref={lettersRef}
         type="button"
         onClick={onOpenLetters}
-        className="absolute top-2 right-2 z-10 flex h-9 items-center gap-1.5 rounded-full bg-[#E0AFA6] px-3 text-xs text-[#2E4535] hover:bg-[#D9A399]"
+        aria-hidden={reading || undefined}
+        tabIndex={reading ? -1 : undefined}
+        className={`absolute top-2 right-2 z-10 flex h-9 items-center gap-1.5 rounded-full bg-[#E0AFA6] px-3 text-xs text-[#2E4535] transition-opacity duration-200 hover:bg-[#D9A399] ${
+          reading ? "pointer-events-none opacity-0" : ""
+        }`}
       >
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <rect x="3" y="5.5" width="18" height="13" rx="2" />
