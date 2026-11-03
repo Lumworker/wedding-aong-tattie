@@ -21,7 +21,7 @@ export function WelcomeRegister({ onRegister, onReturning }: { onRegister: () =>
         <img src="/brand/script-rose.webp?v=1" alt="Aong and Tattie" width={154} height={84} className="h-[84px] w-auto" draggable={false} />
       </header>
 
-      <Garden height={380} coupleSize={150} floor={112} bubble="มาร่วมงานเรานะ!" interactive className="mx-3.5 shrink-0">
+      <Garden height={380} coupleSize={150} floor={112} coupleTop={150} halo={240} haloTop={58} bubble="มาร่วมงานเรานะ!" interactive className="mx-3.5 shrink-0">
         <span className="pointer-events-none absolute bottom-[58px] left-3 rounded-full border border-[#E6DCC4] bg-[#FFFCF5]/85 px-2.5 py-0.5 text-[11px] text-[#5B6B5F]">
           แตะบ่าวสาวเพื่อทักทาย
         </span>
@@ -50,7 +50,7 @@ export function WelcomeRegister({ onRegister, onReturning }: { onRegister: () =>
         </span>
       </section>
 
-      <div className="mt-auto flex flex-col items-center gap-0.5 px-3.5 pt-4">
+      <div className="flex flex-col items-center gap-0.5 px-3.5 pt-4">
         <button
           type="button"
           disabled={pending}

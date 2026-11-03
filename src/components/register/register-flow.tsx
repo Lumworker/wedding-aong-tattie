@@ -465,7 +465,7 @@ export function RegisterFlow({
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#F6F1E8] text-[#2E4535]">
         <TopBar step={1} of={totalSteps} onBack={editing ? () => onNavigate(declined ? "notgoing" : "who") : onLeave} />
-        <Garden height={140} coupleSize={100} floor={44} bubble="มาด้วยกันนะ" className="mx-3.5" />
+        <Garden height={140} coupleSize={100} floor={44} coupleTop={26} halo={126} haloTop={22} bubble="มาด้วยกันนะ" className="mx-3.5" />
         <div className="flex flex-col gap-4 px-5 pt-4">
           <Title sub={dateLine}>มาร่วมงานไหม</Title>
           <div>
@@ -536,7 +536,7 @@ export function RegisterFlow({
         {askName ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(46,69,53,0.45)] px-6">
             <div role="alertdialog" aria-modal="true" aria-labelledby="returning-title" className="flex w-full max-w-sm flex-col gap-3 rounded-[22px] bg-[#FFFCF5] px-[18px] pt-5 pb-2.5">
-              <Garden height={84} coupleSize={64} floor={22} />
+              <Garden height={84} coupleSize={64} floor={22} coupleTop={12} halo={80} haloTop={8} />
               <div className="text-center">
                 <h2 id="returning-title" className="text-xl font-semibold">
                   เบอร์นี้ตอบไว้แล้ว
@@ -886,7 +886,7 @@ export function RegisterFlow({
                       <input
                         list="province-list"
                         value={car.province}
-                        placeholder={DEFAULT_PROVINCE}
+                        placeholder="กรุงเทพฯ"
                         onChange={(event) => patchCar(car.id, { province: event.target.value })}
                         className={`${inputClass} px-3.5`}
                       />
@@ -1038,7 +1038,7 @@ function ConfirmSheet({
         className="w-full max-w-md overflow-hidden rounded-t-3xl bg-[#FFFCF5] motion-safe:animate-in motion-safe:slide-in-from-bottom-8"
       >
         <div className="relative">
-          <Garden height={128} coupleSize={96} floor={36} className="rounded-none border-0 border-b" />
+          <Garden height={128} coupleSize={96} floor={36} coupleTop={22} halo={120} haloTop={14} className="rounded-none border-0 border-b" />
           <span aria-hidden="true" className="absolute top-2.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-sm bg-[#CFC6B4]" />
         </div>
         <div className="flex flex-col gap-3.5 px-5 pt-4 pb-[max(env(safe-area-inset-bottom),1.375rem)]">

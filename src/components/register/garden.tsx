@@ -13,6 +13,9 @@ export function Garden({
   height,
   coupleSize,
   floor,
+  coupleTop,
+  halo,
+  haloTop,
   bubble,
   interactive = false,
   className = "",
@@ -23,6 +26,11 @@ export function Garden({
   coupleSize: number
   /** Height of the gingham band. */
   floor: number
+  /** Top of the couple cells, from the boards. */
+  coupleTop: number
+  /** Rose halo diameter and top. */
+  halo: number
+  haloTop: number
   /** Speech bubble at the top centre. */
   bubble?: string
   /** Tap the couple to wave (W1). */
@@ -32,10 +40,8 @@ export function Garden({
 }) {
   const [mode, setMode] = useState<CoupleMode>("idle")
   const [playKey, setPlayKey] = useState(0)
-  const halo = Math.round(coupleSize * 1.55)
   // Groom art sits right of centre in its cell and the bride left of it: overlap them like the boards.
   const overlap = Math.round(coupleSize * 0.44)
-  const feet = height - Math.round(floor * 0.72)
 
   const couple = (
     <span className="relative block" style={{ width: coupleSize * 2 - overlap, height: coupleSize }}>
@@ -64,7 +70,7 @@ export function Garden({
       <div
         aria-hidden="true"
         className="absolute left-1/2 rounded-full bg-[#F2D9D3]"
-        style={{ width: halo, height: halo, marginLeft: -halo / 2, top: feet - coupleSize - Math.round(halo * 0.12) }}
+        style={{ width: halo, height: halo, marginLeft: -halo / 2, top: haloTop }}
       />
       <div
         aria-hidden="true"
@@ -76,7 +82,7 @@ export function Garden({
         className="absolute rounded-full bg-[#8EA383]"
         style={{ right: -30, bottom: floor - 16, width: Math.round(height * 0.22), height: Math.round(height * 0.26) }}
       />
-      <div className="absolute left-1/2 -translate-x-1/2" style={{ top: feet - coupleSize }}>
+      <div className="absolute left-1/2 -translate-x-1/2" style={{ top: coupleTop }}>
         {interactive ? (
           <button
             type="button"
