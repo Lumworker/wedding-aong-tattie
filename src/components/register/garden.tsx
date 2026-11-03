@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react"
 import { CoupleSprite, type CoupleMode } from "@/components/dashboard/couple-sprite"
 import { COUPLE } from "@/lib/event"
+import { FOLLOWER_ATLAS, GUEST_GRID } from "@/lib/guest-atlas"
 
 /**
  * Small garden box from the v2.3 boards (W1 welcome, W2–W4 headers, W6 sheet):
@@ -130,4 +131,46 @@ export function shortDateThai(iso: string) {
   const weekday = date.toLocaleDateString("th-TH", { weekday: "long", timeZone: "Asia/Bangkok" }).replace(/^วัน/, "")
   const rest = date.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Bangkok" })
   return `${weekday} ${rest}`
+}
+
+/** One cell of guests-grid.png (same order as guests.png: 0–5 male, 6–11 female), drawn `height` px tall. */
+export function GuestCell({ index, height, className = "" }: { index: number; height: number; className?: string }) {
+  const scale = height / GUEST_GRID.height
+  const width = GUEST_GRID.cell * scale
+  return (
+    <span
+      aria-hidden="true"
+      className={`block shrink-0 ${className}`}
+      style={{
+        width,
+        height,
+        backgroundImage: `url(${GUEST_GRID.href})`,
+        backgroundSize: `${GUEST_GRID.width * scale}px ${height}px`,
+        backgroundPosition: `${-index * width}px 0`,
+        backgroundRepeat: "no-repeat",
+        imageRendering: "pixelated",
+      }}
+    />
+  )
+}
+
+/** One follower from followers.png, drawn `height` px tall. */
+export function FollowerCell({ index, height, className = "" }: { index: number; height: number; className?: string }) {
+  const scale = height / FOLLOWER_ATLAS.frameH
+  const width = FOLLOWER_ATLAS.frameW * scale
+  return (
+    <span
+      aria-hidden="true"
+      className={`block shrink-0 ${className}`}
+      style={{
+        width,
+        height,
+        backgroundImage: `url(${FOLLOWER_ATLAS.href})`,
+        backgroundSize: `${FOLLOWER_ATLAS.width * scale}px ${height}px`,
+        backgroundPosition: `${-(index % FOLLOWER_ATLAS.count) * width}px 0`,
+        backgroundRepeat: "no-repeat",
+        imageRendering: "pixelated",
+      }}
+    />
+  )
 }
