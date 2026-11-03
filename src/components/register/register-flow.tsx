@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, Minus, Plus, Shirt, X } from "lucide-react"
-import { Envelope, Garden, shortDateThai } from "@/components/register/garden"
-import { CEREMONY_DATE_ISO, COUPLE, DRESS_CODE, PARTY_MAX, VENUE_MAP } from "@/lib/event"
+import { Envelope, FollowerCell, Garden, GuestCell, shortDateThai } from "@/components/register/garden"
+import { spriteForGuest } from "@/lib/appearance"
+import { COUPLE_IDLE } from "@/lib/couple-atlas"
+import { CEREMONY_DATE_ISO, COUPLE, PARTY_MAX, VENUE_MAP } from "@/lib/event"
 import { newId } from "@/lib/id"
 import { travelIcon, travelLabel } from "@/lib/labels"
 import { formatThaiMobile, maskPhoneInput, normalizeThaiMobile } from "@/lib/phone"
@@ -115,6 +117,11 @@ function companions(form: Form, phone: string, main: Guest, existing: Guest[]): 
     }))
   }
   return [...take("adult", total - kids, "ผู้ติดตาม"), ...take("child", kids, "เด็ก")]
+}
+
+/** Your own sprite index in guests-grid, same pick as the venue scene. */
+function selfSprite(form: Form) {
+  return spriteForGuest({ id: form.id, name: form.name, gender: form.gender ?? "other", ageGroup: "adult", attendance: "attending", partyPhone: "" }).index
 }
 
 const sideNick = (side: FamilySide | null) =>
@@ -551,7 +558,12 @@ export function RegisterFlow({
         {askName ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(46,69,53,0.45)] px-6">
             <div role="alertdialog" aria-modal="true" aria-labelledby="returning-title" className="flex w-full max-w-sm flex-col gap-3 rounded-[22px] bg-[#FFFCF5] px-[18px] pt-5 pb-2.5">
-              <Garden height={84} coupleSize={64} floor={22} coupleTop={12} halo={80} haloTop={8} />
+              <div aria-hidden="true" className="flex h-16 items-end justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={COUPLE_IDLE.groom} alt="" className="h-[60px] w-auto [image-rendering:pixelated]" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={COUPLE_IDLE.bride} alt="" className="h-[62px] w-auto [image-rendering:pixelated]" />
+              </div>
               <div className="text-center">
                 <h2 id="returning-title" className="text-xl font-semibold">
                   เบอร์นี้ตอบไว้แล้ว
@@ -659,7 +671,8 @@ export function RegisterFlow({
         </div>
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[150px]">
           <div className="gingham absolute inset-x-0 bottom-0 h-[92px] border-t border-[#E6DCC4]" />
-          <span className="absolute bottom-[100px] left-5 rounded-full border border-[#E6DCC4] bg-[#FFFCF5] px-2.5 py-0.5 text-[11px]">ส่งกำลังใจจากไกล ๆ</span>
+          <GuestCell index={selfSprite(form)} height={64} className="absolute bottom-[86px] left-[22px]" />
+          <span className="absolute bottom-[120px] left-[62px] rounded-full border border-[#E6DCC4] bg-[#FFFCF5] px-2.5 py-0.5 text-[11px]">ส่งกำลังใจจากไกล ๆ</span>
           <Envelope width={22} className="absolute right-7 bottom-[98px] rotate-[8deg]" />
         </div>
         <div aria-hidden="true" className="h-[150px] shrink-0" />
@@ -720,6 +733,7 @@ export function RegisterFlow({
                   className="h-14"
                 >
                   {form.gender === gender ? <CheckBadge /> : null}
+                  <GuestCell index={gender === "male" ? 0 : 6} height={40} />
                   {gender === "male" ? "ชาย" : "หญิง"}
                 </Pick>
               ))}
@@ -732,6 +746,8 @@ export function RegisterFlow({
               {(["groom", "bride"] as const).map((side) => (
                 <Pick key={side} selected={form.side === side} onClick={() => patch({ side })} className="h-14">
                   {form.side === side ? <CheckBadge /> : null}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={COUPLE_IDLE[side]} alt="" className="size-[34px] [image-rendering:pixelated]" />
                   ฝั่ง{sideNick(side)}
                 </Pick>
               ))}
@@ -1055,7 +1071,10 @@ function ConfirmSheet({
         className="w-full max-w-md overflow-hidden rounded-t-3xl bg-[#FFFCF5] motion-safe:animate-in motion-safe:slide-in-from-bottom-8"
       >
         <div className="relative">
-          <Garden height={128} coupleSize={96} floor={36} coupleTop={22} halo={120} haloTop={14} className="rounded-none border-0 border-b" />
+          <Garden height={128} coupleSize={96} floor={36} coupleTop={22} halo={120} haloTop={14} className="rounded-none border-0 border-b">
+            <GuestCell index={selfSprite(form)} height={64} className="absolute top-[58px] left-[34px]" />
+            {form.count > 1 ? <FollowerCell index={2} height={38} className="absolute top-[84px] left-[74px]" /> : null}
+          </Garden>
           <span aria-hidden="true" className="absolute top-2.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-sm bg-[#CFC6B4]" />
         </div>
         <div className="flex flex-col gap-3.5 px-5 pt-4 pb-[max(env(safe-area-inset-bottom),1.375rem)]">
@@ -1085,12 +1104,11 @@ function ConfirmSheet({
                     : travelLabel(travel.mode)}
               </Chip>
             ) : null}
-            {form.story.trim() ? <Chip>มีเรื่องเล่า</Chip> : null}
           </div>
           <div role="note" className="flex items-center gap-2.5 rounded-2xl bg-[#CCCDB0] px-3.5 py-3">
             <Shirt aria-hidden="true" className="size-[22px] shrink-0" />
             <p className="text-sm">
-              <b className="font-semibold">{DRESS_CODE.title.replace("การแต่งกาย: ", "แต่งกาย")}</b> · {DRESS_CODE.detail}
+              <b className="font-semibold">แต่งกายสุภาพ</b> · พิธีในโบสถ์
             </p>
           </div>
           {error ? (
