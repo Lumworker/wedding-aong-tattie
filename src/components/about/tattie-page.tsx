@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRef, useState, type MouseEvent } from "react"
 import { motion, useReducedMotion } from "framer-motion"
+import { BookOpen, Flower2, Sparkles } from "lucide-react"
 import { ABOUT_ROUTES, AboutHeader, WavingSprite, WISH_HREF } from "@/components/about/about-shared"
 import { hand } from "@/components/about/fonts"
 import { COUPLE } from "@/lib/event"
@@ -25,6 +26,21 @@ const FALLING = [
 ]
 
 type Burst = { id: number; x: number; y: number }
+
+/** Small drawn marks per love; pebbles are hand-made since no icon set has them. */
+function LoveIcon({ kind }: { kind: "yoga" | "pretty" | "books" | "stones" }) {
+  const cls = "size-6 text-[#A8665A]"
+  if (kind === "yoga") return <Flower2 aria-hidden="true" className={cls} strokeWidth={1.8} />
+  if (kind === "pretty") return <Sparkles aria-hidden="true" className={cls} strokeWidth={1.8} />
+  if (kind === "books") return <BookOpen aria-hidden="true" className={cls} strokeWidth={1.8} />
+  return (
+    <span aria-hidden="true" className="flex h-6 items-end gap-0.5">
+      <span className="block h-3.5 w-5 rounded-[50%] bg-[#A8665A]/80" />
+      <span className="block h-5 w-4 -rotate-12 rounded-[50%] bg-[#8A9DB5]" />
+      <span className="block h-3 w-3.5 rounded-[50%] bg-[#CCCDB0]" />
+    </span>
+  )
+}
 
 function Sticker({ children, className, tilt = 0, delay = 0 }: { children: React.ReactNode; className?: string; tilt?: number; delay?: number }) {
   const reduced = useReducedMotion() === true
@@ -122,39 +138,41 @@ export function TattiePage() {
               สวัสดีค่า {COUPLE.brideNickname}เอง
             </h2>
             <p className="mt-1.5 text-[15px] leading-7">
-              <b className="font-semibold">{p.headline}</b>
-              <br />
-              {p.about}
+              {p.intro}
             </p>
           </section>
         </Sticker>
 
-        <section aria-labelledby="t-work" className="mx-4 mt-8">
-          <h2 id="t-work" className="font-[family-name:var(--font-about-hand),var(--font-thai-sans),sans-serif] text-[19px] font-semibold">
-            ผลงานที่{COUPLE.brideNickname}เคยอยู่เบื้องหลัง
+        <section aria-labelledby="t-love" className="mx-4 mt-8">
+          <h2 id="t-love" className="font-[family-name:var(--font-about-hand),var(--font-thai-sans),sans-serif] text-[19px] font-semibold">
+            เรื่องที่{COUPLE.brideNickname}รัก
           </h2>
-          <p className="mt-0.5 mb-4 text-[13px] text-[#5B6B5F]">วางแผนคอนเทนต์ให้แบรนด์เหล่านี้</p>
-          <div className="grid grid-cols-2 gap-3">
-            {p.brands.map((brand, index) => (
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {p.loves.map((love, index) => (
               <Sticker
-                key={brand.name}
+                key={love.key}
                 tilt={[-2, 2.5, 1.5, -1.5][index % 4]}
                 delay={index * 0.06}
                 className={cn(
-                  "relative flex h-[84px] flex-col items-center justify-center shadow-[0_1px_4px_rgba(46,69,53,.14)]",
-                  ["bg-[#FFFCF5]", "bg-[#F2D9D3]", "bg-[#D9E7D6]", "bg-[#FFFCF5]"][index % 4]
+                  "relative flex min-h-[176px] flex-col gap-1.5 px-3.5 pt-4 pb-3.5 shadow-[0_1px_4px_rgba(46,69,53,.14)]",
+                  ["bg-[#FFFCF5]", "bg-[#F2D9D3]", "bg-[#D9E7D6]", "bg-[#FFF8E6]"][index % 4]
                 )}
               >
                 <span aria-hidden="true" className={cn(TAPE, "-top-[7px] left-1/2 w-11 -translate-x-1/2")} />
-                <span className="font-serif text-xl font-semibold">{brand.name}</span>
-                <span className="text-[11px] text-[#5B6B5F]">{brand.kind}</span>
+                <LoveIcon kind={love.key} />
+                <span className="font-[family-name:var(--font-about-hand),var(--font-thai-sans),sans-serif] text-base font-semibold text-[#A8665A]">{love.title}</span>
+                <span className="text-[13px] leading-relaxed">{love.text}</span>
               </Sticker>
             ))}
           </div>
-          <p className="mt-4 text-center font-[family-name:var(--font-about-hand),var(--font-thai-sans),sans-serif] text-sm text-[#A8665A]">
-            ถ้าเคยหยุดดูคลิปแบรนด์ไหนนาน ๆ อาจเป็นฝีมือ{COUPLE.brideNickname}ก็ได้นะ
-          </p>
         </section>
+
+        <Sticker tilt={-0.6} className="relative mx-5 mt-9 bg-[#FFFCF5] px-5 pt-6 pb-5 shadow-[0_1px_4px_rgba(46,69,53,.12)]">
+          <span aria-hidden="true" className="absolute -top-3 left-4 font-serif text-6xl leading-none text-[#E0AFA6]">“</span>
+          <p className="font-serif text-[17px] leading-8 text-[#2E4535] italic">{p.column}</p>
+          <p className="mt-3 text-right font-[family-name:var(--font-about-hand),var(--font-thai-sans),sans-serif] text-sm text-[#A8665A]">— คอลัมน์เล็ก ๆ ของ{COUPLE.brideNickname}</p>
+        </Sticker>
+        <p className="mx-6 mt-4 text-center text-xs leading-relaxed text-[#5B6B5F]">{p.dayJob}</p>
 
         {p.threeWords.length ? (
           <section aria-labelledby="t-w3" className="mx-4 mt-8">

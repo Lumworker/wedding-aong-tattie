@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useReducedMotion } from "framer-motion"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 import { ABOUT_ROUTES, AboutHeader, ARROW_INNER, ARROW_OUTER, PixelArrow, WavingSprite, WISH_HREF } from "@/components/about/about-shared"
 import { mono } from "@/components/about/fonts"
@@ -18,7 +17,6 @@ import { cn } from "@/lib/utils"
  * from github.com/DhvanilPatel/swarm-cursors, which has no licence).
  */
 
-const SEEN_KEY = "about-aong-built-v1"
 const HERO_MS = 1700
 const SECTION_MS = 850
 const LONG_PRESS_MS = 450
@@ -180,7 +178,6 @@ function useSwarmBuild(order: string[]) {
   }
 
   const play = useCallback(() => {
-    if (reducedMotion()) return
     order.forEach((id) => starts.current.set(id, null))
     resetPositions()
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
@@ -200,14 +197,8 @@ function useSwarmBuild(order: string[]) {
     // Strict Mode runs this twice; the second pass must not read the flag the first just wrote.
     if (decided.current) return
     decided.current = true
-    let seen = false
-    try {
-      seen = window.localStorage.getItem(SEEN_KEY) === "1"
-      window.localStorage.setItem(SEEN_KEY, "1")
-    } catch {
-      seen = false
-    }
-    if (seen || reducedMotion()) {
+    // Every visit builds itself; reduced motion starts finished (the Play button still replays it).
+    if (reducedMotion()) {
       order.forEach((id) => starts.current.set(id, -Infinity))
       paint(performance.now())
     } else {
@@ -422,7 +413,7 @@ function useMarquee(rootRef: React.RefObject<HTMLDivElement | null>, enabled: bo
 
 /* ------------------------------------------------------------------- page */
 
-const ORDER = ["hero", "about", "career", "words", "letter", "next"]
+const ORDER = ["hero", "about", "traits", "issue", "words", "letter", "next"]
 
 function Built({ id, className, children }: { id: string; className?: string; children: React.ReactNode }) {
   return (
@@ -436,7 +427,6 @@ function Built({ id, className, children }: { id: string; className?: string; ch
 export function AongPage() {
   const { rootRef, cursorRefs, building, play, finish } = useSwarmBuild(ORDER)
   const { handlers, boxes, marquee, chip, clear } = useMarquee(rootRef, !building)
-  const canPlay = useReducedMotion() === false
   const replay = () => {
     clear()
     play()
@@ -460,13 +450,13 @@ export function AongPage() {
               <button type="button" onClick={finish} className="h-11 rounded-full border border-[#8A9DB5] bg-[#1F2E25] px-3.5 text-[13px]">
                 ข้าม
               </button>
-            ) : canPlay ? (
+            ) : (
               <button type="button" onClick={replay} aria-label="ดูหน้าประกอบตัวอีกรอบ" className="flex size-11 items-center justify-center rounded-full hover:bg-white/5">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" />
                 </svg>
               </button>
-            ) : null
+            )
           }
         />
 
@@ -490,7 +480,7 @@ export function AongPage() {
                   {COUPLE.groom} · เจ้าบ่าว
                 </p>
               </div>
-              {canPlay && !building ? (
+              {!building ? (
                 <button
                   type="button"
                   onClick={replay}
@@ -510,37 +500,41 @@ export function AongPage() {
           </Built>
 
           <Built id="about">
-            <div data-pick="about.md">
-              <h2 className="mb-2.5 font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] font-normal text-[#8A9DB5]">about.md</h2>
-              <p className="text-xl leading-snug font-semibold">
-                {p.role}
-                <br />
-                <span className="text-[15px] font-normal text-[#CCCDB0]">@ {p.company}</span>
-              </p>
-              <p className="mt-3 text-[15px] leading-relaxed">{p.about}</p>
+            <div data-pick="readme.md">
+              <h2 className="mb-2.5 font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] font-normal text-[#8A9DB5]">readme.md</h2>
+              <p className="text-[19px] leading-relaxed font-medium">{p.intro}</p>
             </div>
           </Built>
 
-          <Built id="career">
-            <div data-pick="git log">
-              <h2 className="mb-3.5 text-[17px] font-semibold">
-                เส้นทางสายโค้ด <span className="font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] font-normal text-[#8A9DB5]">git log</span>
+          <Built id="traits">
+            <div data-pick="features">
+              <h2 className="mb-3 text-[17px] font-semibold">
+                ฟีเจอร์ของ{COUPLE.groomNickname} <span className="font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] font-normal text-[#8A9DB5]">aong.exe</span>
               </h2>
-              <ol className="flex flex-col gap-3.5">
-                {p.career.map((step) => (
-                  <li key={step.company} data-pick={step.company} data-pick-id={`job-${step.company}`} className="flex items-baseline gap-3.5">
-                    <span className={cn("w-[84px] shrink-0 font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px]", step.current ? "text-[#E0AFA6]" : "text-[#CCCDB0]")}>
-                      {step.years}
-                    </span>
-                    <span>
-                      <b className="font-semibold">{step.company}</b>
-                      <br />
-                      <span className="text-[13px] text-[#CCCDB0]">{step.role}</span>
-                    </span>
+              <ul className="flex flex-col gap-2.5">
+                {p.traits.map((trait) => (
+                  <li key={trait.fn} data-pick={trait.fn} className="rounded-2xl border border-[#8A9DB5]/40 bg-white/[0.04] px-4 py-3.5">
+                    <p className="flex items-baseline justify-between gap-3">
+                      <b className="text-base font-semibold">{trait.title}</b>
+                      <span className="font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] text-[#8A9DB5]">{trait.fn}</span>
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-[#E6E2D3]">{trait.text}</p>
                   </li>
                 ))}
-              </ol>
+              </ul>
             </div>
+          </Built>
+
+          <Built id="issue">
+            <div data-pick="known issue" className="rounded-2xl border border-dashed border-[#E0AFA6]/70 px-4 py-3.5">
+              <p className="font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] text-[#E0AFA6]">⚠ known issue</p>
+              <p className="mt-1 text-base font-semibold">{p.knownIssue.title}</p>
+              <p className="mt-1 text-sm leading-relaxed text-[#E6E2D3]">{p.knownIssue.text}</p>
+              <p className="mt-2.5 inline-flex rounded-full bg-[#E0AFA6] px-2.5 py-1 font-[family-name:var(--font-about-mono),ui-monospace,monospace] text-[11px] text-[#1F2E25]">
+                {p.knownIssue.status}
+              </p>
+            </div>
+            <p className="mt-4 text-center text-xs text-[#CCCDB0]">{p.dayJob}</p>
           </Built>
 
           {p.threeWords.length ? (
