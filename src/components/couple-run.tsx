@@ -10,9 +10,9 @@ export function CoupleRunSplash() {
       <PetalField />
       <div className="relative z-10 flex flex-col items-center">
         <div aria-hidden="true">
-          <span className="couple-run" />
+          <span className="cats-run" />
         </div>
-        <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">กำลังเปิดคำเชิญ</p>
+        <p className="mt-5 text-[15px] leading-relaxed text-muted-foreground">มะเหงกกับหนำใจกำลังเอาคำเชิญมาส่ง…</p>
       </div>
     </div>
   )
